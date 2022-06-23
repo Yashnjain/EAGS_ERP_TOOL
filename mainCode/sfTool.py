@@ -6,13 +6,20 @@ import pandas as pd
 
 # USER = "AKSHATA"
 # PASSWORD = "Biourja@2022"
+# USER = "SVC_BUITDB"
+# PASSWORD = "BUITDB2022"
 USER = "SVC_BUITDB_DEV"
 PASSWORD = "BUITDBDEV2022"
 ACCOUNT = 'OS54042.east-us-2.azure'
 WAREHOUSE = "BUIT_WH"
+# DATABASE = "BUITDB"
 DATABASE = "BUITDB_DEV"
 SCHEMA = "EAGS"
 ROLE = "OWNER_BUITDB_DEV"
+# ROLE = "OWNER_BUITDB"
+
+
+EAGS_QUOTATION_TABLE = "EAGS_QUOTATION"
 
 def get_connection():
     engine = bu_snowflake.get_engine(
@@ -83,7 +90,7 @@ def get_cx_df(conn,table):
     return df
 
 def get_inv_df(conn, table):
-    query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, RESERVED_PIECES, RESERVED_LENGTH_IN, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN FROM {DATABASE}.{SCHEMA}.{table}"
+    query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, RESERVED_PIECES, RESERVED_LENGTH_IN, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN FROM {DATABASE}.{SCHEMA}.{table}"
     df = pd.read_sql_query(query, conn)
     return df
 
@@ -93,7 +100,36 @@ def get_qtylengthdf(conn, table, location, type, grade, od, id):
                 WHERE SITE={location} AND MATERIAL_TYPE={type} AND GLOBAL_GRADE={grade}  AND OD_IN = {od} AND OD_IN_2 = {id}"""
     df = pd.read_sql_query(query, conn)
     return df
+    
+#EAGS_Quotation
+def eagsQuotationuploader(conn,df):
+    df.to_sql(name=EAGS_QUOTATION_TABLE, con=conn, index=False,if_exists='append', schema=SCHEMA)
 
 
+def getLatestQuote(conn,curr_quoteNo):
+    query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE LIMIT 1"
+
+    data = conn.execute(query)
+    raw_data = data.fetchall()
+    if len(raw_data):
+        raw_data = raw_data[0][0]
+        revIndex = raw_data.rfind("/")
+        data = raw_data[:revIndex]
+
+        curr_revIndex = curr_quoteNo.rfind("/")
+        curr_data = curr_quoteNo[:curr_revIndex]
+        if curr_data==data:
+            inpNum = raw_data.split("/")[-1]
+            nextNum = str(int(inpNum)+1).zfill(6)
+            newData = data+"/"+nextNum
+        else:
+            newData = curr_quoteNo
+    else:
+        newData = curr_quoteNo
+    print(data)
+    return newData
+
+#Driver
+# curr_quoteNo = 'EAGS/USA/2022/000001'
 # conn = get_connection()
-# get_cx_df(conn,table= "EAGS_CUSTOMER")
+# getLatestQuote(conn,curr_quoteNo)

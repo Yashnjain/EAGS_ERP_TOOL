@@ -26,7 +26,7 @@ def formulaCalc(boxList, index):
             else:
                 # Selling cost/UOM = "SellingCost/LBS" * mid_formula (rounded upto 2 decimal places)
                 sellCostUOM = round((sellCostLBS * mid_formula),2)
-        else:
+        elif boxList["E_Type"][0][index][1].get() == "BR":
             # BR
             # mid_formula = (od*od*2.71)/12
             mid_formula = ((e_od-wt)*wt*10.68)/12
@@ -38,6 +38,8 @@ def formulaCalc(boxList, index):
                 # For Inch: 
                 # Selling cost/UOM ="SellingCost/LBS" * mid_formula	
                 sellCostUOM = round((sellCostLBS * mid_formula),2)
+        else:
+            sellCostUOM = 0
         return sellCostUOM
     except Exception as e:
         raise e
@@ -169,7 +171,7 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                             newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
                                     & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                                     & (df["od_in"]==float(boxList['E_OD'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID'][0][index][0].get()))]
-                            newDf = newDf[['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
+                            newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
                             boxList[next_key][0][index][0].focus()
                             pt.model.df = newDf
                             pt.redraw()
@@ -178,8 +180,10 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                         new_list = filterList(boxList,next_key,index,df)
                         cx_eags = {'E_Grade':'C_Grade','E_Yield':'C_Yield','E_OD':'C_OD','E_ID':'C_ID'}
                         #if cx value in current list, set next key value = cx value
-                        
-                        if str(boxList[cx_eags[next_key]][0][index][0].get()).upper() in list(map(lambda x: str(x).upper(),new_list)):
+                        if next_key in ["E_OD","E_ID"]:
+                            if float(boxList[cx_eags[next_key]][0][index][0].get()) in list(map(lambda x: float(x),new_list)):
+                                boxList[next_key][0][index][1].set(boxList[cx_eags[next_key]][0][index][0].get())
+                        elif str(boxList[cx_eags[next_key]][0][index][0].get()).upper() in list(map(lambda x: str(x).upper(),new_list)):
                             boxList[next_key][0][index][1].set(str(boxList[cx_eags[next_key]][0][index][0].get()).upper())
                         elif len(new_list)==1:
                             boxList[next_key][0][index][1].set(new_list[0])
@@ -202,7 +206,14 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                             boxList[newKey][0][index][1].set("NA")
                             boxList[newKey][0][index][0].configure(state='disabled')
                     
-            
+            else:
+                if len(boxList):
+                    key, index = keyFinder(boxList,(ent,var))
+                    if key=='E_Additional_Cost':
+                        addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
+                        sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
+                        finalPrice = addCost+sellCost
+                        boxList["E_Final Price"][0][index][1].set(finalPrice)
                                     
                 
 
@@ -354,8 +365,10 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                 if key != "C_Quote Yes/No" and key != 'E_Location' and boxList['E_Location'][0][index][0].get()!='' and key != "cus_long_name" and key != "E_UOM":
                     if not str(boxList["C_Quote Yes/No"][0][index][0].get().upper()).startswith("Y"):
                         check = False
+                    
                     else:
                         newList = filterList(boxList,key,index,df)
+                
             elif len(cxDict):
                 key, index = keyFinder(cxDict,(ent,var))
                 newList = df["cus_long_name"].values.tolist()

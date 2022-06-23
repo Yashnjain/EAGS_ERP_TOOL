@@ -6,7 +6,7 @@ from tkcalendar import DateEntry
 from datetime import date
 import sys
 import pandas as pd
-from pandastable import Table, TableModel
+from pandastable import Table
 from dfMaker import dfMaker
 from sfTool import get_connection,get_cx_df, get_inv_df
 
@@ -122,6 +122,7 @@ def quoteGenerator(mainRoot,user,conn):
 
     #Getting invoentory dataframe
     df = get_inv_df(conn,table = INV_TABLE)
+    df = df.fillna("")
     
     # df = pd.read_excel("sampleInventory.xlsx")
     #Getting Cx Dataframe
@@ -250,8 +251,10 @@ def quoteGenerator(mainRoot,user,conn):
     
 
     #Creating list to be sent fro df creation 
-    pandasDf = TableModel.getSampleData()
-    pt = Table(databaseFrame, dataframe=pandasDf,showtoolbar=False, showstatusbar=True)
+    nonList = [[None,None,None,None,None,None]]
+    pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
+    pt = Table(databaseFrame, dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
+    pt.cellwidth=135
     pt.show()
     # cx_list = ('Perfect Tools Factory LLC', 'Accurate Edge Manufacturin & Coating LLC', 'High precision Manufacturing LLC', 
     # 'NTS Middle East FZCO', 'Ultra Corpotech', 'Falcon Group of Companies')
@@ -616,7 +619,7 @@ def quoteGenerator(mainRoot,user,conn):
     addRowbut = ttk.Button(controlFrame, text="Add Row",command=addRow, width=30)
     addRowbut.grid(row=0,column=1, padx=(350,150),pady=(100,100),sticky=tk.EW)
 
-    submitButton = ttk.Button(controlFrame, text="Submit",command=lambda: dfMaker(specialList,cxListCalc(),otherListCalc()), width=10)
+    submitButton = ttk.Button(controlFrame, text="Submit",command=lambda: dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn), width=10)
     submitButton.grid(row=1,column=1, padx=(350,150),pady=(100,100),sticky=tk.EW)
     
 
