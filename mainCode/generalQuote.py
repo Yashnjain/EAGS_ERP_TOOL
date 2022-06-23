@@ -6,10 +6,14 @@ from tkcalendar import DateEntry
 from datetime import date
 import sys
 import pandas as pd
+from pandastable import Table, TableModel
+from dfMaker import dfMaker
+from sfTool import get_connection,get_cx_df, get_inv_df
 
 
-
-
+UNITS = "units"
+INV_TABLE = "EAGS_INVENTORY"
+CX_TABLE = "EAGS_CUSTOMER"
 
 #Calendar
 
@@ -46,9 +50,29 @@ class ResizingCanvas(tk.Canvas):
 
 
 
-def quoteGenerator(mainRoot,user):
+def quoteGenerator(mainRoot,user,conn):
+    def set_mousewheel(widget, command):
+        """Activate / deactivate mousewheel scrolling when 
+        cursor is over / not over the widget respectively."""
+        widget.bind("<Enter>", lambda _: widget.bind_all('<MouseWheel>', command))
+        widget.bind("<Leave>", lambda _: widget.unbind_all('<MouseWheel>'))
     def OnMouseWheel(event):
         entryCanvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    # def OnMouseWheel(self, event):
+    #     """Handle mouse wheel scroll for windows"""
+
+    #     if event.num == 5 or event.delta == -120:
+    #         event.widget.yview_scroll(1, UNITS)
+    #         self.rowheader.yview_scroll(1, UNITS)
+    #     if event.num == 4 or event.delta == 120:
+    #         if self.canvasy(0) < 0:
+    #             return
+    #         event.widget.yview_scroll(-1, UNITS)
+    #         self.rowheader.yview_scroll(-1, UNITS)
+        
+        
+    #     return
     # def yesNo(inStr,wName):
     #     if inStr == "No":
     #         print(wName)
@@ -87,7 +111,7 @@ def quoteGenerator(mainRoot,user):
     def on_configure(event):
         # update scrollregion after starting 'mainloop'
         # when all widgets are in canvas
-        entryCanvas.configure(scrollregion=entryCanvas.bbox('all'),width=1700,height=400)
+        entryCanvas.configure(scrollregion=entryCanvas.bbox('all'),width=1890,height=380)
     def returnTohome():
         root.withdraw()
         mainRoot.deiconify()
@@ -96,37 +120,46 @@ def quoteGenerator(mainRoot,user):
     global row_num
     row_num=0
 
+    #Getting invoentory dataframe
+    df = get_inv_df(conn,table = INV_TABLE)
+    
+    # df = pd.read_excel("sampleInventory.xlsx")
+    #Getting Cx Dataframe
+    cx_df = get_cx_df(conn,table = CX_TABLE)
+    # cx_df = pd.read_excel("cxDatabase.xlsx")
 
-    df = pd.read_excel("sampleInventory.xlsx")
+    
 
-    print(df)
 
 
 
     count = 0
-    root = tk.Toplevel(mainRoot)
+    root = tk.Toplevel(mainRoot, bg = "#9BC2E6")
     root.state('zoomed')
-    cxFrame = tk.Frame(root)#,highlightbackground="blue", highlightthickness=2)
-    cxFrame2 = tk.Frame(root)#,highlightbackground="blue", highlightthickness=2)
-    m_entryFrame = tk.Frame(root,highlightbackground="black", highlightthickness=2)#width=1700,height=300
-    entryCanvas = tk.Canvas(m_entryFrame)#,width=1930,height=400)
+    cxFrame = tk.Frame(root, bg = "#9BC2E6")#,highlightbackground="blue", highlightthickness=2)
+    cxFrame2 = tk.Frame(root, bg = "#9BC2E6")#,highlightbackground="blue", highlightthickness=2)
+    m_entryFrame = tk.Frame(root, bg= "#DDEBF7",highlightbackground="black", highlightthickness=2)#width=1700,height=300
+    entryCanvas = tk.Canvas(m_entryFrame, bg= "#DDEBF7")#,width=1930,height=400)
     # entryCanvas = ResizingCanvas(m_entryFrame,width=1700, height=400)
     xscrollbar=ttk.Scrollbar(m_entryFrame,orient=tk.HORIZONTAL, command=entryCanvas.xview)
     
     entryCanvas.config(xscrollcommand = xscrollbar.set)
 
     #Defining frame inside canvas
-    entryFrame = tk.Frame(entryCanvas)
+    entryFrame = tk.Frame(entryCanvas, bg= "#DDEBF7")
     
     entryFrame.bind('<Configure>', on_configure)
 
     yscrollbar=ttk.Scrollbar(m_entryFrame,orient="vertical", command=entryCanvas.yview)
-    entryCanvas.bind_all("<MouseWheel>", OnMouseWheel)
+    set_mousewheel(entryCanvas, OnMouseWheel)
+    # entryCanvas.bind_all("<MouseWheel>", OnMouseWheel)
     
     entryCanvas.config(yscrollcommand = yscrollbar.set)
-    databaseFrame = tk.Frame(root,height=500)
+    databaseFrame = tk.Frame(root,height=500, bg= "#DDEBF7")
 
+    controlFrame = tk.Frame(root, bg= "#DDEBF7")
 
+    
     # 
     
     
@@ -142,12 +175,16 @@ def quoteGenerator(mainRoot,user):
 
     cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),rowspan=10,sticky="new")
     cxFrame2.grid(row=0, column=1,pady=(24,10),columnspan=3, padx=(30,120),rowspan=10,sticky="nw")
-    m_entryFrame.grid(row=0, column=0,pady=(160,0),columnspan=3, padx=(0,0),sticky="nsew")
-    xscrollbar.grid(row=1,column=0,sticky="nsew")
-    yscrollbar.grid(row=0,column=1,sticky="nsew")
-    entryCanvas.grid(row=0,column=0, sticky="nsew")
+    m_entryFrame.grid(row=0, column=0,pady=(160,0),columnspan=3, padx=(0,0),sticky=tk.NSEW)
+    xscrollbar.grid(row=1,column=0,sticky=tk.NSEW)
+    yscrollbar.grid(row=0,column=1,sticky=tk.NSEW)
+    entryCanvas.grid(row=0,column=0, sticky=tk.NSEW)
     databaseFrame.grid(row=1,column=0, sticky=tk.NSEW)
+    controlFrame.grid(row=1,column=1, sticky=tk.NSEW)
     
+
+    # pt = Table(databaseFrame, dataframe=df,showtoolbar=False, showstatusbar=True)
+    # pt.show()
     # myscrollbar.grid(row=1,column=0,sticky="ns")
     # dbFrame.grid(row=2, column=0,pady=(24,0),columnspan=3, padx=(30,0),sticky="nsew")
 
@@ -211,20 +248,59 @@ def quoteGenerator(mainRoot,user):
     
     home_img = tk.PhotoImage(master=root, file="home.png")
     
-    cx_list = ('Perfect Tools Factory LLC', 'Accurate Edge Manufacturin & Coating LLC', 'High precision Manufacturing LLC', 
-    'NTS Middle East FZCO', 'Ultra Corpotech', 'Falcon Group of Companies')
+
+    #Creating list to be sent fro df creation 
+    pandasDf = TableModel.getSampleData()
+    pt = Table(databaseFrame, dataframe=pandasDf,showtoolbar=False, showstatusbar=True)
+    pt.show()
+    # cx_list = ('Perfect Tools Factory LLC', 'Accurate Edge Manufacturin & Coating LLC', 'High precision Manufacturing LLC', 
+    # 'NTS Middle East FZCO', 'Ultra Corpotech', 'Falcon Group of Companies')
+    #Defining special dict for cx one time entry
+    global cxDatadict
+    cxDatadict = {}
+    #Cx data Varilables
+
+    cxDatadict["Prepared_By"] = []
+    prepByVar = []
+
+    cxDatadict["Date"] = []
+    inpDateVar = []
+    
+
+    cxDatadict["cus_long_name"] = []
+    cxNameVar = []
+    cxDatadict["cus_long_name"].append(cxNameVar)
+    
+    cxDatadict["payment_term"] = []
+
+    cxDatadict["cus_address"] = []
+
+    cxDatadict["cus_phone"] = []
+
+    cxDatadict["cus_city_zip"] = []
+
+    cxDatadict["cus_email"] = []
+
+    
+
+    
+
+    
+    # cxpayTermVar = []
+    
 
     item_list = ('A4140', 'A4140M', 'A4330V', 'A4715', 'BS708M40', 'A4145M', '4542','4462')
 
-    cxLabel = tk.Label(cxFrame, text="Customer Details")
-    lb1 = tk.Label(cxFrame,text="Prepared By")
-    lb2 = tk.Label(cxFrame,text="Date")
-    lb3 = tk.Label(cxFrame,text="Customer Name")
-    lb4 = tk.Label(cxFrame,text="Location/Address")
-    lb5 = tk.Label(cxFrame,text="Email")
-    lb6 = tk.Label(cxFrame,text="Payment Terms")
-    lb7 = tk.Label(cxFrame2,text="Validity")
-    lb8 = tk.Label(cxFrame2,text="Additional Comments")
+    cxLabel = tk.Label(cxFrame, text="Customer Details", bg = "#9BC2E6")
+    lb1 = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6")
+    lb2 = tk.Label(cxFrame,text="Date", bg = "#9BC2E6")
+    lb3 = tk.Label(cxFrame,text="Customer Name", bg = "#9BC2E6")
+    lb4 = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6")
+    lb5 = tk.Label(cxFrame,text="Email", bg = "#9BC2E6")
+    lb6 = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6")
+    blanckLabel = tk.Label(cxFrame2,text="", bg = "#9BC2E6")
+    lb7 = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6")
+    lb8 = tk.Label(cxFrame2,text="Additional Comments", bg = "#9BC2E6")
     cxLabel.grid(row=0,column=0)
     lb1.grid(row=1,column=0)
     lb2.grid(row=1,column=1)
@@ -232,24 +308,62 @@ def quoteGenerator(mainRoot,user):
     lb4.grid(row=3,column=1)
     lb5.grid(row=3,column=2)
     lb6.grid(row=3,column=3)
-    lb7.grid(row=0,column=0)
-    lb8.grid(row=0,column=1)
+    blanckLabel.grid(row=0,column=0)
+    lb7.grid(row=1,column=0,padx=(100,5))
+    lb8.grid(row=1,column=1)
 
     
     prep_by = ttk.Entry(cxFrame)
     prep_by.insert(tk.END, user)
     prep_by.grid(row=2,column=0)
     prep_by.config(state= "disabled")
-    # myCombobox(df,root,item_list,frame=cxFrame,row=2,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-    cal = MyDateEntry(master=cxFrame, width=17, selectmode='day')
-    cal.grid(row=2, column=1)
-    myCombobox(df,root,item_list,frame=cxFrame,row=4,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-    myCombobox(df,root,item_list,frame=cxFrame,row=4,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-    myCombobox(df,root,item_list,frame=cxFrame,row=4,column=2,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-    myCombobox(df,root,item_list,frame=cxFrame,row=4,column=3,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+    cxDatadict["Prepared_By"] = prep_by.get()
 
-    myCombobox(df,root,item_list,frame=cxFrame2,row=1,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-    myCombobox(df,root,item_list,frame=cxFrame2,row=1,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+    # myCombobox(df,root,item_list,frame=cxFrame,row=2,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+    inpDate = MyDateEntry(master=cxFrame, width=17, selectmode='day')
+    inpDate.grid(row=2, column=1)
+    cxDatadict["Date"] = inpDate.get()
+    
+
+    
+    #Validity
+    validityVar = tk.StringVar()
+    validity = ttk.Entry(cxFrame2, textvariable=validityVar, foreground='blue', background = 'white',width = 15)
+    validity.grid(row=2,column=0,padx=(100,5),pady=5)
+    # myCombobox(df,root,item_list,frame=cxFrame2,row=1,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+
+    #Additional Comments
+    addCommVar = tk.StringVar()
+    addComm = ttk.Entry(cxFrame2, textvariable=addCommVar, foreground='blue', background = 'white',width = 15)
+    addComm.grid(row=2,column=1,sticky=tk.EW,padx=5,pady=5)
+
+
+    #Customer Name Entry Box
+    cxNameVar.append(myCombobox(cx_df,root,item_list,frame=cxFrame,row=4,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=validity))
+    #location Address entry box
+    locAddVar = tk.StringVar()
+    locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20)
+    locAdd.grid(row=4,column=1,sticky=tk.EW,padx=5,pady=5)
+    # cxLocVar = []
+    cxDatadict["cus_address"].append((locAdd, locAddVar))
+    # myCombobox(df,root,item_list,frame=cxFrame,row=4,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+
+    #Email
+    emailAddVar = tk.StringVar()
+    emailAdd = ttk.Entry(cxFrame, textvariable=emailAddVar, foreground='blue', background = 'white',width = 20)
+    emailAdd.grid(row=4,column=2,sticky=tk.EW,padx=5,pady=5)
+    # cxemailAddVar = []
+    cxDatadict["cus_email"].append((emailAdd, emailAddVar))
+    # myCombobox(df,root,item_list,frame=cxFrame,row=4,column=2,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+
+    #Payment Terms Entry
+    payTermVar = tk.StringVar()
+    payTerm = ttk.Entry(cxFrame, textvariable=payTermVar, foreground='blue', background = 'white',width = 20)
+    payTerm.grid(row=4,column=3,sticky=tk.EW,padx=5,pady=5)
+    cxDatadict["payment_term"].append((payTerm, payTermVar))
+    # myCombobox(df,root,item_list,frame=cxFrame,row=4,column=3,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+
+    # myCombobox(df,root,item_list,frame=cxFrame2,row=1,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
     
     # myCombobox(df,root,item_list,frame=entryFrame,row=1,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW)
 
@@ -266,28 +380,28 @@ def quoteGenerator(mainRoot,user):
 
     #################Entry Form Section##############################################
     ######################defining labels############################################
-    specLabel = tk.Label(entryFrame, text="Specification")
-    gradeLabel = tk.Label(entryFrame, text="Grade")
-    yieldLabel = tk.Label(entryFrame, text="Yield")
-    odLabel = tk.Label(entryFrame, text="OD")
-    idLabel = 	tk.Label(entryFrame, text="ID")
-    lengthLabel = tk.Label(entryFrame, text="Length")
-    qtyLabel = tk.Label(entryFrame, text="Qty")
-    quoteLabel = tk.Label(entryFrame, text="Quote Yes/No")
-    locationLabel = tk.Label(entryFrame, text="Location")
-    typeLabel = tk.Label(entryFrame, text="Type")
-    e_gradeLabel = tk.Label(entryFrame, text="Grade")
-    e_yieldLabel = tk.Label(entryFrame, text="Yield")
-    e_odLabel = tk.Label(entryFrame, text="OD")
-    e_idLabel = tk.Label(entryFrame, text="ID")
-    e_Length = tk.Label(entryFrame, text="Length")
-    e_Qty = tk.Label(entryFrame, text="Qty")
-    sellcostLbsLabel = tk.Label(entryFrame, text="Selling Cost/LBS")
-    uom = tk.Label(entryFrame, text="UOM")
-    sellcostUOMLabel = tk.Label(entryFrame, text="Selling Cost/UOM")
-    addCostLabel = tk.Label(entryFrame, text="Additional Cost")
-    leadTimeLAbel = tk.Label(entryFrame, text="Lead Time")
-    finalPriceLabel = tk.Label(entryFrame, text="Final Price")
+    specLabel = tk.Label(entryFrame, text="Specification", bg= "#DDEBF7")
+    gradeLabel = tk.Label(entryFrame, text="Grade", bg= "#DDEBF7")
+    yieldLabel = tk.Label(entryFrame, text="Yield", bg= "#DDEBF7")
+    odLabel = tk.Label(entryFrame, text="OD", bg= "#DDEBF7")
+    idLabel = 	tk.Label(entryFrame, text="ID", bg= "#DDEBF7")
+    lengthLabel = tk.Label(entryFrame, text="Length", bg= "#DDEBF7")
+    qtyLabel = tk.Label(entryFrame, text="Qty", bg= "#DDEBF7")
+    quoteLabel = tk.Label(entryFrame, text="Quote Yes/No", bg= "#DDEBF7")
+    locationLabel = tk.Label(entryFrame, text="Location", bg= "#DDEBF7")
+    typeLabel = tk.Label(entryFrame, text="Type", bg= "#DDEBF7")
+    e_gradeLabel = tk.Label(entryFrame, text="Grade", bg= "#DDEBF7")
+    e_yieldLabel = tk.Label(entryFrame, text="Yield", bg= "#DDEBF7")
+    e_odLabel = tk.Label(entryFrame, text="OD", bg= "#DDEBF7")
+    e_idLabel = tk.Label(entryFrame, text="ID", bg= "#DDEBF7")
+    e_Length = tk.Label(entryFrame, text="Length", bg= "#DDEBF7")
+    e_Qty = tk.Label(entryFrame, text="Qty", bg= "#DDEBF7")
+    sellcostLbsLabel = tk.Label(entryFrame, text="Selling Cost/LBS", bg= "#DDEBF7")
+    uom = tk.Label(entryFrame, text="UOM", bg= "#DDEBF7")
+    sellcostUOMLabel = tk.Label(entryFrame, text="Selling Cost/UOM", bg= "#DDEBF7")
+    addCostLabel = tk.Label(entryFrame, text="Additional Cost", bg= "#DDEBF7")
+    leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+    finalPriceLabel = tk.Label(entryFrame, text="Final Price", bg= "#DDEBF7")
 
 
 
@@ -316,82 +430,100 @@ def quoteGenerator(mainRoot,user):
     ###################################################################
     ######################Defining List variables for various entry boxes######################
     global specialList
+    
     specialList = {}
+    
+
+
+    #General Quote Form Variables
     cx_spec = []
+    specialList["C_Specification"] = []
+    specialList["C_Specification"].append(cx_spec)
+
     cx_grade = []
-    specialList["cx_grade"] = []
-    specialList["cx_grade"].append(cx_grade)
+    specialList["C_Grade"] = []
+    specialList["C_Grade"].append(cx_grade)
+
     cx_yield = []
-    specialList["cx_yield"] = []
-    specialList["cx_yield"].append(cx_yield)
+    specialList["C_Yield"] = []
+    specialList["C_Yield"].append(cx_yield
+    )
     cx_od = []
-    specialList["cx_od"] = []
-    specialList["cx_od"].append(cx_od)
+    specialList["C_OD"] = []
+    specialList["C_OD"].append(cx_od)
+
     cx_id = []
-    specialList["cx_id"] = []
-    specialList["cx_id"].append(cx_id)
+    specialList["C_ID"] = []
+    specialList["C_ID"].append(cx_id)
+
     cx_len = []
+    specialList["C_Length"] = []
+    specialList["C_Length"].append(cx_len)
+    
     cx_qty = []
+    specialList["C_Qty"] = []
+    specialList["C_Qty"].append(cx_qty)
     
     
     quoteYesNo = []
-    specialList["quoteYesNo"] = []
-    specialList["quoteYesNo"].append(quoteYesNo)
+    specialList["C_Quote Yes/No"] = []
+    specialList["C_Quote Yes/No"].append(quoteYesNo)
+
     e_location = []
-    specialList["e_location"] = []
-    specialList["e_location"].append(e_location)
+    specialList["E_Location"] = []
+    specialList["E_Location"].append(e_location)
 
     e_type = []
-    specialList["e_type"] = []
-    specialList["e_type"].append(e_type)
+    specialList["E_Type"] = []
+    specialList["E_Type"].append(e_type)
 
     e_grade = []
-    specialList["e_grade"] = []
-    specialList["e_grade"].append(e_grade)
+    specialList["E_Grade"] = []
+    specialList["E_Grade"].append(e_grade)
 
     e_yield = []
-    specialList["e_yield"] = []
-    specialList["e_yield"].append(e_yield)
+    specialList["E_Yield"] = []
+    specialList["E_Yield"].append(e_yield)
 
     e_od = []
-    specialList["e_od"] = []
-    specialList["e_od"].append(e_od)
+    specialList["E_OD"] = []
+    specialList["E_OD"].append(e_od)
 
     e_id = []
-    specialList["e_id"] = []
-    specialList["e_id"].append(e_id)
+    specialList["E_ID"] = []
+    specialList["E_ID"].append(e_id)
 
     e_len = []
-    specialList["e_len"] = []
-    specialList["e_len"].append(e_len)
+    specialList["E_Length"] = []
+    specialList["E_Length"].append(e_len)
 
     e_qty = []
-    specialList["e_qty"] = []
-    specialList["e_qty"].append(e_qty)
+    specialList["E_Qty"] = []
+    specialList["E_Qty"].append(e_qty)
 
     sellCostLBS = []
-    specialList["sellCostLBS"] = []
-    specialList["sellCostLBS"].append(sellCostLBS)
-
-    sellCostUOM = []
-    specialList["sellCostUOM"] = []
-    specialList["sellCostUOM"].append(sellCostUOM)
+    specialList["E_Selling Cost/LBS"] = []
+    specialList["E_Selling Cost/LBS"].append(sellCostLBS)
 
     e_uom = []
-    specialList["e_uom"] = []
-    specialList["e_uom"].append(e_uom)
+    specialList["E_UOM"] = []
+    specialList["E_UOM"].append(e_uom)
+    
+    sellCostUOM = []
+    specialList["E_Selling Cost/UOM"] = []
+    specialList["E_Selling Cost/UOM"].append(sellCostUOM)
 
     addCost = []
-    specialList["addCost"] = []
-    specialList["addCost"].append(addCost)
+    specialList["E_Additional_Cost"] = []
+    specialList["E_Additional_Cost"].append(addCost)
 
     leadTime = []
-    specialList["leadTime"] = []
-    specialList["leadTime"].append(leadTime)
+    specialList["E_LeadTime"] = []
+    specialList["E_LeadTime"].append(leadTime)
 
     finalCost = []
-    specialList["finalCost"] = []
-    specialList["finalCost"].append(finalCost)
+    specialList["E_Final Price"] = []
+    specialList["E_Final Price"].append(finalCost)
 
     # specialList = [[quoteYesNo],[e_location], [e_type], [e_grade], [e_yield], [e_od], [e_id], [e_len], [e_qty], [sellCostLBS], [sellCostUOM],
     # [e_uom], [addCost], [leadTime], [finalCost]]
@@ -404,52 +536,52 @@ def quoteGenerator(mainRoot,user):
     def addRow():
         
         row_num = len(quoteYesNo)
-        cx_spec.append(ttk.Entry(entryFrame,width=15))
-        cx_spec[-1].grid(row=1+row_num,column=0,padx=(15,0))
+        cx_spec.append((ttk.Entry(entryFrame,width=15),None))
+        cx_spec[-1][0].grid(row=1+row_num,column=0,padx=(15,0))
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=1,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-        cx_grade.append(ttk.Entry(entryFrame,width=15))
-        cx_grade[-1].grid(row=1+row_num,column=1)
+        cx_grade.append((ttk.Entry(entryFrame,width=15),None))
+        cx_grade[-1][0].grid(row=1+row_num,column=1)
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=2,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-        cx_yield.append(ttk.Entry(entryFrame,width=15))
-        cx_yield[-1].grid(row=1+row_num,column=2)
+        cx_yield.append((ttk.Entry(entryFrame,width=15),None))
+        cx_yield[-1][0].grid(row=1+row_num,column=2)
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=3,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
         
         vcmd = root.register(intFloat)
-        cx_od.append(ttk.Entry(entryFrame, width=10,validate = "key",
-                validatecommand=(vcmd, '%P','%d')))
-        cx_od[-1].grid(row=1+row_num,column=3)
+        cx_od.append((ttk.Entry(entryFrame, width=10,validate = "key",
+                validatecommand=(vcmd, '%P','%d')),None))
+        cx_od[-1][0].grid(row=1+row_num,column=3)
         # cx_od['validatecommand'] = (cx_od.register(intFloat),'%P','%d')
 
 
 
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=4,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-        cx_id.append(ttk.Entry(entryFrame, width=10, validate = "key"))
-        cx_id[-1].grid(row=1+row_num,column=4)
-        cx_id[-1]['validatecommand'] = (cx_id[-1].register(intFloat),'%P','%d')
+        cx_id.append((ttk.Entry(entryFrame, width=10, validate = "key"),None))
+        cx_id[-1][0].grid(row=1+row_num,column=4)
+        cx_id[-1][0]['validatecommand'] = (cx_id[-1][0].register(intFloat),'%P','%d')
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=5,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-        cx_len.append(ttk.Entry(entryFrame, width=10, validate = "key"))
-        cx_len[-1].grid(row=1+row_num,column=5)
-        cx_len[-1]['validatecommand'] = (cx_len[-1].register(intFloat),'%P','%d')
+        cx_len.append((ttk.Entry(entryFrame, width=10, validate = "key"),None))
+        cx_len[-1][0].grid(row=1+row_num,column=5)
+        cx_len[-1][0]['validatecommand'] = (cx_len[-1][0].register(intFloat),'%P','%d')
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-        cx_qty.append(ttk.Entry(entryFrame, width=10, validate = "key"))
-        cx_qty[-1].grid(row=1+row_num,column=6)
-        cx_qty[-1]['validatecommand'] = (cx_qty[-1].register(intChecker),'%P','%d')
+        cx_qty.append((ttk.Entry(entryFrame, width=10, validate = "key"), None))
+        cx_qty[-1][0].grid(row=1+row_num,column=6)
+        cx_qty[-1][0]['validatecommand'] = (cx_qty[-1][0].register(intChecker),'%P','%d')
         quoteYesNo.append(myCombobox(df,root,["Yes","No","Other"],frame=entryFrame,row=1+row_num,column=7,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # quoteYesNo[-1]['validate']='focusout'
         # quoteYesNo[-1]['validatecommand'] = (quoteYesNo[-1].register(yesNo),'%P','%W')
         e_location.append(myCombobox(df,root,["Dubai","Singapore","USA","UK"],frame=entryFrame,row=1+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # e_location[-1].config(textvariable="NA", state='disabled')
-        e_type.append(myCombobox(df,root,["THF","BR"],frame=entryFrame,row=1+row_num,column=9,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_type.append(myCombobox(df,root,["THF","BR"],frame=entryFrame,row=1+row_num,column=9,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_type[-1].config(textvariable="NA", state='disabled')
-        e_grade.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=10,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_grade.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=10,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_grade[-1].config(textvariable="NA", state='disabled')
-        e_yield.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=11,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_yield.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=11,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_yield[-1].config(textvariable="NA", state='disabled')
-        e_od.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=12,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_od.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=12,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_od[-1].config(textvariable="NA", state='disabled')
         e_od[-1][0]['validate']='key'
         e_od[-1][0]['validatecommand'] = (e_od[-1][0].register(intFloat),'%P','%d')
-        e_id.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=13,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_id.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=13,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_id[-1].config(textvariable="NA", state='disabled')
         e_len.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=14,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # e_len[-1].config(textvariable="NA", state='disabled')
@@ -466,19 +598,26 @@ def quoteGenerator(mainRoot,user):
         leadTime.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=20,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # leadTime[-1].config(textvariable="NA", state='disabled')
         finalCost.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=21,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+    def cxListCalc():
         # finalCost[-1].config(textvariable="NA", state='disabled')
-        
-        
+        cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), cxDatadict["cus_address"][0][0].get(),
+            cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_phone"],cxDatadict["cus_city_zip"]]
+        return cxList
+    def otherListCalc():
+        otherList = [validityVar.get(), addCommVar.get()]
+        return otherList
         # row_num+=1
     while len(quoteYesNo)<1:
         addRow()
         
-        
+    
 
+    addRowbut = ttk.Button(controlFrame, text="Add Row",command=addRow, width=30)
+    addRowbut.grid(row=0,column=1, padx=(350,150),pady=(100,100),sticky=tk.EW)
 
-
-    addRowbut = tk.Button(databaseFrame, text="Add Row",command=addRow)
-    addRowbut.grid(row=0,column=1, sticky=tk.NW)
+    submitButton = ttk.Button(controlFrame, text="Submit",command=lambda: dfMaker(specialList,cxListCalc(),otherListCalc()), width=10)
+    submitButton.grid(row=1,column=1, padx=(350,150),pady=(100,100),sticky=tk.EW)
     
 
     # scrollbar = tk.Scrollbar(entryFrame, orient='horizontal')
@@ -491,6 +630,7 @@ def quoteGenerator(mainRoot,user):
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             # mainRoot.destroy()
+            conn.close()
             root.destroy()
             sys.exit()
     mainRoot.protocol("WM_DELETE_WINDOW", on_closing)
@@ -498,8 +638,8 @@ def quoteGenerator(mainRoot,user):
     
     # root.mainloop()
 
-
-# mainRoot = tk.Tk()
-# user = "Imam"
-# quoteGenerator(mainRoot, user)
-# mainRoot.mainloop()
+conn = get_connection()
+mainRoot = tk.Tk()
+user = "Imam"
+quoteGenerator(mainRoot, user, conn)
+mainRoot.mainloop()

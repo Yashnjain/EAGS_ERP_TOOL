@@ -3,13 +3,13 @@ from tkinter import ttk
 from datetime import datetime, date
 from tkinter import messagebox
 from PIL import Image, ImageTk
-# from login import login
+from sfTool import get_connection, loginChecker
 from generalQuote import quoteGenerator
 import sys
 
 today = datetime.strftime(date.today(), format = "%d%m%Y")
 
-
+S_TABLE = "EAGS_SALESPERSON"
 
 
 
@@ -21,7 +21,8 @@ today = datetime.strftime(date.today(), format = "%d%m%Y")
 class App():
     def __init__(self,root):
         # super().__init__()
-
+        #Get Snowflake Connection
+        conn = get_connection()
         root.withdraw()
         global user
         
@@ -75,7 +76,7 @@ class App():
 
         right_button = tk.Button(mFrame, image=right_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"])
         right_button.place(x=570, y=170)
-        top_button = tk.Button(mFrame, image=top_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:quoteGenerator(root,user))
+        top_button = tk.Button(mFrame, image=top_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:quoteGenerator(root,user,conn))
         top_button.place(x=200, y=20)
         bottom_button = tk.Button(mFrame, image=bottom_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"])
         bottom_button.place(x=200, y=540)
@@ -113,10 +114,13 @@ class App():
             def login_command():
                 
                 user_dict = {"Imam":"Biourja@2022"}
-                
-                if username.get() in user_dict.keys() and password.get() == user_dict[username.get()]:
-                        global user
-                        user = username.get()
+                global user
+                user = username.get()
+                pwd = password.get()
+                # if username.get() in user_dict.keys() and password.get() == user_dict[username.get()]:
+                #         global user
+                #         user = username.get()
+                if loginChecker(conn,S_TABLE, user, pwd):
                         root.deiconify() #Unhides the root window
                         root.state('zoomed')
                         top.destroy()
