@@ -1,5 +1,6 @@
 import bu_snowflake
 import snowflake.connector
+from snowflake.connector.pandas_tools import write_pandas
 from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
 import pandas as pd
@@ -22,15 +23,26 @@ ROLE = "OWNER_BUITDB_DEV"
 EAGS_QUOTATION_TABLE = "EAGS_QUOTATION"
 
 def get_connection():
-    engine = bu_snowflake.get_engine(
-            username=USER,
+    # engine = bu_snowflake.get_engine(
+    #         username=USER,
+    #         password=PASSWORD,
+    #         warehouse=WAREHOUSE,
+    #         role=ROLE,
+    #         schema=SCHEMA,
+    #         database=DATABASE
+    #         )
+    # conn = engine.connect()
+    conn=snowflake.connector.connect(
+
+            user=USER,
             password=PASSWORD,
+            account=ACCOUNT,
             warehouse=WAREHOUSE,
-            role=ROLE,
+            database  = DATABASE,
             schema=SCHEMA,
-            database=DATABASE
-            )
-    conn = engine.connect()
+            role =ROLE
+        ) 
+    
     return conn
 
 def loginChecker(conn,table, user, pwd):
@@ -68,11 +80,16 @@ def loginChecker(conn,table, user, pwd):
 
         # conn = cnn.cursor()
         # conn = engine.connect()
+        query = f"SELECT NAME FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'"
         
-        raw_data = conn.execute(f"SELECT NAME FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'")
-        data = raw_data.fetchall()
+        # raw_data = conn.execute(f"SELECT NAME FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'")
+        cur = conn.cursor()
+        cur.execute(query)
+        data = cur.fetch_pandas_all()
+        
+        # data = raw_data.fetchall()
         if len(data):
-            return True
+            return data.iloc[0,0] #data[0][0]
         return False
     except Exception as e:
         raise e
@@ -86,33 +103,55 @@ def loginChecker(conn,table, user, pwd):
 def get_cx_df(conn,table):
     # query = f"SELECT CUS_LONG_NAME, PAYMENT_TERM, CUS_ADDRESS, CUS_PHONE, CUS_EMAIL, CUS_CITY_ZIP FROM {DATABASE}.{SCHEMA}.{table}"
     query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
-    df = pd.read_sql_query(query, conn)
+    cur = conn.cursor()
+    cur.execute(query)
+    df = cur.fetch_pandas_all()
+    df.columns = map(str.lower  , df.columns)
+    # df = pd.read_sql_query(query, conn)
     return df
 
 def get_inv_df(conn, table):
     query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, RESERVED_PIECES, RESERVED_LENGTH_IN, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN FROM {DATABASE}.{SCHEMA}.{table}"
-    df = pd.read_sql_query(query, conn)
+    cur = conn.cursor()
+    cur.execute(query)
+    df = cur.fetch_pandas_all()
+    df.columns = map(str.lower  , df.columns)
+    # df = pd.read_sql_query(query, conn)#conn.cursor.fetch_pandas
     return df
 
 
 def get_qtylengthdf(conn, table, location, type, grade, od, id):
     query = f"""SELECT ONHAND_PIECES, ONHAND_LENGTH_IN, RESERVED_PIECES, RESERVED_LENGTH_IN, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN FROM {DATABASE}.{SCHEMA}.{table} 
                 WHERE SITE={location} AND MATERIAL_TYPE={type} AND GLOBAL_GRADE={grade}  AND OD_IN = {od} AND OD_IN_2 = {id}"""
-    df = pd.read_sql_query(query, conn)
+    cur = conn.cursor()
+    cur.execute(query)
+    df = cur.fetch_pandas_all()
+    df.columns = map(str.lower, df.columns)
+    # df = pd.read_sql_query(query, conn)
     return df
     
 #EAGS_Quotation
 def eagsQuotationuploader(conn,df):
-    df.to_sql(name=EAGS_QUOTATION_TABLE, con=conn, index=False,if_exists='append', schema=SCHEMA)
+    # Write the data from the DataFrame to the table named "customers".
+    success, nchunks, nrows, _ = write_pandas(conn, df, EAGS_QUOTATION_TABLE)
+
+    # df.to_sql(name=EAGS_QUOTATION_TABLE, con=conn, index=False,if_exists='append', schema=SCHEMA)
 
 
 def getLatestQuote(conn,curr_quoteNo):
-    query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE LIMIT 1"
+    query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE DESC LIMIT 1"
 
-    data = conn.execute(query)
-    raw_data = data.fetchall()
+    # data = conn.execute(query)
+    # raw_data = data.fetchall()
+
+
+    cur = conn.cursor()
+    cur.execute(query)
+    raw_data = cur.fetch_pandas_all()
+
+
     if len(raw_data):
-        raw_data = raw_data[0][0]
+        raw_data = raw_data.iloc[0,0]#raw_data[0][0]
         revIndex = raw_data.rfind("/")
         data = raw_data[:revIndex]
 

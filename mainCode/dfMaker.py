@@ -1,6 +1,8 @@
 import pandas as pd
 from datetime import datetime, date
 from sfTool import eagsQuotationuploader,getLatestQuote
+
+
 def dfMaker(specialList,cxList,otherList,pt,conn):
 
     # colList = list(inpDict.keys())
@@ -51,11 +53,13 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
     if specialList["E_Final Price"][0][0][0].get() != "":
         sfDf = pd.DataFrame(row, columns=columnList)
         print(sfDf)
-        pt.model.df = sfDf
-        pt.redraw()
-        eagsQuotationuploader(conn, sfDf)
+        # pt.model.df = sfDf
+        # pt.redraw()
+        # eagsQuotationuploader(conn, sfDf)
+
         
     print()
+    return sfDf
 
 
     # row = [[trade_date, flow_m1, ch_opis, ny_opis, flow[flow_m1][2], flow[flow_m1][3], flow[flow_m1][1],flow[flow_m1][0], in_date, up_date]]

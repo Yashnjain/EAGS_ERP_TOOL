@@ -12,10 +12,11 @@ def formulaCalc(boxList, index):
         uom = boxList["E_UOM"][0][index][1].get()
         e_length = int(boxList["E_Length"][0][index][1].get())
         sellCostLBS = float(boxList["E_Selling Cost/LBS"][0][index][1].get())
+        wt = (e_od - e_id)/2
         # THF
         if boxList["E_Type"][0][index][1].get() == "THF":
             # wt = (od-id)/2
-            wt = (e_od - e_id)/2
+            
             # mid_formula = ((od-wt)*wt*10.68)/12
             mid_formula = ((e_od-wt)*wt*10.68)/12 
             # For Each:
@@ -49,6 +50,7 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
     # def __init__(self,item_list,frame,row,column,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW):
     global checker
     checker = True
+    
     # def paste(event):
     #     rows = root.clipboard_get().split('\n')
     #     for r, row in enumerate(rows):
@@ -163,7 +165,7 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
 
 
                     
-                elif value != "Yes" and value != "No" and key!='E_Location' and key != "E_UOM":
+                elif value != "Other" and value != "Yes" and value != "No" and key!='E_Location' and key != "E_UOM":
                     current_key = key
                     while True:
                         next_key = nextKey(current_key, index)
@@ -195,11 +197,11 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                         
                         current_key = next_key
                         
-                elif value == "Yes" or value == "No":
+                elif value == "Yes" or value == "No"or value == "Other":
                     keyIndex= list(boxList.keys()).index('E_Location')
                     for i in range(keyIndex,len(list(boxList.keys()))):
                         newKey = list(boxList.keys())[i]
-                        if value == "Yes":
+                        if value == "Yes" or value == "Other":
                             boxList[newKey][0][index][1].set("")
                             boxList[newKey][0][index][0].configure(state='normal')
                         else:
@@ -210,10 +212,11 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                 if len(boxList):
                     key, index = keyFinder(boxList,(ent,var))
                     if key=='E_Additional_Cost':
-                        addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
-                        sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
-                        finalPrice = addCost+sellCost
-                        boxList["E_Final Price"][0][index][1].set(finalPrice)
+                        if boxList["E_Additional_Cost"][0][index][1].get()!='' and boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
+                            addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
+                            sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
+                            finalPrice = addCost+sellCost
+                            boxList["E_Final Price"][0][index][1].set(finalPrice)
                                     
                 
 
@@ -251,52 +254,65 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
             pass
         lbframe.list.delete(0, tk.END)
         lbframe.place_forget()
-        if breakCheck:
+        if breakCheck:# or e.keysym=="Tab":
             return "break"
 
     def list_input(_):
+        
+        listCheck = True
         if ent.get()=='':
             if len(boxList):
                 key, index = keyFinder(boxList,(ent,var))
-                if key=='E_UOM':
+                if boxList['C_Quote Yes/No'][0][index][1].get() == "Other":
+                    listCheck = False
+                elif key=='E_UOM':
                     newList = item_list
                 else:
                     newList = filterList(boxList,key,index,df)
+                
             else:
                 key, index = keyFinder(cxDict,(ent,var))
                 newList = df["cus_long_name"].values.tolist() 
             lbframe.list.delete(0, tk.END)
-            for item in newList:
-                lbframe.list.insert(tk.END, item)
-                lbframe.list.itemconfigure(tk.END, foreground="black")
-            lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
-        lbframe.list.focus()
-        lbframe.list.select_set(0)
+            if listCheck and len(newList):
+                for item in newList:
+                    lbframe.list.insert(tk.END, item)
+                    lbframe.list.itemconfigure(tk.END, foreground="black")
+                if not newList[0]=='':  
+                    lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
+                    lbframe.list.focus()
+                    lbframe.list.select_set(0)
+                
 
     def list_up(_):
         if not lbframe.list.curselection()[0]:
+            
             ent.focus()
             list_hide()
+                
 
 
-    def get_selection(_):
+    def get_selection(e):
         value = lbframe.list.get(lbframe.list.curselection())
         var.set(value)
-        list_hide()
+        list_hide(e)
         ent.focus()
         ent.icursor(tk.END)
     
-    
+    ent.bind("<Enter>", list_input)
     ent.bind('<Down>', list_input)
     ent.bind('<Return>', list_hide)
     ent.bind('<Tab>',list_hide)
-    ent.bind('<Escape>', list_hide)
+    # ent.bind("<Leave>",list_up)
+    # ent.bind('<Escape>', list_hide)
 
+    lbframe.list.bind("<Enter>", list_input)
     lbframe.list.bind('<Up>', list_up)
     lbframe.list.bind('<Return>', get_selection)
     lbframe.list.bind('<Double-Button-1>', get_selection)
-    lbframe.list.bind('<Tab>',list_hide)
+    lbframe.list.bind('<Tab>',get_selection)
     lbframe.list.bind('<Escape>',list_hide)
+    lbframe.list.bind("<Leave>", list_hide)
     # ent.bind('<Down>', list_input)
     # # ent.bind('<Return>', list_hide)
 
@@ -314,7 +330,12 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                     return key,index
     def filterList(boxList,key,index,df):
         newList = []
-        if key == 'E_Type':
+        if key == 'C_Quote Yes/No':
+            newList = ["Yes", "No", "Other"]
+        elif key== 'E_Location':
+            
+            newList = list(df["site"].unique())
+        elif key == 'E_Type':
             #filter df based on e_location and make unique column of e_type
             new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())]
             newList = list(new_df["material_type"].unique())
@@ -345,7 +366,8 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
             new_df = df[(df["cus_long_name"] == boxList["cus_long_name"][0][index][0].get())] #
             newList = new_df.values.tolist()
         try:
-            newList.sort()
+            if key != 'C_Quote Yes/No':
+                newList.sort()
         except:
             pass
         return newList
@@ -362,7 +384,7 @@ def myCombobox(df,root,item_list,frame,row,column,width=10,list_bd = 0,foregroun
                 # boxList["quoteYesNo"]
                 key, index = keyFinder(boxList,(ent,var))   
                 # print(key, index)
-                if key != "C_Quote Yes/No" and key != 'E_Location' and boxList['E_Location'][0][index][0].get()!='' and key != "cus_long_name" and key != "E_UOM":
+                if key != "C_Quote Yes/No" and boxList['E_Location'][0][index][0].get()!='' and key != "cus_long_name" and key != "E_UOM":#and key != 'E_Location' 
                     if not str(boxList["C_Quote Yes/No"][0][index][0].get().upper()).startswith("Y"):
                         check = False
                     

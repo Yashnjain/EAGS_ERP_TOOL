@@ -120,7 +120,8 @@ class App():
                 # if username.get() in user_dict.keys() and password.get() == user_dict[username.get()]:
                 #         global user
                 #         user = username.get()
-                if loginChecker(conn,S_TABLE, user, pwd):
+                user = loginChecker(conn,S_TABLE, user, pwd)
+                if user:
                         root.deiconify() #Unhides the root window
                         root.state('zoomed')
                         top.destroy()

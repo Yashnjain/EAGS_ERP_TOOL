@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
+import time
+from requests import delete
 from customComboboxV2 import myCombobox
 from tkcalendar import DateEntry
 from datetime import date
@@ -9,7 +11,8 @@ import pandas as pd
 from pandastable import Table
 from dfMaker import dfMaker
 from sfTool import get_connection,get_cx_df, get_inv_df
-
+from final_pdf_creator import pdf_generator
+from sfTool import eagsQuotationuploader
 
 UNITS = "units"
 INV_TABLE = "EAGS_INVENTORY"
@@ -59,6 +62,14 @@ def quoteGenerator(mainRoot,user,conn):
     def OnMouseWheel(event):
         entryCanvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
+
+    def on_enter(e):
+        e.widget['image'] = button_dict[e.widget][1]
+        # addRowbut['background'] = 'green'
+
+    def on_leave(e):
+       e.widget['image'] = button_dict[e.widget][0]
+    #    addRowbut['background'] = 'SystemButtonFace'
     # def OnMouseWheel(self, event):
     #     """Handle mouse wheel scroll for windows"""
 
@@ -111,7 +122,7 @@ def quoteGenerator(mainRoot,user,conn):
     def on_configure(event):
         # update scrollregion after starting 'mainloop'
         # when all widgets are in canvas
-        entryCanvas.configure(scrollregion=entryCanvas.bbox('all'),width=1890,height=380)
+        entryCanvas.configure(scrollregion=entryCanvas.bbox('all'))#,width=1890,height=380)#(0,0,300,200)
     def returnTohome():
         root.withdraw()
         mainRoot.deiconify()
@@ -137,9 +148,21 @@ def quoteGenerator(mainRoot,user,conn):
     count = 0
     root = tk.Toplevel(mainRoot, bg = "#9BC2E6")
     root.state('zoomed')
-    cxFrame = tk.Frame(root, bg = "#9BC2E6")#,highlightbackground="blue", highlightthickness=2)
-    cxFrame2 = tk.Frame(root, bg = "#9BC2E6")#,highlightbackground="blue", highlightthickness=2)
-    m_entryFrame = tk.Frame(root, bg= "#DDEBF7",highlightbackground="black", highlightthickness=2)#width=1700,height=300
+    tabControl = ttk.Notebook(root)
+    s = ttk.Style(tabControl)
+    s.configure("TFrame", background=root["bg"])
+    tab1 = ttk.Frame(tabControl)
+    tab2 = ttk.Frame(tabControl)
+    tab3 = ttk.Frame(tabControl)
+
+    tabControl.add(tab1, text='Quote Generator')
+    tabControl.add(tab2, text='Machining')
+    tabControl.add(tab3, text='Quote Generator + MAchining')
+
+    tabControl.pack(expand=1, fill='both')
+    cxFrame = tk.Frame(tab1, bg = "#9BC2E6")#,highlightbackground="blue", highlightthickness=2)
+    cxFrame2 = tk.Frame(tab1, bg = "#9BC2E6")#,highlightbackground="blue", highlightthickness=2)
+    m_entryFrame = tk.Frame(tab1, bg= "#DDEBF7",highlightbackground="black", highlightthickness=2)#width=1700,height=300
     entryCanvas = tk.Canvas(m_entryFrame, bg= "#DDEBF7")#,width=1930,height=400)
     # entryCanvas = ResizingCanvas(m_entryFrame,width=1700, height=400)
     xscrollbar=ttk.Scrollbar(m_entryFrame,orient=tk.HORIZONTAL, command=entryCanvas.xview)
@@ -156,23 +179,23 @@ def quoteGenerator(mainRoot,user,conn):
     # entryCanvas.bind_all("<MouseWheel>", OnMouseWheel)
     
     entryCanvas.config(yscrollcommand = yscrollbar.set)
-    databaseFrame = tk.Frame(root,height=500, bg= "#DDEBF7")
+    databaseFrame = tk.Frame(tab1,height=500, bg= "#DDEBF7")
 
-    controlFrame = tk.Frame(root, bg= "#DDEBF7")
+    controlFrame = tk.Frame(tab1, bg= "#DDEBF7")
 
     
     # 
     
     
-    # dbFrame = ttk.Frame(root)
-    # canvas =tk.Canvas(root)
+    # dbFrame = ttk.Frame(tab1)
+    # canvas =tk.Canvas(tab1)
     # canvas.pack()
-    # cxFrame.place(in_=root, anchor="nw",x=10,y=10,relwidth=0.55)
-    root.grid_rowconfigure(0,weight=1)
-    root.grid_rowconfigure(1,weight=1)
-    root.grid_rowconfigure(2,weight=1)
-    root.grid_columnconfigure(0,weight=1)
-    root.grid_columnconfigure(1,weight=1)
+    # cxFrame.place(in_=tab1, anchor="nw",x=10,y=10,relwidth=0.55)
+    # tab1.grid_rowconfigure(0,weight=1)
+    # root.grid_rowconfigure(1,weight=1)
+    # root.grid_rowconfigure(2,weight=1)
+    # root.grid_columnconfigure(0,weight=1)
+    # root.grid_columnconfigure(1,weight=1)
 
     cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),rowspan=10,sticky="new")
     cxFrame2.grid(row=0, column=1,pady=(24,10),columnspan=3, padx=(30,120),rowspan=10,sticky="nw")
@@ -194,7 +217,13 @@ def quoteGenerator(mainRoot,user,conn):
     entryCanvas.create_window((0,0),window=entryFrame,tags='expand')
     
     # entryFrame.grid(row=0,column=0)
-    
+    tab1.grid_rowconfigure(0, weight=1) # For row 0
+    tab1.grid_rowconfigure(1, weight=1) # For row 1
+
+    tab1.grid_columnconfigure(0, weight=1) # For column 0
+    tab1.grid_columnconfigure(1, weight=1) # For column 1
+
+
     cxFrame.grid_rowconfigure(0, weight=1) # For row 0
     cxFrame.grid_rowconfigure(1, weight=1) # For row 1
     cxFrame.grid_rowconfigure(2, weight=1) # For row 2
@@ -214,12 +243,12 @@ def quoteGenerator(mainRoot,user,conn):
 
 
     m_entryFrame.grid_rowconfigure(0, weight=1) # For row 0
-    m_entryFrame.grid_rowconfigure(1, weight=1) # For row 1
+    # m_entryFrame.grid_rowconfigure(1, weight=1) # For row 1
 
     m_entryFrame.grid_columnconfigure(0, weight=1) # For column 0
-    m_entryFrame.grid_columnconfigure(1, weight=1) # For column 1
+    # m_entryFrame.grid_columnconfigure(1, weight=1) # For column 1
 
-    entryFrame.grid_rowconfigure(0, weight=1) # For row 0
+    # entryFrame.grid_rowconfigure(0, weight=1) # For row 0
     entryFrame.grid_rowconfigure(1, weight=1) # For row 1
 
     entryFrame.grid_columnconfigure(0, weight=1) # For column 0
@@ -245,9 +274,34 @@ def quoteGenerator(mainRoot,user,conn):
     entryFrame.grid_columnconfigure(20, weight=1) # For column 20
     entryFrame.grid_columnconfigure(21, weight=1) # For column 21
     
+    controlFrame.grid_rowconfigure(0, weight=1) # For column 21
+    controlFrame.grid_rowconfigure(1, weight=1) # For column 21
 
     
-    home_img = tk.PhotoImage(master=root, file="home.png")
+    controlFrame.grid_rowconfigure(2, weight=1) # For column 21
+   
+    
+    controlFrame.grid_rowconfigure(3, weight=1) # For column 21
+    controlFrame.grid_columnconfigure(1, weight=1) # For column 21
+
+    databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
+    databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
+    # databaseFrame.grid_rowconfigure(0, weight=1) # For column 21
+    # databaseFrame.grid_columnconfigure(0, weight=1) # For column 21
+    
+    # databaseFrame.grid_rowconfigure(2, weight=1) # For column 21
+    # databaseFrame.grid_columnconfigure(2, weight=1) # For column
+
+    
+    home_img = tk.PhotoImage(master=tab1, file="home.png")
+    add_img = tk.PhotoImage(master=controlFrame, file="addRowS.png")
+    add_img2 = tk.PhotoImage(master=controlFrame, file="addRow2S.png")
+    delete_img = tk.PhotoImage(master=controlFrame, file="deleteRowS.png")
+    delete_img2 = tk.PhotoImage(master=controlFrame, file="deleteRow2S.png")
+    preview_img = tk.PhotoImage(master=controlFrame, file="previewButtonS.png")
+    preview_img2 = tk.PhotoImage(master=controlFrame, file="previewButton2S.png")
+    submit_img = tk.PhotoImage(master=controlFrame, file="submitButtonS.png")
+    submit_img2 = tk.PhotoImage(master=controlFrame, file="submitButton2S.png")
     
 
     #Creating list to be sent fro df creation 
@@ -342,7 +396,7 @@ def quoteGenerator(mainRoot,user,conn):
 
 
     #Customer Name Entry Box
-    cxNameVar.append(myCombobox(cx_df,root,item_list,frame=cxFrame,row=4,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=validity))
+    cxNameVar.append(myCombobox(cx_df,tab1,item_list,frame=cxFrame,row=4,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=validity))
     #location Address entry box
     locAddVar = tk.StringVar()
     locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20)
@@ -371,7 +425,7 @@ def quoteGenerator(mainRoot,user,conn):
     # myCombobox(df,root,item_list,frame=entryFrame,row=1,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW)
 
 
-    home_button = tk.Button(root, image=home_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=returnTohome)
+    home_button = tk.Button(tab1, image=home_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=returnTohome)
     home_button.image = home_img #Preventing image to go into garbage
     home_button.grid(row=0,column=2,stick="nw",padx=(0,50),pady=(10,0))
     # home_button.place(x=1600,y=-10,relx=0.1,rely=0.1,anchor="sw")
@@ -549,7 +603,7 @@ def quoteGenerator(mainRoot,user,conn):
         cx_yield[-1][0].grid(row=1+row_num,column=2)
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=3,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
         
-        vcmd = root.register(intFloat)
+        vcmd = tab1.register(intFloat)
         cx_od.append((ttk.Entry(entryFrame, width=10,validate = "key",
                 validatecommand=(vcmd, '%P','%d')),None))
         cx_od[-1][0].grid(row=1+row_num,column=3)
@@ -561,46 +615,50 @@ def quoteGenerator(mainRoot,user,conn):
         cx_id.append((ttk.Entry(entryFrame, width=10, validate = "key"),None))
         cx_id[-1][0].grid(row=1+row_num,column=4)
         cx_id[-1][0]['validatecommand'] = (cx_id[-1][0].register(intFloat),'%P','%d')
-        # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=5,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+        # myCombobox(df,tab1,cx_list,frame=entryFrame,row=1,column=5,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
         cx_len.append((ttk.Entry(entryFrame, width=10, validate = "key"),None))
         cx_len[-1][0].grid(row=1+row_num,column=5)
         cx_len[-1][0]['validatecommand'] = (cx_len[-1][0].register(intFloat),'%P','%d')
-        # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+        # myCombobox(df,tab1,cx_list,frame=entryFrame,row=1,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
         cx_qty.append((ttk.Entry(entryFrame, width=10, validate = "key"), None))
         cx_qty[-1][0].grid(row=1+row_num,column=6)
         cx_qty[-1][0]['validatecommand'] = (cx_qty[-1][0].register(intChecker),'%P','%d')
-        quoteYesNo.append(myCombobox(df,root,["Yes","No","Other"],frame=entryFrame,row=1+row_num,column=7,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        quoteYesNo.append(myCombobox(df,tab1,["Yes","No","Other"],frame=entryFrame,row=1+row_num,column=7,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # quoteYesNo[-1]['validate']='focusout'
         # quoteYesNo[-1]['validatecommand'] = (quoteYesNo[-1].register(yesNo),'%P','%W')
-        e_location.append(myCombobox(df,root,["Dubai","Singapore","USA","UK"],frame=entryFrame,row=1+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_location.append(myCombobox(df,tab1,["Dubai","Singapore","USA","UK"],frame=entryFrame,row=1+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # e_location[-1].config(textvariable="NA", state='disabled')
-        e_type.append(myCombobox(df,root,["THF","BR"],frame=entryFrame,row=1+row_num,column=9,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+        e_type.append(myCombobox(df,tab1,["THF","BR"],frame=entryFrame,row=1+row_num,column=9,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_type[-1].config(textvariable="NA", state='disabled')
-        e_grade.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=10,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+        e_grade.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=10,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_grade[-1].config(textvariable="NA", state='disabled')
-        e_yield.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=11,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+        e_yield.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=11,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_yield[-1].config(textvariable="NA", state='disabled')
-        e_od.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=12,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+        e_od.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=12,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_od[-1].config(textvariable="NA", state='disabled')
         e_od[-1][0]['validate']='key'
         e_od[-1][0]['validatecommand'] = (e_od[-1][0].register(intFloat),'%P','%d')
-        e_id.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=13,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+        e_id.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=13,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
         # e_id[-1].config(textvariable="NA", state='disabled')
-        e_len.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=14,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_len.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=14,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # e_len[-1].config(textvariable="NA", state='disabled')
-        e_qty.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=15,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_qty.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=15,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # e_qty[-1].config(textvariable="NA", state='disabled')
-        sellCostLBS.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=16,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        sellCostLBS.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=16,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        sellCostLBS[-1][0]['validate']='key'
+        sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
         # sellCostLBS[-1].config(textvariable="NA", state='disabled')
-        e_uom.append(myCombobox(df,root,["Inch","Each"],frame=entryFrame,row=1+row_num,column=17,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        e_uom.append(myCombobox(df,tab1,["Inch","Each"],frame=entryFrame,row=1+row_num,column=17,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # e_uom[-1].config(textvariable="NA", state='disabled')
-        sellCostUOM.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=18,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        sellCostUOM.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=18,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # sellCostUOM[-1].config(textvariable="NA", state='disabled')
-        addCost.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=19,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        addCost.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=19,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        addCost[-1][0]['validate']='key'
+        addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
         # addCost[-1].config(textvariable="NA", state='disabled')
-        leadTime.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=20,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        leadTime.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=20,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
         # leadTime[-1].config(textvariable="NA", state='disabled')
-        finalCost.append(myCombobox(df,root,item_list,frame=entryFrame,row=1+row_num,column=21,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+        finalCost.append(myCombobox(df,tab1,item_list,frame=entryFrame,row=1+row_num,column=21,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
 
     def cxListCalc():
         # finalCost[-1].config(textvariable="NA", state='disabled')
@@ -613,14 +671,62 @@ def quoteGenerator(mainRoot,user,conn):
         # row_num+=1
     while len(quoteYesNo)<1:
         addRow()
+    def deleteRow():
+        for key in specialList.keys():
+            
+            # specialList[key][0][-1][1].destroy()
+            if len(specialList[key][0])==1:
+                specialList[key][0][0][0].delete(0, tk.END)
+                # time.sleep(1)
+                # addRow()
+            else:
+                specialList[key][0][-1][0].destroy()
+                specialList[key][0].pop()
+    button_dict = {}
+
+    addRowbut = tk.Button(controlFrame, image=add_img, command=addRow,borderwidth=0, background=controlFrame["bg"])
+    addRowbut.image = add_img
+    addRowbut.grid(row=0,column=1)
+    button_dict[addRowbut] = [add_img, add_img2]
+    addRowbut.bind("<Enter>", on_enter)
+    addRowbut.bind("<Leave>", on_leave)
+
+    deleteRowbut = tk.Button(controlFrame, image=delete_img, text="Delete Row",command=deleteRow,borderwidth=0, background=controlFrame["bg"])
+    deleteRowbut.image = delete_img
+    deleteRowbut.grid(row=1,column=1)
+    button_dict[deleteRowbut] = [delete_img, delete_img2]
+    deleteRowbut.bind("<Enter>", on_enter)
+    deleteRowbut.bind("<Leave>", on_leave)
+    def create_pdf():
+        global quoteDf
+        quoteDf = dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn)
+        pt.model.df = quoteDf
+        pt.redraw()
+        pdf_generator(quoteDf)
+        submitButton.configure(state='normal')
+
+    def uploadDf(conn, quoteDf):
+        # pt.model.df = quoteDf
+        # pt.redraw()
+        eagsQuotationuploader(conn, quoteDf)
+        submitButton.configure(state='disable')
+        messagebox.showinfo("Info", "Data uploaded Successfully!")
         
+    Previewbut = tk.Button(controlFrame, image=preview_img,text="Preview",command=create_pdf,borderwidth=0, background=controlFrame["bg"])
+    Previewbut.image = preview_img
+    Previewbut.grid(row=2,column=1)
+    button_dict[Previewbut] = [preview_img, preview_img2]
+    Previewbut.bind("<Enter>", on_enter)
+    Previewbut.bind("<Leave>", on_leave)
+
+    submitButton = tk.Button(controlFrame, image=submit_img, text="Submit",command=lambda: uploadDf(conn, quoteDf),borderwidth=0, background=controlFrame["bg"])
+    submitButton.image = submit_img
+    submitButton.configure(state='disable')
+    submitButton.grid(row=3,column=1)
+    button_dict[submitButton] = [submit_img, submit_img2]
+    submitButton.bind("<Enter>", on_enter)
+    submitButton.bind("<Leave>", on_leave)
     
-
-    addRowbut = ttk.Button(controlFrame, text="Add Row",command=addRow, width=30)
-    addRowbut.grid(row=0,column=1, padx=(350,150),pady=(100,100),sticky=tk.EW)
-
-    submitButton = ttk.Button(controlFrame, text="Submit",command=lambda: dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn), width=10)
-    submitButton.grid(row=1,column=1, padx=(350,150),pady=(100,100),sticky=tk.EW)
     
 
     # scrollbar = tk.Scrollbar(entryFrame, orient='horizontal')
@@ -633,7 +739,7 @@ def quoteGenerator(mainRoot,user,conn):
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             # mainRoot.destroy()
-            conn.close()
+            # conn.close()
             root.destroy()
             sys.exit()
     mainRoot.protocol("WM_DELETE_WINDOW", on_closing)
@@ -642,6 +748,7 @@ def quoteGenerator(mainRoot,user,conn):
     # root.mainloop()
 
 conn = get_connection()
+# conn=None
 mainRoot = tk.Tk()
 user = "Imam"
 quoteGenerator(mainRoot, user, conn)
