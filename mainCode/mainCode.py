@@ -1,11 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime, date
-from tkinter import messagebox
+from tkinter import messagebox, Tk
 from PIL import Image, ImageTk
 from sfTool import get_connection, loginChecker
+from tkinter.messagebox import showerror
 from generalQuote import quoteGenerator
-import sys
+import sys, traceback
+from Tools import resource_path
 
 today = datetime.strftime(date.today(), format = "%d%m%Y")
 
@@ -19,7 +21,9 @@ S_TABLE = "EAGS_SALESPERSON"
 
 
 class App():
+
     def __init__(self,root):
+        
         # super().__init__()
         #Get Snowflake Connection
         conn = get_connection()
@@ -38,30 +42,36 @@ class App():
         y = (screen_height/2) - (height/2)
         root.geometry('%dx%d+%d+%d' % (width, height, x, y))
         # root.geometry('648x696')
-        photo = tk.PhotoImage(file = 'biourjaLogo.png')
+        biourjaLogo = resource_path('biourjaLogo.png')
+        photo = tk.PhotoImage(file = biourjaLogo)
         root.iconphoto(False, photo)
         root["bg"]= "white"
         mFrame = tk.Frame(width=width, height=height, background=root["bg"])
         mFrame.place(in_=root, anchor="c", relx=.5, rely=.5)
         ################Main Window########################
-        image1 = Image.open("Entry1.png")
+        entry1_path = resource_path("Entry1.png")
+        image1 = Image.open(entry1_path)
         image1 = image1.resize((420,199), Image.ANTIALIAS)
         top_img = ImageTk.PhotoImage(image1)
 
-        image2 = Image.open("Entry2.png")
+        entry2_path = resource_path("Entry2.png")
+        image2 = Image.open(entry2_path)
         image2 = image2.resize((204,423), Image.ANTIALIAS)
         left_img = ImageTk.PhotoImage(image2)
 
-        image3 = Image.open("Entry3.png")
+        entry3_path = resource_path("Entry3.png")
+        image3 = Image.open(entry3_path)
         image3 = image3.resize((204,423), Image.ANTIALIAS)
         right_img = ImageTk.PhotoImage(image3)
 
-        image4 = Image.open("Entry4.png")
+        entry4_path = resource_path("Entry4.png")
+        image4 = Image.open(entry4_path)
         image4 = image4.resize((420,199), Image.ANTIALIAS)
         bottom_img = ImageTk.PhotoImage(image4)
 
 
-        center_img = Image.open("center.png")
+        center_img_path = resource_path("center.png")
+        center_img = Image.open(center_img_path)
         center_img = center_img.resize((285,285), Image.ANTIALIAS)
         cent_photo = ImageTk.PhotoImage(center_img)
 
@@ -101,70 +111,81 @@ class App():
         s.configure("TMenu", width=19)
         s.configure("TFrame", background="white")
 
+        def report_callback_exception(self, exc, val, tb):
+            msg = traceback.format_exc()
+            showerror("Error", message=msg)
+            root.update()
         def on_closing():
-            if messagebox.askokcancel("Quit", "Do you want to quit?"):
-                top.destroy()
-                root.destroy()
-                sys.exit()
+            try:
+                if messagebox.askokcancel("Quit", "Do you want to quit?"):
+                    top.destroy()
+                    root.destroy()
+                    sys.exit()
+            except Exception as e:
+                raise e
         
         def login(root,top):
-
+            try:
+            
         
-        
-            def login_command():
-                
-                user_dict = {"Imam":"Biourja@2022"}
-                global user
-                user = username.get()
-                pwd = password.get()
-                # if username.get() in user_dict.keys() and password.get() == user_dict[username.get()]:
-                #         global user
-                #         user = username.get()
-                user = loginChecker(conn,S_TABLE, user, pwd)
-                if user:
-                        root.deiconify() #Unhides the root window
-                        root.state('zoomed')
-                        top.destroy()
-                        # top.wait_window()
+                def login_command():
+                    try:
+                        user_dict = {"Imam":"Biourja@2022"}
+                        global user
+                        user = username.get()
+                        pwd = password.get()
+                        # if username.get() in user_dict.keys() and password.get() == user_dict[username.get()]:
+                        #         global user
+                        #         user = username.get()
+                        user = loginChecker(conn,S_TABLE, user, pwd)
+                        if user:
+                                root.deiconify() #Unhides the root window
+                                root.state('zoomed')
+                                top.destroy()
+                                # top.wait_window()
+                                
+                                
+                                # user = username.get().copy()
+                        else:
+                                password.delete(0, tk.END)
+                                messagebox.showinfo("Invalid Credentials", "Username or password is incorrect")
+                    except Exception as e:
+                        raise e
+
+                top_frame = ttk.Frame(top)
                         
-                        
-                        # user = username.get().copy()
-                else:
-                        password.delete(0, tk.END)
-                        messagebox.showinfo("Invalid Credentials", "Username or password is incorrect")
+                top_frame.grid(row=0, column=1,pady=(24,0),columnspan=3, padx=(10,0))
+                user_label = ttk.Label(top_frame, text="Username:", font=("Book Antiqua bold", 12), foreground="#ff8c00", background="white")
+                user_label.grid(row=0, column=0)
+                user_text = tk.StringVar()
+                username = ttk.Entry(top_frame, textvariable=user_text) #Username entry
+                # user_text.set("IMAM")
+                username.grid(row=0, column=1)
+                password_label = ttk.Label(top_frame, text="Password:", font=("Book Antiqua bold", 12), foreground="#ff8c00", background="white")
+                password_label.grid(row=1, column=0, pady=10)
+                password_text = tk.StringVar()
+                password = ttk.Entry(top_frame, show="*", textvariable=password_text) #Password entry
+                password.grid(row=1, column=1, pady=10)
+                # password_text.set("Biourja@2021#7515")
 
-            top_frame = ttk.Frame(top)
-                    
-            top_frame.grid(row=0, column=1,pady=(24,0),columnspan=3, padx=(10,0))
-            user_label = ttk.Label(top_frame, text="Username:", font=("Book Antiqua bold", 12), foreground="#ff8c00", background="white")
-            user_label.grid(row=0, column=0)
-            user_text = tk.StringVar()
-            username = ttk.Entry(top_frame, textvariable=user_text) #Username entry
-            # user_text.set("IMAM")
-            username.grid(row=0, column=1)
-            password_label = ttk.Label(top_frame, text="Password:", font=("Book Antiqua bold", 12), foreground="#ff8c00", background="white")
-            password_label.grid(row=1, column=0, pady=10)
-            password_text = tk.StringVar()
-            password = ttk.Entry(top_frame, show="*", textvariable=password_text) #Password entry
-            password.grid(row=1, column=1, pady=10)
-            # password_text.set("Biourja@2021#7515")
+                loginButton_text = tk.StringVar()
+                loginButton = tk.Button(top_frame, textvariable=loginButton_text, font = ("Book Antiqua bold", 12), bg="#20bebe", fg="white", height=1, width=14, command=login_command, activebackground="#20bebb")
+                loginButton.grid(row=2, column=1, pady=30)
+                loginButton_text.set("Login")
 
-            loginButton_text = tk.StringVar()
-            loginButton = tk.Button(top_frame, textvariable=loginButton_text, font = ("Book Antiqua bold", 12), bg="#20bebe", fg="white", height=1, width=14, command=login_command, activebackground="#20bebb")
-            loginButton.grid(row=2, column=1, pady=30)
-            loginButton_text.set("Login")
-
-            loginButton.bind("<Return>", (lambda event: login_command()))
-            password.bind("<Return>", (lambda event: login_command()))
+                loginButton.bind("<Return>", (lambda event: login_command()))
+                password.bind("<Return>", (lambda event: login_command()))
+            except Exception as e:
+                raise e
         
         # root = root
         user = login(root,top)
-
+        Tk.report_callback_exception = report_callback_exception
 
         top.protocol("WM_DELETE_WINDOW", on_closing)
         root.protocol("WM_DELETE_WINDOW", on_closing)
 
-        
+        # Tk.report_callback_exception = report_callback_exception
         
         root.mainloop()
 
