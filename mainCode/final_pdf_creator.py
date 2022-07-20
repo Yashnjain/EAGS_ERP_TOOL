@@ -3,6 +3,7 @@ import xlwings.constants as win32c
 import time
 import os
 import pandas as pd
+from Tools import resource_path
 
 def num_to_col_letters(num):
     try:
@@ -27,14 +28,18 @@ def insert_rows(cell_values,working_sheet,working_workbook):
         raise e
 
 def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+    try:
+        """Yield successive n-sized chunks from lst."""
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
+    except Exception as e:
+                raise e
 
 def pdf_generator(df):
     try:       
         # job_name = 'open_ar_v2' 
-        input_sheet='pdfCreator.xlsm'
+        input_sheet = resource_path('pdfCreator.xlsm')
+        # input_sheet='pdfCreator.xlsm'
         retry=0
         while retry < 10:
             try:
@@ -55,7 +60,7 @@ def pdf_generator(df):
         for index,values in enumerate(list1):
                 chunk_df=df.iloc[values]
                 chunk_df.reset_index(inplace=True)
-                chunk_df = chunk_df.astype({'C_OD':'float','C_ID':'float','E_OD':'float','E_ID':'float', 'E_FINAL_PRICE':'float', 'E_QTY':'float'})
+                chunk_df = chunk_df.astype({'C_OD':'float','C_ID':'float'})
                 page_diff=70
                 ws1.range(f'F{2+(page_count*page_diff)}').value=df['QUOTENO'][0]
                 ws1.range(f'F{3+(page_count*page_diff)}').value=df['DATE'][0]
@@ -75,15 +80,27 @@ def pdf_generator(df):
                     customer_requirement=f'{round(float(chunk_df["C_OD"][i]),3)}"OD - {round(chunk_df["C_ID"][i],3)}"ID - {chunk_df["C_GRADE"][i]} - {chunk_df["C_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["C_QTY"][i]}@{chunk_df["C_LENGTH"][i]}"'
                     ws1.range(f'A{9+(diff*i+page_count*page_diff)}').value=customer_requirement
                     ws1.range(f'A{10+(diff*i+page_count*page_diff)}').value="EAGL Offer:"
-                    ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value=f'{chunk_df["E_QTY"][i]}PC@{chunk_df["E_LENGTH"][i]}"'#QTY
+                    
                     ws1.range(f'D{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_UOM'][i]#UOM
                     ws1.range(f'E{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_FINAL_PRICE'][i]#Price
-                    ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_FINAL_PRICE'][i]*chunk_df['E_QTY'][i]#amount
-                    ws1.range(f'G{10+(diff*i+page_count*page_diff)}').value=chunk_df['LEAD_TIME'][i]#lead time
-                    ws1.range(f'H{10+(diff*i+page_count*page_diff)}').value=f"Ex-works"#delivery term
-                    ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_LOCATION'][i]}"#delivery term
-                    eagl_offer=f'{round(chunk_df["E_OD"][i],3)}"OD - {round(chunk_df["E_ID"][i],3)}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["E_QTY"][i]}@{chunk_df["E_LENGTH"][i]}"'
-                    ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value= eagl_offer
+                    if chunk_df['E_FINAL_PRICE'][i] != "NA":
+                        ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])*float(chunk_df['E_QTY'][i])#amount
+                        ws1.range(f'H{10+(diff*i+page_count*page_diff)}').value=f"Ex-works"#delivery term
+                        ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value=f'{chunk_df["E_QTY"][i]}PC@{chunk_df["E_LENGTH"][i]}"'#QTY
+                        ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_LOCATION'][i]}"#delivery term
+                    else:
+                        ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value = "NA"
+                        ws1.range(f'H{10+(diff*i+page_count*page_diff)}').value="NA"#delivery term
+                        ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value="NA"#QTY
+                    ws1.range(f'G{10+(diff*i+page_count*page_diff)}').value=chunk_df['LEAD_TIME'][i]#lead time                    
+                    
+                    if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='yes':
+                        chunk_df = chunk_df.astype({'E_OD1':'float','E_ID1':'float', 'E_FINAL_PRICE':'float', 'E_QTY':'float'})
+                        eagl_offer=f'{round(chunk_df["E_OD1"][i],3)}"OD - {round(chunk_df["E_ID1"][i],3)}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["E_QTY"][i]}@{chunk_df["E_LENGTH"][i]}"'
+                        ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value= eagl_offer
+                    if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='no' or (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='other':
+                        eagl_offer='NA'#f'{chunk_df["E_OD1"][i]}"OD - {chunk_df["E_ID1"][i]}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["E_SPEC"][i]} - {chunk_df["E_QTY"][i]}@{chunk_df["E_LENGTH"][i]}"'
+                        ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value= eagl_offer
                     if i!=(len(chunk_df))-1:
                            last_row=8+(diff*(i+1)+page_count*page_diff) 
                            cell_values= f'A{8+(diff*i)+page_count*page_diff}:H{last_row-1}'                 
@@ -102,12 +119,13 @@ def pdf_generator(df):
         filename=str(df['QUOTENO'][0]).replace("/","")
         pdf_path = os.path.join(current_work_dir, f"{filename}.pdf")
         # Save excel workbook to pdf file
-        print(f"Saving workbook as '{pdf_path}' ...")
+        # print(f"Saving workbook as '{pdf_path}' ...")
         ws1.api.ExportAsFixedFormat(0, pdf_path)
         # Open the created pdf file
-        print(f"Opening pdf file with default application ...")
+        # print(f"Opening pdf file with default application ...")
         os.startfile(pdf_path)
-        return f"pdf generated succesfully"
+        # return f"pdf generated succesfully"
+        return pdf_path
 
     except Exception as e:
         raise e
