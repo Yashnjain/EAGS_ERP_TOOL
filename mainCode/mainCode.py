@@ -149,6 +149,7 @@ class App():
                         else:
                                 password.delete(0, tk.END)
                                 messagebox.showinfo("Invalid Credentials", "Username or password is incorrect")
+                                password.focus()
                     except Exception as e:
                         raise e
 
@@ -175,6 +176,8 @@ class App():
 
                 loginButton.bind("<Return>", (lambda event: login_command()))
                 password.bind("<Return>", (lambda event: login_command()))
+                top_frame.focus()
+                username.focus()
             except Exception as e:
                 raise e
         
