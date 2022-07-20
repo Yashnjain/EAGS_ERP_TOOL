@@ -165,9 +165,9 @@ def eagsQuotationuploader(conn,df):
 
 def getLatestQuote(conn,curr_quoteNo):
     try:
-        cx_init_name = curr_quoteNo.split("_")[-1]
+        cx_init_name = curr_quoteNo.split("_")[0]
         # query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE DESC LIMIT 1"
-        query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name}%'"
+        query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name}%' ORDER BY QUOTENO desc LIMIT 1"
 
         # data = conn.execute(query)
         # raw_data = data.fetchall()
@@ -197,13 +197,15 @@ def getLatestQuote(conn,curr_quoteNo):
             #     newData = curr_quoteNo
 
             #########New quote no logic##############
-            data = raw_data.split("_")[-1]
-            curr_data = curr_quoteNo.split("_")[-1]
+            data = raw_data.split("_")[0]
+            curr_data = curr_quoteNo.split("_")[0]
+            
 
             if curr_data==data:
-                inpNum = raw_data.split("_")[0]
-                nextNum = str(int(inpNum)+1).zfill(6)
-                newData =nextNum +"_"+ data
+                # inpNum = raw_data.split("_")[0]
+                curr_num = int(raw_data.split("_")[-1])
+                nextNum = str(int(curr_num)+1).zfill(6)
+                newData = data +"_"+ nextNum
             else:
                 newData = curr_quoteNo
 
