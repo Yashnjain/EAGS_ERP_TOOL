@@ -12,6 +12,7 @@ from sfTool import get_connection,get_cx_df, get_inv_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
 import os
+from tkPDFViewer import tkPDFViewer as pdf
 import ctypes
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
@@ -20,8 +21,6 @@ INV_TABLE = "EAGS_INVENTORY"
 CX_TABLE = "EAGS_CUSTOMER"
 
 #Calendar
-
-
 class MyDateEntry(DateEntry):
     try:
         def __init__(self, master=None, **kw):
@@ -60,7 +59,7 @@ class ResizingCanvas(tk.Canvas):
 
 
 
-def quoteGenerator(mainRoot,user,conn):
+def quoteGenerator(mainRoot,user,conn, df):
     try:
         def set_mousewheel(widget, command):
             try:
@@ -125,6 +124,7 @@ def quoteGenerator(mainRoot,user,conn):
                 # update scrollregion after starting 'mainloop'
                 # when all widgets are in canvas
                 entryCanvas.configure(scrollregion=entryCanvas.bbox('all'))#,width=1890,height=380)#(0,0,300,200)
+                # entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         def returnTohome():
@@ -184,7 +184,7 @@ def quoteGenerator(mainRoot,user,conn):
                 # quoteYesNo[-1]['validatecommand'] = (quoteYesNo[-1].register(yesNo),'%P','%W')
                 e_location.append(myCombobox(df,tab1,item_list=["Dubai","Singapore","USA","UK"],frame=entryFrame,row=2+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # e_location[-1].config(textvariable="NA", state='disabled')
-                e_type.append(myCombobox(df,tab1,item_list=["THF","BR"],frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                e_type.append(myCombobox(df,tab1,item_list=["THF","BR", "TUI", "HR"],frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
 
                 e_spec.append((None, None))
                 # e_type[-1].config(textvariable="NA", state='disabled')
@@ -237,9 +237,8 @@ def quoteGenerator(mainRoot,user,conn):
 
         def cxListCalc():
             try:
-                # finalCost[-1].config(textvariable="NA", state='disabled')
-                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), cxDatadict["cus_address"][0][0].get(),
-                    cxDatadict["cus_phone"],cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
+                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currencyVar.get(),  cxDatadict["cus_address"][0][0].get(),
+                    cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
             except Exception as e:
                 raise e
@@ -259,18 +258,19 @@ def quoteGenerator(mainRoot,user,conn):
                     
                     # specialList[key][0][-1][1].destroy()
                     if (len(specialList[key][0])==1):
-                        if key!='E_OD2' and key != 'E_ID2':
+                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
                             specialList[key][0][0][0].configure(state='normal')
                             specialList[key][0][0][0].delete(0, tk.END)
                         
                         # time.sleep(1)
                         # addRow()
                     else:
-                        if key!='E_OD2' and key != 'E_ID2':
+                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
                             specialList[key][0][-1][0].destroy()
                         specialList[key][0].pop()
                 # show bottom of canvas
                 entryCanvas.yview_moveto('1.0')
+                entryCanvas.yview_moveto('0.0')
             except Exception as e:
                 raise e
         
@@ -284,6 +284,20 @@ def quoteGenerator(mainRoot,user,conn):
                     
                     global pdf_path
                     pdf_path = pdf_generator(quoteDf)
+                    # try:
+                    #     pdfRoot.destroy()
+                    # except:
+                    #     pass
+                    pdfRoot = tk.Toplevel()
+                    pdfRoot.title(quoteDf["QUOTENO"][0])
+                    pdfviewer = pdf.ShowPdf()
+                    # zoom_scale = tk.Scale(pdfRoot, orient='vertical', from_=1, to=500)
+                    # zoom_scale.config(command=zoom)
+                    # Adding pdf path and width and height.
+                    # zoom_scale.pack(fill='y', side='right')
+                    # zoom_scale.set(10)
+                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120)
+                    pdfframe.pack()
                     submitButton.configure(state='normal')
                 else:
                     messagebox.showerror("Error", "Empty dataframe was given in input")
@@ -318,7 +332,7 @@ def quoteGenerator(mainRoot,user,conn):
         row_num=0
 
         #Getting invoentory dataframe
-        df = get_inv_df(conn,table = INV_TABLE)
+        # df = get_inv_df(conn,table = INV_TABLE)
         
         
         # df = pd.read_excel("sampleInventory.xlsx")
@@ -363,12 +377,11 @@ def quoteGenerator(mainRoot,user,conn):
         
         entryCanvas.config(yscrollcommand = yscrollbar.set)
         databaseFrame = tk.Frame(tab1,height=500, bg= "#DDEBF7")
-
         controlFrame = tk.Frame(tab1, bg= "#DDEBF7")
 
-
-        cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),sticky="new")
-        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,120),sticky="new")
+        #Frames Under Tab1
+        cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),sticky="nsew")
+        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,120),sticky="nsew")
         # headerFrame.grid(row=1, column=0,sticky="sew",columnspan=2)
         m_entryFrame.grid(row=1, column=0,sticky="nsew", columnspan=2)
         xscrollbar.grid(row=1,column=0,sticky=tk.NSEW)
@@ -379,82 +392,11 @@ def quoteGenerator(mainRoot,user,conn):
         
         entryCanvas.create_window((0,0),window=entryFrame,tags='expand')
         
-        # entryFrame.grid(row=0,column=0)
-        tab1.grid_rowconfigure(0, weight=1) # For row 0
-        tab1.grid_rowconfigure(1, weight=1) # For row 1
-        tab1.grid_rowconfigure(2, weight=1) # For row 1
-
-        tab1.grid_columnconfigure(0, weight=1) # For column 0
-        tab1.grid_columnconfigure(1, weight=1) # For column 1
-
-
-        cxFrame.grid_rowconfigure(0, weight=1) # For row 0
-        cxFrame.grid_rowconfigure(1, weight=1) # For row 1
-        cxFrame.grid_rowconfigure(2, weight=1) # For row 2
-        cxFrame.grid_rowconfigure(3, weight=1) # For row 3
-        cxFrame.grid_rowconfigure(4, weight=1) # For row 4
-
-        cxFrame.grid_columnconfigure(0, weight=1) # For column 0
-        cxFrame.grid_columnconfigure(1, weight=1) # For column 1
-        cxFrame.grid_columnconfigure(2, weight=1) # For column 2
-        cxFrame.grid_columnconfigure(3, weight=1) # For column 3
         
-        cxFrame2.grid_rowconfigure(0, weight=1) # For row 0
-        cxFrame2.grid_rowconfigure(1, weight=1) # For row 1
-        cxFrame2.grid_rowconfigure(2, weight=1) # For row 1
-
-        cxFrame2.grid_columnconfigure(0, weight=1) # For column 0
-        cxFrame2.grid_columnconfigure(1, weight=1) # For column 1
-        cxFrame2.grid_columnconfigure(2, weight=1) # For column 1
-
-
-        m_entryFrame.grid_rowconfigure(0, weight=1) # For row 0
-        # m_entryFrame.grid_rowconfigure(1, weight=1) # For row 1
-
-        m_entryFrame.grid_columnconfigure(0, weight=1) # For column 0
-        # m_entryFrame.grid_columnconfigure(1, weight=1) # For column 1
-
-        entryFrame.grid_rowconfigure(0, weight=1) # For row 0
-        entryFrame.grid_rowconfigure(1, weight=1) # For row 1
-        entryFrame.grid_rowconfigure(2, weight=1) # For row 1
-
-        entryFrame.grid_columnconfigure(0, weight=1) # For column 0
-        entryFrame.grid_columnconfigure(1, weight=1) # For column 1
-        entryFrame.grid_columnconfigure(2, weight=1) # For column 2
-        entryFrame.grid_columnconfigure(3, weight=1) # For column 3
-        entryFrame.grid_columnconfigure(4, weight=1) # For column 4
-        entryFrame.grid_columnconfigure(5, weight=1) # For column 5
-        entryFrame.grid_columnconfigure(6, weight=1) # For column 6
-        entryFrame.grid_columnconfigure(7, weight=1) # For column 7
-        entryFrame.grid_columnconfigure(8, weight=1) # For column 8
-        entryFrame.grid_columnconfigure(9, weight=1) # For column 9
-        entryFrame.grid_columnconfigure(10, weight=1) # For column 10
-        entryFrame.grid_columnconfigure(11, weight=1) # For column 11
-        entryFrame.grid_columnconfigure(12, weight=1) # For column 12
-        entryFrame.grid_columnconfigure(13, weight=1) # For column 13
-        entryFrame.grid_columnconfigure(14, weight=1) # For column 14
-        entryFrame.grid_columnconfigure(15, weight=1) # For column 15
-        entryFrame.grid_columnconfigure(16, weight=1) # For column 16
-        entryFrame.grid_columnconfigure(17, weight=1) # For column 17
-        entryFrame.grid_columnconfigure(18, weight=1) # For column 18
-        entryFrame.grid_columnconfigure(19, weight=1) # For column 19
-        entryFrame.grid_columnconfigure(20, weight=1) # For column 20
-        entryFrame.grid_columnconfigure(21, weight=1) # For column 21
-        
-        controlFrame.grid_rowconfigure(0, weight=1) # For column 21
-        controlFrame.grid_rowconfigure(1, weight=1) # For column 21
-
-        
-        controlFrame.grid_rowconfigure(2, weight=1) # For column 21
-    
-        
-        controlFrame.grid_rowconfigure(3, weight=1) # For column 21
-        controlFrame.grid_columnconfigure(1, weight=1) # For column 21
-
-        databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
-        databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
       ###############Importing Images fir buttons #####################################
-        home_path = resource_path("home.png")
+        button_dict = {}#defining dict storing images for hover effect
+        home_path = resource_path("home(2).png")
+        home_path1 = resource_path("home(4).png")
         add_img_path = resource_path("addRowS.png")
         add_img2_path = resource_path("addRow2S.png")
         delete_img_path = resource_path("deleteRowS.png")
@@ -464,6 +406,7 @@ def quoteGenerator(mainRoot,user,conn):
         submit_img_path = resource_path("submitButtonS.png")
         submit_img2_path = resource_path("submitButton2S.png")
         home_img = tk.PhotoImage(master=tab1, file=home_path)
+        home_img1 = tk.PhotoImage(master=tab1, file=home_path1)
         add_img = tk.PhotoImage(master=controlFrame, file=add_img_path)
         add_img2 = tk.PhotoImage(master=controlFrame, file=add_img2_path)
         delete_img = tk.PhotoImage(master=controlFrame, file=delete_img_path)
@@ -476,11 +419,14 @@ def quoteGenerator(mainRoot,user,conn):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None,None]]
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
+        nonList = [[None,None,None,None,None]]
+        # pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in',  'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
-        pt.cellwidth=135
+        pt.cellwidth=145
+        pt.thefont = ('Segoe UI', 12)
+        pt.rowheight = 30
         pt.show()
 
         global cxDatadict
@@ -507,54 +453,74 @@ def quoteGenerator(mainRoot,user,conn):
         cxDatadict["cus_city_zip"] = []
 
         cxDatadict["cus_email"] = []
+        cxDatadict["currency"] = []
 
 
-        item_list = ('A4140', 'A4140M', 'A4330V', 'A4715', 'BS708M40', 'A4145M', '4542','4462')
+        item_list = () #('A4140', 'A4140M', 'A4330V', 'A4715', 'BS708M40', 'A4145M', '4542','4462')
 
-        cxLabel = tk.Label(cxFrame, text="Customer Details", bg = "#9BC2E6")
-        lb1 = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6")
-        lb2 = tk.Label(cxFrame,text="Date", bg = "#9BC2E6")
-        lb3 = tk.Label(cxFrame,text="Customer Name", bg = "#9BC2E6")
-        lb4 = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6")
-        lb5 = tk.Label(cxFrame,text="Email", bg = "#9BC2E6")
-        lb6 = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6")
-        blanckLabel = tk.Label(cxFrame2,text="", bg = "#9BC2E6")
-        lb7 = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6")
-        lb8 = tk.Label(cxFrame2,text="Additional Comments", bg = "#9BC2E6")
-        cxLabel.grid(row=0,column=0)
-        lb1.grid(row=1,column=0)
-        lb2.grid(row=1,column=1)
-        lb3.grid(row=3,column=0)
-        lb4.grid(row=3,column=1)
-        lb5.grid(row=3,column=2)
-        lb6.grid(row=3,column=3)
-        blanckLabel.grid(row=0,column=0)
-        lb7.grid(row=1,column=0,padx=(100,5))
-        lb8.grid(row=1,column=1)
-
-        
+        cxLabel = tk.Label(cxFrame, text="Customer Details", bg = "#9BC2E6", font=("Segoe UI", 12))
+        prepByLb = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6", font=("Segoe UI", 10))
         prep_by = ttk.Entry(cxFrame)
         prep_by.insert(tk.END, user)
+        inpDateLb = tk.Label(cxFrame,text="Date", bg = "#9BC2E6", font=("Segoe UI", 10))
+        inpDate = MyDateEntry(master=cxFrame, width=17, selectmode='day', font=("Segoe UI", 10))
+        cxNameLb = tk.Label(cxFrame,text="Customer Name", bg = "#9BC2E6", font=("Segoe UI", 10))
+        locAddLb = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6", font=("Segoe UI", 10))
+        emailLb = tk.Label(cxFrame,text="Email", bg = "#9BC2E6", font=("Segoe UI", 10))
+        payTermLb = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6", font=("Segoe UI", 10))
+        mobileLb = tk.Label(cxFrame2, text="Mobile", bg = "#9BC2E6", font=("Segoe UI", 10))
+        currencyLabel = tk.Label(cxFrame2,text="Currency", bg = "#9BC2E6", font=("Segoe UI", 10))
+        valLb = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6", font=("Segoe UI", 10))
+        addCommLb = tk.Label(cxFrame2,text="Additional Comments", bg = "#9BC2E6", font=("Segoe UI", 10))
+        # remarksLabel = tk.Label(cxFrame2,text="Remarks", bg = "#9BC2E6", font=("Segoe UI", 10))
+        cxLabel.grid(row=0,column=0)
+        prepByLb.grid(row=1,column=0)
         prep_by.grid(row=2,column=0)
+        inpDateLb.grid(row=1,column=1)
+        inpDate.grid(row=2, column=1)
+        cxNameLb.grid(row=3,column=0)
+        locAddLb.grid(row=3,column=1)
+        emailLb.grid(row=3,column=2)
+        payTermLb.grid(row=3,column=3)
+
+        #label grid using cxFrame2
+        mobileLb.grid(row=1, column=0, pady=(20,0))
+        currencyLabel.grid(row=1,column=1, pady=(20,0))
+        # remarksLabel.grid(row=1,column=2, pady=(20,0))#padx=(50,5)
+        valLb.grid(row=1,column=2, pady=(20,0))#5x=(50,5)
+        addCommLb.grid(row=1,column=3, pady=(20,0))#padx=(50,5)
+
+        
+        
+        
         prep_by.config(state= "disabled")
         cxDatadict["Prepared_By"] = prep_by.get()
 
         
-        inpDate = MyDateEntry(master=cxFrame, width=17, selectmode='day')
-        inpDate.grid(row=2, column=1)
+        
+        
         cxDatadict["Date"] = inpDate.get()
         
-
+        #Currency
+        currencyVar = tk.StringVar()
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5, text="$")
+        currency.insert(tk.END,"$")
+        # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
+        currency.grid(row=2,column=1,pady=5)
+        # #Remarks
+        # remarksVar = tk.StringVar()
+        # remarks = ttk.Entry(cxFrame2, textvariable=remarksVar, foreground='blue', background = 'white',width = 40, font=('Segoe UI', 10))
+        # remarks.grid(row=2,column=2,pady=5)
         
         #Validity
         validityVar = tk.StringVar()
-        validity = ttk.Entry(cxFrame2, textvariable=validityVar, foreground='blue', background = 'white',width = 15)
-        validity.grid(row=2,column=0,padx=(100,5),pady=5)
+        validity = ttk.Entry(cxFrame2, textvariable=validityVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
+        validity.grid(row=2,column=2,pady=5)
         
         #Additional Comments
         addCommVar = tk.StringVar()
-        addComm = ttk.Entry(cxFrame2, textvariable=addCommVar, foreground='blue', background = 'white',width = 15)
-        addComm.grid(row=2,column=1,sticky=tk.EW,padx=5,pady=5)
+        addComm = ttk.Entry(cxFrame2, textvariable=addCommVar, foreground='blue', background = 'white',width = 40, font=('Segoe UI', 10))
+        addComm.grid(row=2,column=3,sticky=tk.EW,pady=5)
 
         addComm.bind("<Tab>",tabFunc)
         
@@ -565,7 +531,7 @@ def quoteGenerator(mainRoot,user,conn):
         cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=validity))
         #location Address entry box
         locAddVar = tk.StringVar()
-        locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20)
+        locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
         locAdd.grid(row=4,column=1,sticky=tk.EW,padx=5,pady=5)
         # cxLocVar = []
         cxDatadict["cus_address"].append((locAdd, locAddVar))
@@ -573,7 +539,7 @@ def quoteGenerator(mainRoot,user,conn):
 
         #Email
         emailAddVar = tk.StringVar()
-        emailAdd = ttk.Entry(cxFrame, textvariable=emailAddVar, foreground='blue', background = 'white',width = 20)
+        emailAdd = ttk.Entry(cxFrame, textvariable=emailAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
         emailAdd.grid(row=4,column=2,sticky=tk.EW,padx=5,pady=5)
         # cxemailAddVar = []
         cxDatadict["cus_email"].append((emailAdd, emailAddVar))
@@ -581,14 +547,23 @@ def quoteGenerator(mainRoot,user,conn):
 
         #Payment Terms Entry
         payTermVar = tk.StringVar()
-        payTerm = ttk.Entry(cxFrame, textvariable=payTermVar, foreground='blue', background = 'white',width = 20)
+        payTerm = ttk.Entry(cxFrame, textvariable=payTermVar, foreground='blue', background = 'white',width = 5, font=('Segoe UI', 10))
         payTerm.grid(row=4,column=3,sticky=tk.EW,padx=5,pady=5)
         cxDatadict["payment_term"].append((payTerm, payTermVar))
+        
+        #Mobile No. Entry
+        mobileVar = tk.StringVar()
+        mobile = ttk.Entry(cxFrame2, textvariable=mobileVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
+        mobile.grid(row=2,column=0,sticky=tk.EW,padx=5,pady=5)
+        cxDatadict["cus_phone"].append((mobile, mobileVar))
         
 
         home_button = tk.Button(cxFrame2, image=home_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=returnTohome)
         home_button.image = home_img #Preventing image to go into garbage
-        home_button.grid(row=0,column=2,sticky="ne")
+        home_button.grid(row=0,column=3,sticky="ne")
+        button_dict[home_button] = [home_img, home_img1]
+        home_button.bind("<Enter>", on_enter)
+        home_button.bind("<Leave>", on_leave)
         # home_button.place(x=1600,y=-10,relx=0.1,rely=0.1,anchor="sw")
         #######################################
         
@@ -779,7 +754,7 @@ def quoteGenerator(mainRoot,user,conn):
         while len(quoteYesNo)<1:
             addRow()
         
-        button_dict = {}
+        # button_dict = {}
 
         addRowbut = tk.Button(controlFrame, image=add_img, command=addRow,borderwidth=0, background=controlFrame["bg"])
         addRowbut.image = add_img
@@ -811,6 +786,105 @@ def quoteGenerator(mainRoot,user,conn):
         submitButton.bind("<Enter>", on_enter)
         submitButton.bind("<Leave>", on_leave)
 
+
+
+         ##############Adding weight to mainFrames##############
+        mainRowNum = 2
+        mainColNum = 1
+        # for i in range(mainRowNum+1):
+        #     tab1.grid_rowconfigure(index=i,weight=1)
+
+        tab1.grid_rowconfigure(0, weight=1) # For row 0
+        tab1.grid_rowconfigure(1, weight=6) # For row 1
+        tab1.grid_rowconfigure(2, weight=1) # For row 1
+        for i in range(mainColNum+1):
+            tab1.grid_columnconfigure(index=i,weight=1)
+        # tab1.grid_columnconfigure(0, weight=1) # For column 0
+        # tab1.grid_columnconfigure(1, weight=1) # For column 1
+
+        #Configuring CxFrame grids as well as Controlgrid
+        for i in range(5):
+            cxFrame.grid_rowconfigure(index=i, weight=1)
+            if i !=4:
+                cxFrame.grid_columnconfigure(index=i, weight=1)
+            #Configuring CxFrame2
+            if i<3:
+                cxFrame2.grid_rowconfigure(index=i, weight=1)
+                cxFrame2.grid_columnconfigure(index=i, weight=1)
+            #Configuring control Frame
+            controlFrame.grid_rowconfigure(index=i, weight=1)
+            if i <2:
+                controlFrame.grid_columnconfigure(index=i, weight=1)
+        # cxFrame.grid_rowconfigure(0, weight=1) # For row 0
+        # cxFrame.grid_rowconfigure(1, weight=1) # For row 1
+        # cxFrame.grid_rowconfigure(2, weight=1) # For row 2
+        # cxFrame.grid_rowconfigure(3, weight=1) # For row 3
+        # cxFrame.grid_rowconfigure(4, weight=1) # For row 4
+
+        # cxFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # cxFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # cxFrame.grid_columnconfigure(2, weight=1) # For column 2
+        # cxFrame.grid_columnconfigure(3, weight=1) # For column 3
+        
+        # cxFrame2.grid_rowconfigure(0, weight=1) # For row 0
+        # cxFrame2.grid_rowconfigure(1, weight=1) # For row 1
+        # cxFrame2.grid_rowconfigure(2, weight=1) # For row 1
+
+        # cxFrame2.grid_columnconfigure(0, weight=1) # For column 0
+        # cxFrame2.grid_columnconfigure(1, weight=1) # For column 1
+        # cxFrame2.grid_columnconfigure(2, weight=1) # For column 1
+
+
+        m_entryFrame.grid_rowconfigure(0, weight=1) # For row 0
+
+        # # m_entryFrame.grid_rowconfigure(1, weight=1) # For row 1
+
+        m_entryFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # # m_entryFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # databaseFrame.grid_rowconfigure(index=0,weight=1)
+        # databaseFrame.grid_columnconfigure(index=1,weight=1)
+
+        # bakerTableFrame.grid_rowconfigure(index=0, weight=1)
+        # bakerTableFrame.grid_columnconfigure(index=1, weight=1)
+        # entryFrame.grid_rowconfigure(0, weight=1) # For row 0
+        # entryFrame.grid_rowconfigure(1, weight=1) # For row 1
+        # entryFrame.grid_rowconfigure(2, weight=1) # For row 1
+
+        # entryFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # entryFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # entryFrame.grid_columnconfigure(2, weight=1) # For column 2
+        # entryFrame.grid_columnconfigure(3, weight=1) # For column 3
+        # entryFrame.grid_columnconfigure(4, weight=1) # For column 4
+        # entryFrame.grid_columnconfigure(5, weight=1) # For column 5
+        # entryFrame.grid_columnconfigure(6, weight=1) # For column 6
+        # entryFrame.grid_columnconfigure(7, weight=1) # For column 7
+        # entryFrame.grid_columnconfigure(8, weight=1) # For column 8
+        # entryFrame.grid_columnconfigure(9, weight=1) # For column 9
+        # entryFrame.grid_columnconfigure(10, weight=1) # For column 10
+        # entryFrame.grid_columnconfigure(11, weight=1) # For column 11
+        # entryFrame.grid_columnconfigure(12, weight=1) # For column 12
+        # entryFrame.grid_columnconfigure(13, weight=1) # For column 13
+        # entryFrame.grid_columnconfigure(14, weight=1) # For column 14
+        # entryFrame.grid_columnconfigure(15, weight=1) # For column 15
+        # entryFrame.grid_columnconfigure(16, weight=1) # For column 16
+        # entryFrame.grid_columnconfigure(17, weight=1) # For column 17
+        # entryFrame.grid_columnconfigure(18, weight=1) # For column 18
+        # entryFrame.grid_columnconfigure(19, weight=1) # For column 19
+        # entryFrame.grid_columnconfigure(20, weight=1) # For column 20
+        # entryFrame.grid_columnconfigure(21, weight=1) # For column 21
+        
+        # controlFrame.grid_rowconfigure(0, weight=1) # For column 21
+        # controlFrame.grid_rowconfigure(1, weight=1) # For column 21       
+        # controlFrame.grid_rowconfigure(2, weight=1) # For column 21       
+        # controlFrame.grid_rowconfigure(3, weight=1) # For column 21
+        # controlFrame.grid_columnconfigure(1, weight=1) # For column 21
+
+        databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
+        databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
+
+        #Moving horizontal scroll bar to initial position
+        entryCanvas.xview("moveto", 0)
+
         def on_closing():
             if messagebox.askokcancel("Quit", "Do you want to quit?"):
                 # mainRoot.destroy()
@@ -824,9 +898,11 @@ def quoteGenerator(mainRoot,user,conn):
     
     # root.mainloop()
 
-# conn = get_connection()
-# # conn=None
-# mainRoot = tk.Tk()
-# user = "Imam"
-# quoteGenerator(mainRoot, user, conn)
-# mainRoot.mainloop()
+conn = get_connection()
+# conn=None
+mainRoot = tk.Tk()
+user = "Imam"
+# df = pd.read_excel("sampleInventory.xlsx")
+df = get_inv_df(conn,table = INV_TABLE)
+quoteGenerator(mainRoot, user, conn,df)
+mainRoot.mainloop()

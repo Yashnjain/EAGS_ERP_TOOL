@@ -36,7 +36,15 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
         # Location: USA/UK/DUB/SGP
         # Year: 2022
         # Number:00xxxx
-        if specialList['E_Location'][0][0][0].get() != '' and cxList[2] != '':
+        for i in range(len(cxList)):
+            if i == "" or i == None:
+                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview")
+                return []
+        for i in range(len(otherList)):
+            if i == "" or i == None:
+                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview")
+                return []
+        if specialList['E_Location'][0][-1][0].get() != '' and cxList[2] != '':
             locDict = {"DUBAI":"DUB", "SINGAPORE":"SGP", "USA":"USA","UK":"UK"}
             locVar = specialList['E_Location'][0][0][0].get()
             if locVar != "NA":
@@ -52,13 +60,17 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
 
             new_quoteNo = getLatestQuote(conn,curr_quoteNo)
 
+            #Appending Previous Quote as None
+            otherList.append(None)
+            #Appending Rev_Checker
+            otherList.append(1)
             otherList.append(date.today())
 
 
 
-            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
+            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
             'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
-            'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','INSERT_DATE']
+            'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER','INSERT_DATE']
             row = []
             
             colList = list(specialList.keys())
@@ -69,8 +81,14 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
                 for col in colList:
                     if (col == 'E_OD2' or col == 'E_ID2' or col == 'C_Type' or col == 'E_Spec'):
                         rowList.append(specialList[col][0][i][0])
+                        if specialList[col][0][i][0] == "":
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            return []
                     else:
                         rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
+                        if specialList[col][0][i][0].get() == "":
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            return []
                 rowList.extend(otherList)#insert validity and additional comments
                 row.append(rowList)#Append current ith row to row List
                 #Empty rowList for fetching next row
@@ -89,6 +107,141 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
             # print()
             return sfDf
         else:
+            return []
+    except Exception as e:
+        raise e
+
+
+def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
+    try:
+        # colList = list(inpDict.keys())
+        # for col in colList:
+        #     for i in range(len(inpDict[col][0])):
+        #         inpDict[col][0][i] = inpDict[col][0][i][0].get()
+        # EAGS/Location/Year/Number
+        # Location: USA/UK/DUB/SGP
+        # Year: 2022
+        # Number:00xxxx
+        for i in range(len(cxList)):
+            if i == "" or i == None:
+                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview")
+                return []
+        for i in range(len(otherList)):
+            if i == "" or i == None:
+                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview")
+                return []
+        if specialList['E_Location'][0][0][0].get() != '' and cxList[2] != '':
+            locDict = {"DUBAI":"DUB", "SINGAPORE":"SGP", "USA":"USA","UK":"UK"}
+            locVar = specialList['E_Location'][0][0][0].get()
+            if locVar != "NA":
+                location = locDict[locVar.upper()]
+
+            cxList[1]=datetime.strptime(cxList[1],"%m.%d.%Y").date()
+            input_year=datetime.strftime(cxList[1],"%Y")
+            
+            #try to get latest quote number of same combination if not present then put 1 otherwise increament current contract
+            # curr_quoteNo = f"EAGS/{location}/{input_year}/000001"
+            cx_init_name = cxList[2].split(" ")[0]
+            curr_quoteNo = f"{cx_init_name}_000001"
+
+            new_quoteNo = getLatestQuote(conn,curr_quoteNo, baker=True)
+
+            #Appending Previous Quote as None
+            otherList.append(None)
+            #Appending Rev_Checker
+            otherList.append(1)
+            otherList.append(date.today())
+
+
+
+            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
+            'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
+            'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER', 'INSERT_DATE']
+
+            # columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL',
+            #  'CUS_CITY_ZIP','C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2',
+            #   'E_LENGTH','E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME',
+            #   'E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','INSERT_DATE']
+            row = []
+            bakerxlDf = ptBaker.model.df.copy()
+            bakerxlDf['RM Offer'], bakerxlDf['Price'], bakerxlDf['Location'], bakerxlDf['Lead Time'], bakerxlDf['Remarks'] = [None, None, None, None, None]
+            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty"]
+            colList = list(specialList.keys())
+            
+            #Inserting quote number in bakerxlDf
+            bakerxlDf.insert(0, 'QUOTENO', new_quoteNo)
+
+            for i in range(len(specialList[colList[0]][0])):
+                #Making here 2nd dataframe as well
+                e_type = str(specialList['E_Type'][0][i][0].get()).upper()
+                e_spec = str(specialList['E_Spec'][0][i][0].get()).upper()
+                e_od = str(specialList['E_OD1'][0][i][0].get()).replace('.','').zfill(4)
+                e_id = str(specialList['E_ID1'][0][i][0].get()).replace('.','').zfill(4)
+                e_qrd = str(specialList['C_QRD'][0][i][0]).upper()
+
+                bakerxlDf['RM Offer'][i] = e_type+e_spec+e_od+e_id+e_qrd if e_type!='NA' else "NA"
+                bakerxlDf['Price'][i] = specialList['E_Final Price'][0][i][0].get()
+                bakerxlDf['Location'][i] = specialList['E_Location'][0][i][0].get()
+                bakerxlDf['Lead Time'][i] = specialList['E_LeadTime'][0][i][0].get()
+                bakerxlDf['Remarks'][i] = otherList[1]
+                bakerxlDf['Dlv Date'] = bakerxlDf['Dlv Date'].astype('datetime64[ns]').astype(str)
+                rowList = []
+                rowList.append(new_quoteNo)
+                rowList.extend(cxList)
+                for col in colList:
+                    #Adding condition for not including extracted cx details
+                    # if col not in xlList:
+                    if col == 'C_QRD':
+                        pass
+                    elif col == 'E_OD2' or col == 'E_ID2' or col in xlList:
+                        print(specialList[col][0][i][0])
+                        rowList.append(specialList[col][0][i][0])
+                        if specialList[col][0][i][0] == "":
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            return []
+                    else:
+                        print(specialList[col][0][i][0].get())
+                        if specialList[col][0][i][0].get() == "":
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            return []
+                        if col == 'E_Spec':
+                            rowList.append(specialList[col][0][i][0].get().upper())
+                        else:
+                            rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
+                rowList.extend(otherList)#insert validity and additional comments
+                row.append(rowList)#Append current ith row to row List
+                #Empty rowList for fetching next row
+            # print(row)
+            # print(len(columnList))
+            # print(len(row[0]))
+
+            if specialList["E_Final Price"][0][-1][0].get() != "":
+                initDf = pd.DataFrame(row, columns=columnList)
+                #Saving excel in current Directory
+                
+                # df1 = bakerxlDf.iloc[:,:9]
+                # df2 = sfDf.iloc[:,17:]
+                # result = pd.concat([df1, df2], axis=1)
+
+                ###separating starting columns from sfDf
+                df1 = initDf.iloc[:,:9]
+                df2 = bakerxlDf.iloc[:,1:9]#Getting cx input data
+                df3 = initDf.iloc[:,9:]#getting reaing main dataframe columns
+                sfDf = pd.concat([df1, df2, df3], axis=1)
+                print("Df created")
+                # bakerxlDf = 
+                
+                # print(sfDf)
+                # pt.model.df = sfDf
+                # pt.redraw()
+                # eagsQuotationuploader(conn, sfDf)
+
+                
+            # print()
+            return [sfDf, bakerxlDf]
+        else:
+            if  cxList[2] == '':
+                messagebox.showerror("Error", "Empty Customer dataframe was given in input")
             return []
     except Exception as e:
         raise e
@@ -228,15 +381,15 @@ def specialCase(root, boxList,pt,df,index, item_list):
 
 
         boxList["E_OD2"][0][index] = customComboboxV2.myCombobox(df,toproot,frame=entryFrame2,row=1,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = boxList,pt=pt,item_list=item_list)
-        boxList["E_OD2"][0][-1][0]['validate']='key'
+        boxList["E_OD2"][0][index][0]['validate']='key'
         boxList["E_OD2"][0][-1][0]['validatecommand'] = (boxList["E_OD2"][0][-1][0].register(intFloat),'%P','%d')
         # e_od[-1].config(textvariable="NA", state='disabled')
         # e_od2[-1][0]['validate']='key'
         # e_od2[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
 
         boxList["E_ID2"][0][index] = customComboboxV2.myCombobox(df,toproot,frame=entryFrame2,row=1,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = boxList,pt=pt,item_list=item_list)
-        boxList["E_ID2"][0][-1][0]['validate']='key'
-        boxList["E_ID2"][0][-1][0]['validatecommand'] = (boxList["E_ID2"][0][-1][0].register(intFloat),'%P','%d')
+        boxList["E_ID2"][0][index][0]['validate']='key'
+        boxList["E_ID2"][0][index][0]['validatecommand'] = (boxList["E_ID2"][0][-1][0].register(intFloat),'%P','%d')
         # e_id1[-1][0]['validate']='key'
         # e_id1[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
 

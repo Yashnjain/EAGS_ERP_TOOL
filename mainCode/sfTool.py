@@ -1,9 +1,10 @@
+from errno import ESTALE
 import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
-from snowflake.sqlalchemy import URL
-from sqlalchemy import create_engine
+# from snowflake.sqlalchemy import URL
+# from sqlalchemy import create_engine
 import pandas as pd
-
+# import datetime
 
 USER = "SVC_BUITDB_DEV"
 PASSWORD = "BUITDBDEV2022"
@@ -17,6 +18,7 @@ ROLE = "OWNER_BUITDB_DEV"
 
 
 EAGS_QUOTATION_TABLE = "EAGS_QUOTATION"
+EAGS_BAKER_TABLE = "EAGS_BAKER"
 
 def get_connection():
     try:
@@ -100,10 +102,13 @@ def loginChecker(conn,table, user, pwd):
 
 # loginChecker("table","user", "pwd")
 
-def get_cx_df(conn,table):
+def get_cx_df(conn,table, customer= 'general'):
     try:
         # query = f"SELECT CUS_LONG_NAME, PAYMENT_TERM, CUS_ADDRESS, CUS_PHONE, CUS_EMAIL, CUS_CITY_ZIP FROM {DATABASE}.{SCHEMA}.{table}"
-        query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
+        if customer == 'baker':
+            query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table} WHERE COMPANY='BAKER_HUGES'"
+        else:
+            query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
         cur.execute(query)
         names = [ x[0] for x in cur.description]
@@ -118,6 +123,8 @@ def get_cx_df(conn,table):
 
 def get_inv_df(conn, table):
     try:
+        # init_time = datetime.datetime.now()
+        # print(init_time)
         query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, RESERVED_PIECES, RESERVED_LENGTH_IN, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
         cur.execute(query)
@@ -130,6 +137,26 @@ def get_inv_df(conn, table):
         df['od_in'] = df['od_in'].astype('float')
         df['od_in_2'] = df['od_in_2'].astype('float')
         # df = pd.read_sql_query(query, conn)#conn.cursor.fetch_pandas
+        # print(datetime.datetime.now())
+        # timeTaken = datetime.datetime.now() - init_time
+        # print(f"current time taken for fetch_all = {timeTaken}")
+        
+        # init_time = datetime.datetime.now()
+        # print(init_time)
+        # cur.execute(query)
+        # df = cur.fetch_pandas_all()
+        # timeTaken = datetime.datetime.now() - init_time
+        # print(f"current time taken for pandas all = {timeTaken}")
+        
+        # init_time = datetime.datetime.now()
+        # cur.execute(query)
+        # for df in cur.fetch_pandas_batches():
+        #     print(df)
+
+        # # df = cur.fetch_pandas_all()
+        # timeTaken = datetime.datetime.now() - init_time
+        # print(f"current time taken for pandas all = {timeTaken}")
+
         return df
     except Exception as e:
         raise e
@@ -153,21 +180,29 @@ def get_qtylengthdf(conn, table, location, type, grade, od, id):
         raise e
     
 #EAGS_Quotation
-def eagsQuotationuploader(conn,df):
+def eagsQuotationuploader(conn,df,baker=False):
     try:
-        # Write the data from the DataFrame to the table named "customers".
-        success, nchunks, nrows, _ = write_pandas(conn, df, EAGS_QUOTATION_TABLE)
+        # Write the data from the DataFrame to the table named "eags quotation".
+        if baker:
+            df.columns = map(str.upper, df.columns)
+            df. columns = df. columns. str. replace(' ','_')
+            success, nchunks, nrows, _ = write_pandas(conn, df, EAGS_BAKER_TABLE)
+        else:
+            success, nchunks, nrows, _ = write_pandas(conn, df, EAGS_QUOTATION_TABLE)
     except Exception as e:
         raise e
 
     # df.to_sql(name=EAGS_QUOTATION_TABLE, con=conn, index=False,if_exists='append', schema=SCHEMA)
 
 
-def getLatestQuote(conn,curr_quoteNo):
+def getLatestQuote(conn,curr_quoteNo, baker=False):
     try:
         cx_init_name = curr_quoteNo.split("_")[0]
         # query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE DESC LIMIT 1"
-        query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name}%' ORDER BY QUOTENO desc LIMIT 1"
+        if baker:
+          query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name}%' ORDER BY QUOTENO desc LIMIT 1"  
+        else:
+            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name}%' ORDER BY QUOTENO desc LIMIT 1"
 
         # data = conn.execute(query)
         # raw_data = data.fetchall()

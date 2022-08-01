@@ -7,7 +7,7 @@ import Tools
 
 def formulaCalc(boxList, index):
     try:
-        if boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR":
+        if boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM":
             e_od = float(boxList["E_OD2"][0][index][1])
             e_id = float(boxList["E_ID2"][0][index][1])
         else:
@@ -31,7 +31,7 @@ def formulaCalc(boxList, index):
             else:
                 # Selling cost/UOM = "SellingCost/LBS" * mid_formula (rounded upto 2 decimal places)
                 sellCostUOM = round((sellCostLBS * mid_formula),2)
-        elif boxList["E_Type"][0][index][1].get() == "BR" or boxList["E_Type"][0][index][1].get() == "HR" or boxList["E_Type"][0][index][1].get() == "HB":
+        elif boxList["E_Type"][0][index][1].get() == "BR" or boxList["E_Type"][0][index][1].get() == "HR" or boxList["E_Type"][0][index][1].get() == "HB" or boxList["E_Type"][0][index][1].get() == "HM":
             # BR
             # mid_formula = (od*od*2.71)/12
             mid_formula = ((e_od-wt)*wt*10.68)/12
@@ -110,28 +110,28 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     raise ex
             
         
-        def entryUpdater(check,i,value,key, index):
-            initValue = int(ent._name.split("y")[-1])
-            ent._name = f'!entry{initValue+int(i//2)}'
-            ent._w = f'.!toplevel.!frame3.!canvas.!frame.!entry{initValue+int(i//2)}'
-            if check:
-                ent.configure(state='disabled')
-            else:
-                ent.configure(state='normal')
-            if value != "No" and value != "Yes":
-                # if i ==2:
-                #     key, index = keyFinder(boxList,(ent,var))
+        # def entryUpdater(check,i,value,key, index):
+        #     initValue = int(ent._name.split("y")[-1])
+        #     ent._name = f'!entry{initValue+int(i//2)}'
+        #     ent._w = f'.!toplevel.!frame3.!canvas.!frame.!entry{initValue+int(i//2)}'
+        #     if check:
+        #         ent.configure(state='disabled')
+        #     else:
+        #         ent.configure(state='normal')
+        #     if value != "No" and value != "Yes":
+        #         # if i ==2:
+        #         #     key, index = keyFinder(boxList,(ent,var))
                 
-                newKey = nextKey(key,int(i//2))
-                newList = filterList(boxList,newKey,index,df)
-                # if value in newList:
-                #     var.set(value)
-                if len(newList)==1:
-                    var.set(newList[0])
-                else:
-                    var.set("")
-            ent._name = f'!entry{initValue}'
-            ent._w = f'.!toplevel.!frame3.!canvas.!frame.!entry{initValue}'
+        #         newKey = nextKey(key,int(i//2))
+        #         newList = filterList(boxList,newKey,index,df)
+        #         # if value in newList:
+        #         #     var.set(value)
+        #         if len(newList)==1:
+        #             var.set(newList[0])
+        #         else:
+        #             var.set("")
+        #     ent._name = f'!entry{initValue}'
+        #     ent._w = f'.!toplevel.!frame3.!canvas.!frame.!entry{initValue}'
                 # ent.delete(0, tk.END)
         def addCostCalc(boxList,index):
             try:
@@ -170,7 +170,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         cxDict["cus_email"][index][1].set(dataList[6])
                         # cxDict["cus_email"] = dataList[5]
 
-                        cxDict["cus_phone"] = dataList[5]
+                        cxDict["cus_phone"][index][1].set(dataList[5])
 
                         cxDict["cus_city_zip"] = dataList[7]
                         # val.lift()
@@ -203,29 +203,35 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     else:
                                         e_type_var = boxList['E_Type'][0][index][0].get()
                                     if (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR") and (boxList['E_ID2'][0][index][0].get() != '' and boxList['E_OD2'][0][index][0].get() != ''):
-                                        newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
+                                        # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
+                                        newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
                                                 & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
-                                                & (df["od_in"]==float(boxList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0]))]
+                                                & (df["od_in"]==float(boxList['E_OD2'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0].get()))]
                                         
                                     else:
-                                        newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
+                                        # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
+                                        newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
                                                 & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                                                 & (df["od_in"]==float(boxList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID1'][0][index][0].get()))]
-                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
+                                    # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
+                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in']]
+                                    newDf = newDf[newDf['available_pieces']>0]
                                     boxList[next_key][0][index][0].focus()
-                                    pt.model.df = newDf
-                                    pt.redraw()
-                                    breakCheck = True
+                                    if pt is not None:
+                                        pt.model.df = newDf
+                                        pt.redraw()
+                                        breakCheck = True
                                 break
                             new_list = filterList(boxList,next_key,index,df)
                             if len(bakerDf) and next_key == 'E_Type':
                                 new_list = [w.replace('THF', 'HT') for w in new_list]
                                 new_list = [w.replace('BR', 'HB') for w in new_list]
+                                new_list = [w.replace('HR', 'HM') for w in new_list]
                             cx_eags = {'E_Grade':'C_Grade','E_Yield':'C_Yield','E_OD1':'C_OD','E_ID1':'C_ID','E_OD2':'C_OD','E_ID2':'C_ID','E_Type':"C_Type"}
                             #if cx value in current list, set next key value = cx value
-                            print(bakerDf)
+                            # print(bakerDf)
                             if next_key in ["E_OD1","E_ID1"] and len(new_list):
-                                if boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR":
+                                if boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM":
                                     newList_id = filterList(boxList, 'E_ID2', index, df)
                                     try:
                                         boxList["E_OD2"][0][index][0].get()
@@ -234,7 +240,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     except:
                                         try:
                                             od1,id1,od2,id2 = Tools.specialCase(root, boxList, pt, df, index, item_list=new_list)
-                                            print(od1,id1,od2,id2)
+
                                             if od1 is not None and id1 is not None:
                                                 boxList['E_OD1'][0][index][1].set(od1)
                                                 boxList['E_ID1'][0][index][1].set(id1)
@@ -390,10 +396,18 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
                                 lbframe.list.focus()
                                 lbframe.list.select_set(0)
-                elif len(lbframe.list_values.get()) != 2:
-                    lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
-                    lbframe.list.focus()
-                    lbframe.list.select_set(0)
+                elif len(boxList):
+                    key, index = keyFinder(boxList,(ent,var))
+                    if len(lbframe.list_values.get()) != 2 and boxList['C_Quote Yes/No'][0][index][0].get()=="Yes" and len(lbframe.list_values.get()) != 0:
+                        lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
+                        lbframe.list.focus()
+                        lbframe.list.select_set(0)
+                elif len(cxDict):
+                    key, index = keyFinder(cxDict,(ent,var))
+                    if key == "cus_long_name":
+                        lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
+                        lbframe.list.focus()
+                        lbframe.list.select_set(0)
                 if e.num == 1 or e.num=='??' and e.keysym == '??':
                     root.update()
                     ent.focus()
@@ -475,35 +489,41 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     if boxList['C_Quote Yes/No'][0][index][0].get() != '':
                         newList = list(df["site"].unique())
                 elif key == 'E_Type':
-                    #filter df based on e_location and make unique column of e_type
-                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())]
-                    newList = list(new_df["material_type"].unique())
+                    newList = ["THF","BR", "TUI", "HR"]
+                    # #filter df based on e_location and make unique column of e_type
+                    # new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())]
+                    # newList = list(new_df["material_type"].unique())
 
                 elif key == 'E_Grade':
                     #filter df based on e_location and make unique column of e_type
                     
-                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)]#boxList['E_Type'][0][index][0].get())]
+                    # new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)]#boxList['E_Type'][0][index][0].get())]
+                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())]#boxList['E_Type'][0][index][0].get())]
                     
                     newList = list(new_df["global_grade"].unique())
                 elif key == 'E_Yield':
                     #filter df based on e_location and make unique column of e_type
-                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#boxList['E_Type'][0][index][0].get())
+                    # new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#boxList['E_Type'][0][index][0].get())
+                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())#boxList['E_Type'][0][index][0].get())
                     & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())]
                     newList = list(new_df["heat_condition"].unique())
                 elif key == 'E_OD1':
                     #filter df based on e_location and make unique column of e_type
-                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#==boxList['E_Type'][0][index][0].get())
+                    # new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#==boxList['E_Type'][0][index][0].get())
+                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())#==boxList['E_Type'][0][index][0].get())
                     & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())]
                     newList = list(new_df["od_in"].unique())
                 elif key == 'E_OD2':
                     #filter df based on e_location and make unique column of e_type
-                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#==boxList['E_Type'][0][index][0].get())
+                    # new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#==boxList['E_Type'][0][index][0].get())
+                    new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())#==boxList['E_Type'][0][index][0].get())
                     & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())]
                     newList = list(new_df["od_in"].unique())
                 elif key == 'E_ID1':
                     try:
                         #filter df based on e_location and make unique column of e_type
-                        new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#boxList['E_Type'][0][index][0].get())
+                        # new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)#boxList['E_Type'][0][index][0].get())
+                        new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())#boxList['E_Type'][0][index][0].get())
                         & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                         & (df["od_in"]==float(boxList['E_OD1'][0][index][0].get()))]
                         newList = list(new_df["od_in_2"].unique())
@@ -513,7 +533,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 elif key == 'E_ID2':
                     try:
                         #filter df based on e_location and make unique column of e_type
-                        new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
+                        # new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
+                        new_df = df[(df["site"] == boxList['E_Location'][0][index][0].get())
                         & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                         & (df["od_in"]==float(boxList['E_OD2'][0][index][0].get()))]
                         newList = list(new_df["od_in_2"].unique())
@@ -555,14 +576,18 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             elif (key == 'E_ID1' or key == 'E_OD1') and (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR"):
                                 check = False
                                 if key == 'E_ID1':
-                                    newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
+                                    # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
+                                    newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
                                                 & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                                                 & (df["od_in"]==float(boxList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0]))]
-                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
+                                    # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
+                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in']]
+                                    newDf = newDf[newDf['available_pieces']>0]
                                     boxList['E_Length'][0][index][0].focus()
-                                    pt.model.df = newDf
-                                    pt.redraw()
-                                    breakCheck = True
+                                    if pt is not None:
+                                        pt.model.df = newDf
+                                        pt.redraw()
+                                        breakCheck = True
                             
                             else:
                                 if key != "E_UOM":

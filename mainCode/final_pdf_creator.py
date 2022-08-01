@@ -95,8 +95,8 @@ def pdf_generator(df):
                     ws1.range(f'G{10+(diff*i+page_count*page_diff)}').value=chunk_df['LEAD_TIME'][i]#lead time                    
                     
                     if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='yes':
-                        chunk_df = chunk_df.astype({'E_OD1':'float','E_ID1':'float', 'E_FINAL_PRICE':'float', 'E_QTY':'float'})
-                        eagl_offer=f'{round(chunk_df["E_OD1"][i],3)}"OD - {round(chunk_df["E_ID1"][i],3)}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["E_QTY"][i]}@{chunk_df["E_LENGTH"][i]}"'
+                        # chunk_df = chunk_df.astype({'E_OD1':'float','E_ID1':'float', 'E_FINAL_PRICE':'float', 'E_QTY':'float'})
+                        eagl_offer=f'{round(float(chunk_df["E_OD1"][i]),3)}"OD - {round(float(chunk_df["E_ID1"][i]),3)}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {float(chunk_df["E_QTY"][i])}@{float(chunk_df["E_LENGTH"][i])}"'
                         ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value= eagl_offer
                     if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='no' or (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='other':
                         eagl_offer='NA'#f'{chunk_df["E_OD1"][i]}"OD - {chunk_df["E_ID1"][i]}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["E_SPEC"][i]} - {chunk_df["E_QTY"][i]}@{chunk_df["E_LENGTH"][i]}"'
@@ -123,7 +123,7 @@ def pdf_generator(df):
         ws1.api.ExportAsFixedFormat(0, pdf_path)
         # Open the created pdf file
         # print(f"Opening pdf file with default application ...")
-        os.startfile(pdf_path)
+        # os.startfile(pdf_path)
         # return f"pdf generated succesfully"
         return pdf_path
 
