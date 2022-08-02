@@ -187,6 +187,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         finalPrice = addCost+sellCost
                         boxList["E_Final Price"][0][index][0].set(finalPrice)
 
+                    elif key == "E_Type":
+                        boxList['E_Length'][0][index][0].focus()
+                        breakCheck = True
 
                         
                     elif value != "Other" and value != "Yes" and value != "No"  and key != "E_UOM": #and key!='E_Location'
@@ -216,7 +219,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
                                     newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in']]
                                     newDf = newDf[newDf['available_pieces']>0]
-                                    boxList[next_key][0][index][0].focus()
+                                    boxList['E_Type'][0][index][0].focus()
                                     if pt is not None:
                                         pt.model.df = newDf
                                         pt.redraw()

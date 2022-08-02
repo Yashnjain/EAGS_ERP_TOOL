@@ -821,7 +821,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         def cxListCalc():
             try:
-                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currencyVar.get(),  cxDatadict["cus_address"][0][0].get(),
+                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
                     cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
             except Exception as e:
@@ -1118,7 +1118,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         
         #Currency
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5, text="$")
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text="$")
         currency.insert(tk.END,"$")
         # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
         currency.grid(row=2,column=1,pady=5)
@@ -1546,11 +1546,11 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
     
     # root.mainloop()
 
-conn = get_connection()
-# conn=None
-mainRoot = tk.Tk()
-user = "Imam"
-# df = pd.read_excel("sampleInventory.xlsx")
-df = get_inv_df(conn,table = INV_TABLE)
-bakerQuoteGenerator(mainRoot, user, conn, df)
-mainRoot.mainloop()
+# conn = get_connection()
+# # conn=None
+# mainRoot = tk.Tk()
+# user = "Imam"
+# # df = pd.read_excel("sampleInventory.xlsx")
+# df = get_inv_df(conn,table = INV_TABLE)
+# bakerQuoteGenerator(mainRoot, user, conn, df)
+# mainRoot.mainloop()

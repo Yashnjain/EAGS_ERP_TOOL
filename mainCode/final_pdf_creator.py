@@ -81,10 +81,18 @@ def pdf_generator(df):
                     ws1.range(f'A{9+(diff*i+page_count*page_diff)}').value=customer_requirement
                     ws1.range(f'A{10+(diff*i+page_count*page_diff)}').value="EAGL Offer:"
                     
-                    ws1.range(f'D{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_UOM'][i]#UOM
-                    ws1.range(f'E{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_FINAL_PRICE'][i]#Price
+                    ws1.range(f'D{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_UOM'][i]#UOM    [$$-en-US]#,##0.00   [$£-en-GB]#,##0.00
+                    ws1.range(f'E{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])#Price
+                    if chunk_df['CURRENCY'][i] == "$":
+                        ws1.range(f'E{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
+                    else:
+                        ws1.range(f'E{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
                     if chunk_df['E_FINAL_PRICE'][i] != "NA":
                         ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])*float(chunk_df['E_QTY'][i])#amount
+                        if chunk_df['CURRENCY'][i] == "$":
+                            ws1.range(f'F{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
+                        else:
+                            ws1.range(f'F{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
                         ws1.range(f'H{10+(diff*i+page_count*page_diff)}').value=f"Ex-works"#delivery term
                         ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value=f'{chunk_df["E_QTY"][i]}PC@{chunk_df["E_LENGTH"][i]}"'#QTY
                         ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_LOCATION'][i]}"#delivery term

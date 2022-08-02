@@ -124,7 +124,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                 # update scrollregion after starting 'mainloop'
                 # when all widgets are in canvas
                 entryCanvas.configure(scrollregion=entryCanvas.bbox('all'))#,width=1890,height=380)#(0,0,300,200)
-                # entryCanvas.yview_moveto('1.0')
+                entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         def returnTohome():
@@ -179,10 +179,10 @@ def quoteGenerator(mainRoot,user,conn, df):
                 cx_qty.append((ttk.Entry(entryFrame, width=5, validate = "key"), None))
                 cx_qty[-1][0].grid(row=2+row_num,column=6)
                 cx_qty[-1][0]['validatecommand'] = (cx_qty[-1][0].register(intChecker),'%P','%d')
-                quoteYesNo.append(myCombobox(df,tab1,item_list=["Yes","No","Other"],frame=entryFrame,row=2+row_num,column=7,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                quoteYesNo.append(myCombobox(df,tab1,item_list=["Yes","No","Other"],frame=entryFrame,row=2+row_num,column=7,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 # quoteYesNo[-1]['validate']='focusout'
                 # quoteYesNo[-1]['validatecommand'] = (quoteYesNo[-1].register(yesNo),'%P','%W')
-                e_location.append(myCombobox(df,tab1,item_list=["Dubai","Singapore","USA","UK"],frame=entryFrame,row=2+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_location.append(myCombobox(df,tab1,item_list=["Dubai","Singapore","USA","UK"],frame=entryFrame,row=2+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 # e_location[-1].config(textvariable="NA", state='disabled')
                 e_type.append(myCombobox(df,tab1,item_list=["THF","BR", "TUI", "HR"],frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
 
@@ -237,7 +237,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         def cxListCalc():
             try:
-                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currencyVar.get(),  cxDatadict["cus_address"][0][0].get(),
+                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
                     cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
             except Exception as e:
@@ -269,8 +269,9 @@ def quoteGenerator(mainRoot,user,conn, df):
                             specialList[key][0][-1][0].destroy()
                         specialList[key][0].pop()
                 # show bottom of canvas
+                entryCanvas.yview("moveto", 0)
+                
                 entryCanvas.yview_moveto('1.0')
-                entryCanvas.yview_moveto('0.0')
             except Exception as e:
                 raise e
         
@@ -503,7 +504,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         
         #Currency
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5, text="$")
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text="$")
         currency.insert(tk.END,"$")
         # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
         currency.grid(row=2,column=1,pady=5)
@@ -898,11 +899,11 @@ def quoteGenerator(mainRoot,user,conn, df):
     
     # root.mainloop()
 
-conn = get_connection()
-# conn=None
-mainRoot = tk.Tk()
-user = "Imam"
-# df = pd.read_excel("sampleInventory.xlsx")
-df = get_inv_df(conn,table = INV_TABLE)
-quoteGenerator(mainRoot, user, conn,df)
-mainRoot.mainloop()
+# conn = get_connection()
+# # conn=None
+# mainRoot = tk.Tk()
+# user = "Imam"
+# # df = pd.read_excel("sampleInventory.xlsx")
+# df = get_inv_df(conn,table = INV_TABLE)
+# quoteGenerator(mainRoot, user, conn,df)
+# mainRoot.mainloop()
