@@ -10,6 +10,8 @@ from baker import bakerQuoteGenerator
 import sys, traceback
 from Tools import resource_path
 from quote_revision_final import quoteRevision
+import ctypes
+ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 today = datetime.strftime(date.today(), format = "%d%m%Y")
 
@@ -116,7 +118,7 @@ class App():
         cent_Lable = tk.Label(mFrame,image=cent_photo,borderwidth=0,bg=root["bg"])
         cent_Lable.place(x=270, y=240)
 
-        left_button = tk.Button(mFrame, image=left_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:bakerQuoteGenerator(root,user,conn, inv_df))#,command=my_command)
+        left_button = tk.Button(mFrame, image=left_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:bakerQuoteGenerator(root,user[0],conn, inv_df))#,command=my_command)
         # left_button.grid(row=1,column=0,padx=0)
         left_button.place(x=50,y=170)
         button_dict[left_button] = [left_img, left_imgNew]
@@ -130,13 +132,13 @@ class App():
         right_button.bind("<Leave>", on_leave)
 
 
-        top_button = tk.Button(mFrame, image=top_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:quoteGenerator(root,user,conn, inv_df))
+        top_button = tk.Button(mFrame, image=top_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:quoteGenerator(root,user[0],conn, inv_df))
         top_button.place(x=200, y=20)
         button_dict[top_button] = [top_img, top_imgNew]
         top_button.bind("<Enter>", on_enter)
         top_button.bind("<Leave>", on_leave)
         
-        bottom_button = tk.Button(mFrame, image=bottom_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"], command = lambda:quoteRevision(root,user,conn))
+        bottom_button = tk.Button(mFrame, image=bottom_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"], command = lambda:quoteRevision(root,user,conn, inv_df))
         bottom_button.place(x=200, y=540)
         button_dict[bottom_button] = [bottom_img, bottom_imgNew]
         bottom_button.bind("<Enter>", on_enter)

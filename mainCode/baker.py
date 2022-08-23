@@ -18,6 +18,7 @@ from pandastable.dialogs import *
 from pandastable.core import *
 import ctypes
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
+import shutil
 
 UNITS = "units"
 INV_TABLE = "EAGS_INVENTORY"
@@ -193,7 +194,15 @@ class myFilterBar(FilterBar):
 
         col = self.filtercol.get()
         val = self.filtercolvalue.get()
-        op = 'contains'#self.operator.get()
+        try:
+            int(val)
+            op = 'equals'
+        except:
+            try:
+                float(val)
+                op = 'equals'
+            except:
+                op = 'contains'#self.operator.get()
         booleanop = 'AND'#self.booleanop.get()
         return col, val, op, booleanop
 
@@ -231,7 +240,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 c = Checkbutton(f, text='show filtered only', variable=self.applyqueryvar,
                             command=self.query)
                 c.pack(side=LEFT,padx=2)
-                addButton(f, 'color rows', self.colorResult, images.color_swatch(), 'color filtered rows', side=LEFT)
+                # addButton(f, 'color rows', self.colorResult, images.color_swatch(), 'color filtered rows', side=LEFT)
 
                 self.queryresultvar = StringVar()
                 l = Label(f,textvariable=self.queryresultvar, font=sfont)
@@ -552,7 +561,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 # update scrollregion after starting 'mainloop'
                 # when all widgets are in canvas
                 entryCanvas.configure(scrollregion=entryCanvas.bbox('all'))#,width=1890,height=380)#(0,0,300,200)
-                entryCanvas.yview_moveto('1.0')
+                # entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         def returnTohome():
@@ -684,7 +693,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     # cx_yield.append((None, None))
                     
                 else:
-                    if row_num>=len(bakerDf):
+                    if row_num>=len(bakerDf):#For Adding Blank row in both tables
                         bakerDf = pd.concat([bakerDf, pd.DataFrame(columns=bakerDf.columns, data=[[None] * len(bakerDf.columns)] * 1)])
                         bakerDf.reset_index(drop=True,inplace=True)
                         temp_bakerDf = pd.concat([temp_bakerDf, pd.DataFrame(columns=temp_bakerDf.columns, data=[[None] * len(temp_bakerDf.columns)] * 1)])
@@ -777,7 +786,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 sellCostLBS[-1][0]['validate']='key'
                 sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
                 # sellCostLBS[-1].config(textvariable="NA", state='disabled')
-                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each"],frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = e_uom[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=["Inch","Each"],frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 # e_uom[-1].config(textvariable="NA", state='disabled')
@@ -862,8 +871,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                         specialList[key][0].pop()
                 # show bottom of canvas
                 entryCanvas.yview("moveto", 0)
-                
-                entryCanvas.yview_moveto('1.0')
+                root.update()
+                entryCanvas.yview("moveto", 0)
                 #Updating dataframe values in entry boxes after filter or deletion
                 
                 # entryCanvas.yview_moveto('1.0')
@@ -879,8 +888,13 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     pass
                 #Creating dataframes for uploading into database as well as saving quote xl in current directory
                 dfList = bakerMaker(specialList,cxListCalc(),otherListCalc(),ptBaker,conn)
-                quoteDf = dfList[0]
-                bakerxlDf = dfList[1]
+                try:
+                    quoteDf = dfList[0]
+                    bakerxlDf = dfList[1]
+                except:
+                    quoteDf = dfList
+                    bakerxlDf = dfList
+                    
                 if len(quoteDf) and len(bakerxlDf):
                     pt.model.df = quoteDf
                     pt.redraw()
@@ -909,17 +923,22 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 # pt.model.df = quoteDf
                 # pt.redraw()
                 if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
-                    eagsQuotationuploader(conn, quoteDf, baker=True)
+                    eagsQuotationuploader(conn, quoteDf, latest_revised_quote=None, baker=True)
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
-                    current_work_dir = os.getcwd()
+                    current_work_dir = os.getcwd()#To be Shared Drive
+                    # current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".xlsx"
                     save_dir = current_work_dir+"\\"+cx_init_name
                     if not os.path.exists(save_dir):
                         os.mkdir(save_dir)
                     bakerxlDf.to_excel(save_dir+"\\"+filename, index=False)
+                    desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
+                    if not os.path.exists(desktopDir):
+                        os.mkdir(desktopDir)
+                    shutil.copy(save_dir+"\\"+filename, desktopDir)
                     # os.rename(pdf_path,save_dir+"\\"+filename)
                     
                 else:
@@ -996,7 +1015,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         #Frames Under Tab1
         cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),sticky="nsew")
-        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,120),sticky="nsew")
+        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,40),sticky="nsew")
         bakerTableFrame.grid(row=1,column=0, sticky=tk.NSEW)
         m_entryFrame.grid(row=1, column=1,sticky="nsew")#, columnspan=2)
         xscrollbar.grid(row=1,column=0,sticky=tk.NSEW)
@@ -1034,9 +1053,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None]]
+        nonList = [[None,None,None,None,None, None, None]]
         # pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in',  'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in'])
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
         pt.cellwidth=145
@@ -1118,8 +1137,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         
         #Currency
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text="$")
-        currency.insert(tk.END,"$")
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5)
+        
         # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
         currency.grid(row=2,column=1,pady=5)
         #Remarks
@@ -1143,7 +1162,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
 
         #Customer Name Entry Box
-        cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=remarks))
+        cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))

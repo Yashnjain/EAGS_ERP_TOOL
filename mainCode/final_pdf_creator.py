@@ -82,11 +82,16 @@ def pdf_generator(df):
                     ws1.range(f'A{10+(diff*i+page_count*page_diff)}').value="EAGL Offer:"
                     
                     ws1.range(f'D{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_UOM'][i]#UOM    [$$-en-US]#,##0.00   [$£-en-GB]#,##0.00
-                    ws1.range(f'E{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])#Price
+                    if chunk_df['E_FINAL_PRICE'][i] != "NA":
+                        ws1.range(f'E{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])#Price
+                    else:
+                        ws1.range(f'E{10+(diff*i+page_count*page_diff)}').value='NA'#Price
                     if chunk_df['CURRENCY'][i] == "$":
                         ws1.range(f'E{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
-                    else:
+                    elif chunk_df['CURRENCY'][i] == "£":
                         ws1.range(f'E{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
+                    else:
+                        pass
                     if chunk_df['E_FINAL_PRICE'][i] != "NA":
                         ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])*float(chunk_df['E_QTY'][i])#amount
                         if chunk_df['CURRENCY'][i] == "$":

@@ -1,3 +1,4 @@
+from errno import ESTALE
 import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
 # from snowflake.sqlalchemy import URL
@@ -5,6 +6,15 @@ from snowflake.connector.pandas_tools import write_pandas
 import pandas as pd
 # import datetime
 
+# USER = "SVC_BUITDB_DEV"
+# PASSWORD = "BUITDBDEV2022"
+# ACCOUNT = 'OS54042.east-us-2.azure'
+# WAREHOUSE = "BUIT_WH"
+# # DATABASE = "BUITDB"
+# DATABASE = "BUITDB_DEV"
+# SCHEMA = "EAGS"
+# ROLE = "OWNER_BUITDB_DEV"
+# # ROLE = "OWNER_BUITDB"
 USER =  "SVC_BUIT"#  "SVC_BUITDB_DEV"
 PASSWORD = "BUIT2022"
 ACCOUNT = 'OS54042.east-us-2.azure'
@@ -14,7 +24,6 @@ DATABASE = "BUITDB"
 SCHEMA = "EAGS"
 # ROLE = "OWNER_BUITDB_DEV"
 ROLE = "OWNER_BUITDB"
-
 
 EAGS_QUOTATION_TABLE = "EAGS_QUOTATION"
 EAGS_BAKER_TABLE = "EAGS_BAKER"
@@ -80,7 +89,7 @@ def loginChecker(conn,table, user, pwd):
 
         # conn = cnn.cursor()
         # conn = engine.connect()
-        query = f"SELECT NAME, ROLE, MAIL_LIST FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'"
+        query = f"SELECT NAME FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'"
         
         # raw_data = conn.execute(f"SELECT NAME FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'")
         cur = conn.cursor()
@@ -90,7 +99,7 @@ def loginChecker(conn,table, user, pwd):
         
         # data = raw_data.fetchall()
         if len(data):
-            return [data[0][0], data[0][-2], data[0][-1]] #Name, Role#data.iloc[0,0]
+            return data[0][0]#data.iloc[0,0]
         return False
     except Exception as e:
         raise e
@@ -261,9 +270,7 @@ def getLatestQuote(conn,curr_quoteNo,previous_quote_number=None, baker=False, ne
                     old_name=raw_data.split("_")[-1][:curr_revIndex+1]
                     newData = data +"_"+ old_name + nextNum
                 else:    
-                    curr_num = int(raw_data.split("_")[-1])
-                    nextNum = str(int(curr_num)+1).zfill(6)
-                    newData = data +"_"+ nextNum
+                    newData = raw_data + "R1"
             else:
                 newData = curr_quoteNo
 
@@ -278,7 +285,11 @@ def getallquotes(conn,quote_number):
 
         # conn = cnn.cursor()
         # conn = engine.connect()
-        query = f"select QUOTENO from {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE contains(QUOTENO, '{quote_number}');"
+        if 'Baker' in quote_number:
+            tablename=EAGS_BAKER_TABLE
+        else :
+               tablename= EAGS_QUOTATION_TABLE
+        query = f"select QUOTENO,DATE,PREPAREDBY from {DATABASE}.{SCHEMA}.{tablename} WHERE contains(QUOTENO, '{quote_number}');"
         # raw_data = conn.execute(f"SELECT NAME FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'")
         cur = conn.cursor()
         cur.execute(query)
@@ -304,7 +315,11 @@ def getfullquote(conn,quote_number):
 
         # conn = cnn.cursor()
         # conn = engine.connect()
-        query = f"select * from {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE QUOTENO='{quote_number}';"
+        if 'Baker' in quote_number:
+            tablename=EAGS_BAKER_TABLE
+        else :
+               tablename= EAGS_QUOTATION_TABLE
+        query = f"select * from {DATABASE}.{SCHEMA}.{tablename} WHERE QUOTENO='{quote_number}';"
 
          
         # raw_data = conn.execute(f"SELECT NAME FROM {DATABASE}.{SCHEMA}.{table} WHERE USERNAME = '{user}' AND PASSWORD = '{pwd}'")
@@ -323,3 +338,4 @@ def getfullquote(conn,quote_number):
         raise e
     finally:
         pass
+

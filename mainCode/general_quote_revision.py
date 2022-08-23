@@ -4,20 +4,20 @@ from tkinter import ttk
 # from customComboboxV2 import myCombobox
 from tkcalendar import DateEntry
 from datetime import date
-import sys
+import sys,time
 import pandas as pd
 from pandastable import Table
-from Tools import dfMaker, resource_path
-from sfTool import get_connection,get_cx_df, get_inv_df
+from RTools import dfMaker, resource_path,specialCase
+from RsfTool import get_connection,get_cx_df, get_inv_df
 from final_pdf_creator import pdf_generator
-from sfTool import eagsQuotationuploader
-import os
+from RsfTool import eagsQuotationuploader
+import os, shutil
+from tkPDFViewer import tkPDFViewer as pdf
 import ctypes
+from mail import send_mail
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-# from pynput.keyboard import Key, Controller
 
-# keyboard = Controller()
-key = "enter"
+
 UNITS = "units"
 INV_TABLE = "EAGS_INVENTORY"
 CX_TABLE = "EAGS_CUSTOMER"
@@ -60,11 +60,119 @@ class ResizingCanvas(tk.Canvas):
         raise e
 
 
+def keyFinder(dict, tupleValue):
+            try:
+                for key, value in dict.items():
+                    for index in range(len(value[0])):
+                        
+                        if value[0][index] == tupleValue:
+                            return key,index
+            except Exception as e:
+                raise e
 
 
 
-def general_quote_revision(mainRoot,user,conn,quotedf):
+
+
+def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
     try:
+
+        # def list_up(specialList,cx_type_list_var,tupVar):
+        #     key, index = keyFinder(specialList,tupVar)
+        #     if len(key) and str(specialList[key][0][index][0].get()).upper() not in cx_type_list_var and specialList[key][0][index][0].get()!="":
+        #         specialList[key][0][index][1].set("")
+        #         messagebox.showerror(title="Wrong Value",message="Please enter value from list only!")
+        #     return
+
+        def addCostCalc(specialList,index):
+            try:
+                addCost = float(specialList["E_Additional_Cost"][0][index][1].get())
+                sellCost = float(specialList["E_Selling Cost/UOM"][0][index][1].get())
+                finalPrice = addCost+sellCost
+                specialList["E_Final Price"][0][index][1].set(finalPrice)
+            except Exception as ex:
+                raise ex
+
+        def formulaCalc(specialList, tupVar):
+            try:
+                if len(specialList):
+                    key, index = keyFinder(specialList,tupVar) 
+                if specialList['C_Quote Yes/No'][0][index][0].get()=="Yes":            
+                    if specialList['E_Type'][0][index][0].get()=="TUI" or specialList['E_Type'][0][index][0].get()=="HR" or specialList['E_Type'][0][index][0].get()=="HM":
+                        e_od = float(specialList["E_OD2"][0][index][1])
+                        e_id = float(specialList["E_ID2"][0][index][1])
+                    else:
+                        e_od = float(specialList["E_OD1"][0][index][1].get())
+                        e_id = float(specialList["E_ID1"][0][index][1].get())
+                    uom = specialList["E_UOM"][0][index][1].get()
+                    e_length = float(specialList["E_Length"][0][index][1].get())#int(boxList["E_Length"][0][index][1].get())
+                    sellCostLBS = float(specialList["E_Selling Cost/LBS"][0][index][1].get())
+                    wt = (e_od - e_id)/2
+                    # THF
+                    if specialList["E_Type"][0][index][1].get() == "THF" or specialList["E_Type"][0][index][1].get() == "TUI" or specialList["E_Type"][0][index][1].get() == "HT":
+                        # wt = (od-id)/2
+                        
+                        # mid_formula = ((od-wt)*wt*10.68)/12
+                        mid_formula = ((e_od-wt)*wt*10.68)/12 
+                        # For Each:
+                        if uom == "Each":
+                        # Selling cost/UOM = "SellingCost/LBS" * mid_formula * Length (rounded upto 2 decimal places)
+                            sellCostUOM = round((sellCostLBS * mid_formula * e_length),2)
+                        # For Inch
+                        elif uom == "Inch":
+                            # Selling cost/UOM = "SellingCost/LBS" * mid_formula (rounded upto 2 decimal places)
+                            sellCostUOM = round((sellCostLBS * mid_formula),2)
+                        #For Foot
+                        else:
+                            sellCostUOM = round((sellCostLBS * mid_formula),2)
+                            sellCostUOM = sellCostUOM *12
+                    elif specialList["E_Type"][0][index][1].get() == "BR" or specialList["E_Type"][0][index][1].get() == "HR" or specialList["E_Type"][0][index][1].get() == "HB":
+                        # BR
+                        # mid_formula = (od*od*2.71)/12
+                        mid_formula = ((e_od-wt)*wt*10.68)/12
+                        if uom == "Each":
+                            # For Each: 
+                            # Selling cost/UOM ="SellingCost/LBS" * mid_formula * Length 
+                            sellCostUOM = round((sellCostLBS * mid_formula * e_length),2)
+                        elif uom == "Inch":
+                            # For Inch: 
+                            # Selling cost/UOM ="SellingCost/LBS" * mid_formula	
+                            sellCostUOM = round((sellCostLBS * mid_formula),2)
+                        #For Foot
+                        else:
+                            sellCostUOM = round((sellCostLBS * mid_formula),2)
+                            sellCostUOM = sellCostUOM *12
+                    else:
+                        sellCostUOM = 0
+                    specialList["E_Selling Cost/UOM"][0][index][1].set(sellCostUOM)
+                    addCostCalc(specialList,index)    
+            except Exception as ex:
+                raise ex
+     
+
+        def display(specialList,tupVar,df):
+            key, index = keyFinder(specialList,tupVar)
+            if key == 'E_ID1':
+                newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
+                            & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
+                            & (df["od_in"]==float(specialList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(specialList['E_ID1'][0][index][0].get()))]
+                newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
+                newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
+                newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
+                newDf= newDf[newDf['available_pieces']>0]
+                newDf = newDf.sort_values('age', ascending=False).sort_values('date_last_receipt', ascending=True)
+                specialList['E_Length'][0][index][0].focus()
+                pt.model.df = newDf
+                pt.redraw()
+
+
+        def tui_hr_cehcker(specialList,quotedf,row_num,tupVar,df):
+            print('sdgvdf')
+            key, index = keyFinder(specialList,tupVar)
+            if specialList['E_Type'][0][index][0].get()=='TUI' or specialList['E_Type'][0][index][0].get()=='HR':
+                specialCase(root, specialList,index,pt,df,row_num,quotedf)
+                
+
         def set_mousewheel(widget, command):
             try:
                 """Activate / deactivate mousewheel scrolling when 
@@ -128,6 +236,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                 # update scrollregion after starting 'mainloop'
                 # when all widgets are in canvas
                 entryCanvas.configure(scrollregion=entryCanvas.bbox('all'))#,width=1890,height=380)#(0,0,300,200)
+                entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         def returnTohome():
@@ -146,27 +255,30 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
             except Exception as e:
                 raise e
 
-        def addRow(quotedf):
+        def addRow(quotedf,check=None):
             try:
-                for i in range(0,len(quotedf)):                    
+                # for i in range(0,len(quotedf)):                    
                     row_num = len(quoteYesNo)
 
                     cx_spec_var =tk.StringVar()
                     cx_spec.append((ttk.Entry(entryFrame,width=15,textvariable=cx_spec_var),cx_spec_var))
                     cx_spec[-1][0].grid(row=2+row_num,column=0,padx=(15,0))
-                    cx_spec[0][1].set(quotedf['C_SPECIFICATION'][i])
+                    if check:
+                        cx_spec[i][1].set(quotedf['C_SPECIFICATION'][i])    
 
                     cx_type.append((None, None))
                     # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=1,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
                     cx_grade_var =tk.StringVar()
                     cx_grade.append((ttk.Entry(entryFrame,width=15,textvariable=cx_grade_var),cx_grade_var))
                     cx_grade[-1][0].grid(row=2+row_num,column=1)
-                    cx_grade[0][1].set(quotedf['C_GRADE'][i]) 
+                    if check:
+                        cx_grade[i][1].set(quotedf['C_GRADE'][i]) 
                     # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=2,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
                     cx_yield_var =tk.StringVar()
                     cx_yield.append((ttk.Entry(entryFrame,width=15,textvariable=cx_yield_var),cx_yield_var))
                     cx_yield[-1][0].grid(row=2+row_num,column=2)
-                    cx_yield[0][1].set(quotedf['C_YIELD'][i])
+                    if check:
+                        cx_yield[i][1].set(quotedf['C_YIELD'][i])
                     # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=3,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
                     
                     cx_od_var =tk.StringVar()
@@ -174,7 +286,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     cx_od.append((ttk.Entry(entryFrame, width=5,validate = "key",
                             validatecommand=(vcmd, '%P','%d'),textvariable=cx_od_var),cx_od_var))
                     cx_od[-1][0].grid(row=2+row_num,column=3)
-                    cx_od[0][1].set(quotedf['C_OD'][i])
+                    if check:
+                        cx_od[i][1].set(quotedf['C_OD'][i])
                     # cx_od['validatecommand'] = (cx_od.register(intFloat),'%P','%d')
 
 
@@ -184,14 +297,16 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     cx_id.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_id_var),cx_id_var))
                     cx_id[-1][0].grid(row=2+row_num,column=4)
                     cx_id[-1][0]['validatecommand'] = (cx_id[-1][0].register(intFloat),'%P','%d')
-                    cx_id[0][1].set(quotedf['C_ID'][i])
+                    if check:
+                        cx_id[i][1].set(quotedf['C_ID'][i])
                     # myCombobox(df,tab1,cx_list,frame=entryFrame,row=1,column=5,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
 
                     cx_len_var = tk.StringVar()
                     cx_len.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_len_var),cx_len_var))
                     cx_len[-1][0].grid(row=2+row_num,column=5)
                     cx_len[-1][0]['validatecommand'] = (cx_len[-1][0].register(intFloat),'%P','%d')
-                    cx_len[0][1].set(quotedf['C_LENGTH'][i])
+                    if check:
+                        cx_len[i][1].set(quotedf['C_LENGTH'][i])
                     
                     
                     # myCombobox(df,tab1,cx_list,frame=entryFrame,row=1,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
@@ -199,16 +314,22 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     cx_qty.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_qty_var), cx_qty_var))
                     cx_qty[-1][0].grid(row=2+row_num,column=6)
                     cx_qty[-1][0]['validatecommand'] = (cx_qty[-1][0].register(intChecker),'%P','%d')
-                    cx_qty[0][1].set(quotedf['C_QTY'][i])
+                    if check:
+                        cx_qty[i][1].set(quotedf['C_QTY'][i])
 
                     # var =tk.StringVar()
            
                     # quoteYesNo.append((ttk.Entry(entryFrame, width=5, validate = "key", textvariable=var), var))
                     # var.set(C_QUOTE_YES_NO)
                     cx_qyn_var = tk.StringVar()
-                    quoteYesNo.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_qyn_var), cx_qyn_var))
+                    cx_qyn_var_list=["Yes","No","Other"]
+                    cx_qyn_entry_var=ttk.Combobox(entryFrame, background='white', font=('Segoe UI', 10), justify='center',textvariable=cx_qyn_var,values=cx_qyn_var_list, width=5)
+                    quoteYesNo.append((cx_qyn_entry_var, cx_qyn_var))
                     quoteYesNo[-1][0].grid(row=2+row_num,column=7)
-                    quoteYesNo[0][1].set(quotedf['C_QUOTE_YES/NO'][i])
+                    if check:
+                        cx_qyn_entry_var.insert(tk.END,str(quotedf['C_QUOTE_YES/NO'][i]))
+                    # cx_qyn_entry_var.bind("<Leave>",lambda a:list_up(specialList,cx_qyn_var_list,tupVar = (cx_qyn_entry_var, cx_qyn_var)))    
+
             #--------- old ---------
                     # C_QUOTE_YES_NO=quotedf['C_QUOTE_YES/NO'][i]
                     # quoteYesNo.append(myCombobox(df,tab1,item_list=["Yes","No","Other"],frame=entryFrame,row=2+row_num,column=7,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -216,10 +337,18 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
             #--------- old ---------
                     # quoteYesNo[-1]['validate']='focusout'
                     # quoteYesNo[-1]['validatecommand'] = (quoteYesNo[-1].register(yesNo),'%P','%W')
-                    cx_lctn_var = tk.StringVar()
-                    e_location.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_lctn_var), cx_lctn_var))
+                    # cx_lctn_var = tk.StringVar()
+                    # e_location.append((ttk.Entry(entryFrame, width=10, validate = "key",textvariable=cx_lctn_var), cx_lctn_var))
+                    # e_location[-1][0].grid(row=2+row_num,column=8)
+                    # if check:
+                    #     e_location[i][1].set(quotedf['E_LOCATION'][i])
+                    e_location_var = tk.StringVar()
+                    e_location_list_var=["Dubai", "USA", "UK", "Singapore"]
+                    e_location_entry_var=ttk.Combobox(entryFrame, background='white', font=('Segoe UI', 10), justify='center',textvariable=e_location_var,values=e_location_list_var, width=5)
+                    e_location.append((e_location_entry_var, e_location_var))
                     e_location[-1][0].grid(row=2+row_num,column=8)
-                    e_location[0][1].set(quotedf['E_LOCATION'][i])
+                    if check:
+                        e_location_entry_var.insert(tk.END,str(quotedf['E_LOCATION'][i]))
 
             #--------- old ---------
                     # E_LOCATION=quotedf['E_LOCATION'][i]
@@ -228,22 +357,27 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
             #--------- old ---------
                     # e_location[-1].config(textvariable="NA", state='disabled')
                     cx_type_var = tk.StringVar()
-                    e_type.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_type_var), cx_type_var))
+                    cx_type_list_var=["THF","BR","TUI","HR"]
+                    cx_type_entry_var=ttk.Combobox(entryFrame, background='white', font=('Segoe UI', 10), justify='center',textvariable=cx_type_var,values=cx_type_list_var, width=5)
+                    e_type.append((cx_type_entry_var, cx_type_var))
                     e_type[-1][0].grid(row=2+row_num,column=9)
-                    e_type[0][1].set(quotedf['E_TYPE'][i])
+                    if check:
+                      cx_type_entry_var.insert(tk.END,str(quotedf['E_TYPE'][i]))
+                    # cx_type_entry_var.bind("<Leave>",lambda a:list_up(specialList,cx_type_list_var,tupVar = (cx_type_entry_var, cx_type_var)))
 
             #--------- old ---------
                     # E_TYPE=quotedf['E_TYPE'][i]
                     # e_type.append(myCombobox(df,tab1,item_list=["THF","BR"],frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                     # e_type[0][1].set(E_TYPE)
-                    # e_spec.append((None, None))
+                    e_spec.append((None, None))
             #--------- old ---------
 
                     # e_type[-1].config(textvariable="NA", state='disabled')
                     cx_grd_var = tk.StringVar()
                     e_grade.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_grd_var), cx_grd_var))
                     e_grade[-1][0].grid(row=2+row_num,column=10)
-                    e_grade[0][1].set(quotedf['E_GRADE'][i])
+                    if check:
+                        e_grade[i][1].set(quotedf['E_GRADE'][i])
 
                     # E_GRADE=quotedf['E_GRADE'][i]
                     # e_grade.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=10,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
@@ -256,7 +390,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     cx_yld_var = tk.StringVar()
                     e_yield.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_yld_var), cx_yld_var))
                     e_yield[-1][0].grid(row=2+row_num,column=11)
-                    e_yield[0][1].set(quotedf['E_YIELD'][i])
+                    if check:
+                        e_yield[i][1].set(quotedf['E_YIELD'][i])
 
 
 
@@ -270,11 +405,15 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     # e_yield[-1].config(textvariable="NA", state='disabled')
 
                     cx_od1_var = tk.StringVar()
-                    e_od1.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_od1_var), cx_od1_var))
+                    cx_ent_od1 = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_od1_var)
+                    e_od1.append((cx_ent_od1, cx_od1_var))
                     e_od1[-1][0].grid(row=2+row_num,column=12)
                     e_od1[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
-                    e_od1[0][1].set(quotedf['E_OD1'][i])
+                    if check:
+                        e_od1[i][1].set(quotedf['E_OD1'][i])
+                    cx_ent_od1.bind('<1>',lambda a:tui_hr_cehcker(specialList,quotedf,row_num,tupVar = (cx_ent_od1, cx_od1_var),df=df))
 
+                 
 
                     # E_OD1=quotedf['E_OD1'][i]
                     # e_od1.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=12,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
@@ -284,10 +423,20 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     # e_od1[0][1].set(E_OD1)
                     
                     cx_id1_var = tk.StringVar()
-                    e_id1.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_id1_var), cx_id1_var))
+                    cx_ent_id1 = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_id1_var)
+                    e_id1.append((cx_ent_id1, cx_id1_var))
                     e_id1[-1][0].grid(row=2+row_num,column=13)
                     e_id1[-1][0]['validatecommand'] = (e_id1[-1][0].register(intFloat),'%P','%d')
-                    e_id1[0][1].set(quotedf['E_ID1'][i])
+                    if check:
+                        e_id1[i][1].set(quotedf['E_ID1'][i])
+
+                    # new_tags = e_id1[row_num][0].bindtags() + ("mytag",)
+                    # e_id1[row_num][0].bindtags(new_tags)
+
+                    # e_id1[row_num][0].bind_class("mytag", '<1>',lambda a:display(specialList,tupVar = (e_id1[-1][0], e_id1[-1][1]),df=df))
+
+                    cx_ent_id1.bind('<1>',lambda a:display(specialList,tupVar = (cx_ent_id1, cx_id1_var),df=df))
+                    
 
 
                     # E_ID1=quotedf['E_ID1'][i]
@@ -304,7 +453,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     e_len.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_lnth_var), cx_lnth_var))
                     e_len[-1][0].grid(row=2+row_num,column=14)
                     e_len[-1][0]['validatecommand'] = (e_len[-1][0].register(intFloat),'%P','%d')
-                    e_len[0][1].set(quotedf['E_LENGTH'][i])
+                    if check:
+                        e_len[i][1].set(quotedf['E_LENGTH'][i])
 
                     # E_LENGTH=quotedf['E_LENGTH'][i]
                     # e_len.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -320,7 +470,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     e_qty.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_qty_var), cx_qty_var))
                     e_qty[-1][0].grid(row=2+row_num,column=15)
                     e_qty[-1][0]['validatecommand'] = (e_qty[-1][0].register(intFloat),'%P','%d')
-                    e_qty[0][1].set(quotedf['E_QTY'][i])
+                    if check:
+                        e_qty[i][1].set(quotedf['E_QTY'][i])
 
                     # E_QTY=quotedf['E_QTY'][i]
                     # e_qty.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -333,7 +484,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     sellCostLBS.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_scl_var), cx_scl_var))
                     sellCostLBS[-1][0].grid(row=2+row_num,column=16)
                     sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
-                    sellCostLBS[0][1].set(quotedf['E_SELLING_COST/LBS'][i])
+                    if check:
+                        sellCostLBS[i][1].set(quotedf['E_SELLING_COST/LBS'][i])
 
 
 
@@ -348,9 +500,13 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
                     # sellCostLBS[-1].config(textvariable="NA", state='disabled')
                     cx_uom_var = tk.StringVar()
-                    e_uom.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_uom_var), cx_uom_var))
+                    cx_uom_var_list = ["Inch","Each","Foot"]
+                    cx_uom_entry_var = ttk.Combobox(entryFrame, background='white', font=('Segoe UI', 10), justify='center',textvariable=cx_uom_var,values=cx_uom_var_list, width=5)
+                    e_uom.append((cx_uom_entry_var, cx_uom_var))
                     e_uom[-1][0].grid(row=2+row_num,column=17)
-                    e_uom[0][1].set(quotedf['E_UOM'][i])
+                    if check:
+                        cx_uom_entry_var.insert(tk.END,str(quotedf['E_UOM'][i]))
+                    # cx_uom_entry_var.bind("<Leave>",lambda a:list_up(specialList,cx_uom_var_list,tupVar = (cx_uom_entry_var, cx_uom_var)))
 
                     # E_UOM=quotedf['E_UOM'][i]
                     # e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each"],frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -365,7 +521,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     sellCostUOM.append((ttk.Entry(entryFrame, width=8, validate = "key",textvariable=cx_cuom_var), cx_cuom_var))
                     sellCostUOM[-1][0].grid(row=2+row_num,column=18)
                     sellCostUOM[-1][0]['validatecommand'] = (sellCostUOM[-1][0].register(intFloat),'%P','%d')
-                    sellCostUOM[0][1].set(quotedf['E_SELLING_COST/UOM'][i])
+                    if check:
+                        sellCostUOM[i][1].set(quotedf['E_SELLING_COST/UOM'][i])
 
                     # E_SELLING_COST_UOM=quotedf['E_SELLING_COST/UOM'][i]
                     # sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -379,7 +536,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     addCost.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_ac_var), cx_ac_var))
                     addCost[-1][0].grid(row=2+row_num,column=19)
                     addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
-                    addCost[0][1].set(quotedf['E_ADDITIONAL_COST'][i])
+                    if check:
+                        addCost[i][1].set(quotedf['E_ADDITIONAL_COST'][i])
 
                     # E_ADDITIONAL_COST=quotedf['E_ADDITIONAL_COST'][i]
                     # addCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -390,9 +548,10 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
                     # addCost[-1].config(textvariable="NA", state='disabled')
                     cx_lt_var = tk.StringVar()
-                    leadTime.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_lt_var), cx_lt_var))
+                    leadTime.append((ttk.Entry(entryFrame, width=10, validate = "key",textvariable=cx_lt_var), cx_lt_var))
                     leadTime[-1][0].grid(row=2+row_num,column=20)
-                    leadTime[0][1].set(quotedf['LEAD_TIME'][i])
+                    if check:
+                        leadTime[i][1].set(quotedf['LEAD_TIME'][i])
                     # LEAD_TIME=quotedf['LEAD_TIME'][i]
                     # leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                     # leadTime[0][1].set(LEAD_TIME)
@@ -400,10 +559,15 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
                     # leadTime[-1].config(textvariable="NA", state='disabled')
                     cx_fc_var = tk.StringVar()
-                    finalCost.append((ttk.Entry(entryFrame, width=8, validate = "key",textvariable=cx_fc_var), cx_fc_var))
+                    cx_ent_finalcost = ttk.Entry(entryFrame, width=8, validate = "key",textvariable=cx_fc_var)
+                    finalCost.append((cx_ent_finalcost, cx_fc_var))
                     finalCost[-1][0].grid(row=2+row_num,column=21)
                     finalCost[-1][0]['validatecommand'] = (finalCost[-1][0].register(intFloat),'%P','%d')
-                    finalCost[0][1].set(quotedf['E_FINAL_PRICE'][i])
+                    if check:
+                        finalCost[i][1].set(quotedf['E_FINAL_PRICE'][i])
+                    
+                        
+                    cx_ent_finalcost.bind('<1>',lambda a:formulaCalc(specialList,tupVar = (cx_ent_finalcost, cx_fc_var)))
 
                     # E_FINAL_PRICE=quotedf['E_FINAL_PRICE'][i]
                     # finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=21,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -416,8 +580,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         def cxListCalc():
             try:
                 # finalCost[-1].config(textvariable="NA", state='disabled')
-                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), cxDatadict["cus_address"][0][0].get(),
-                    cxDatadict["cus_phone"],cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
+                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(),currency.get(), cxDatadict["cus_address"][0][0].get(),
+                    cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
             except Exception as e:
                 raise e
@@ -437,53 +601,73 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
                     
                     # specialList[key][0][-1][1].destroy()
                     if (len(specialList[key][0])==1):
-                        if key!='E_OD2' and key != 'E_ID2':
+                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
                             specialList[key][0][0][0].configure(state='normal')
                             specialList[key][0][0][0].delete(0, tk.END)
                         
                         # time.sleep(1)
                         # addRow()
                     else:
-                        if key!='E_OD2' and key != 'E_ID2':
+                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
                             specialList[key][0][-1][0].destroy()
                         specialList[key][0].pop()
                 # show bottom of canvas
+                entryCanvas.yview("moveto", 0)
                 entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         
         def create_pdf():
             try:
-                global quoteDf
-                quoteDf = dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn)
+                global quoteDf,latest_revised_quote
+                quoteDf,latest_revised_quote = dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn,quote_number)
                 if len(quoteDf):
                     pt.model.df = quoteDf
                     pt.redraw()
                     
                     global pdf_path
                     pdf_path = pdf_generator(quoteDf)
+                    pdfRoot = tk.Toplevel()
+                    pdfRoot.title(quoteDf["QUOTENO"][0])
+                    pdfviewer = pdf.ShowPdf()
+                    # zoom_scale = tk.Scale(pdfRoot, orient='vertical', from_=1, to=500)
+                    # zoom_scale.config(command=zoom)
+                    # Adding pdf path and width and height.
+                    # zoom_scale.pack(fill='y', side='right')
+                    # zoom_scale.set(10)
+                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120)
+                    pdfframe.pack()
                     submitButton.configure(state='normal')
                 else:
                     messagebox.showerror("Error", "Empty dataframe was given in input")
+                return latest_revised_quote    
             except Exception as e:
                 raise e
 
-        def uploadDf(conn, quoteDf):
+        def uploadDf(conn, quoteDf ,latest_revised_quote):
             try:
                 # pt.model.df = quoteDf
                 # pt.redraw()
                 if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
-                    eagsQuotationuploader(conn, quoteDf)
+                    eagsQuotationuploader(conn, quoteDf,latest_revised_quote)
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
                     current_work_dir = os.getcwd()
+                    # current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".pdf"
                     save_dir = current_work_dir+"\\"+cx_init_name
                     if not os.path.exists(save_dir):
                         os.mkdir(save_dir)
                     os.rename(pdf_path,save_dir+"\\"+filename)
+                    desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
+                    if not os.path.exists(desktopDir):
+                        os.mkdir(desktopDir)
+                    shutil.copy(save_dir+"\\"+filename, desktopDir)
+                    send_mail(receiver_email = user[-1], mail_subject=f"ALERT Revision generated by {user[0]} for {quoteDf['QUOTENO'][0]}", 
+                    mail_body= f"{user[0]} has generated revision for quote number {quoteDf['QUOTENO'][0]}, initial quote was {quote_number}  on {str(date.today())}",
+                    attachment_locations=[save_dir+"\\"+filename])
                     
                 else:
                     os.remove(pdf_path)
@@ -496,7 +680,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         row_num=0
 
         #Getting invoentory dataframe
-        df = get_inv_df(conn,table = INV_TABLE)
+        # df = get_inv_df(conn,table = INV_TABLE)
         
         
         # df = pd.read_excel("sampleInventory.xlsx")
@@ -507,7 +691,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         count = 0
         root = tk.Toplevel(mainRoot, bg = "#9BC2E6")
         root.state('zoomed')
-        root.title('EAGS Quote Revision Generator')
+        root.title('EAGS Quote Generator Revision')
         tabControl = ttk.Notebook(root)
         s = ttk.Style(tabControl)
         s.configure("TFrame", background=root["bg"])
@@ -516,9 +700,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         tab3 = ttk.Frame(tabControl)
         
 
-        tabControl.add(tab1, text='Quote Revision Generator')
-        # tabControl.add(tab2, text='Machining')
-        # tabControl.add(tab3, text='Quote Generator + Machining')
+        tabControl.add(tab1, text='Quote Generator Revision')
+        tabControl.add(tab2, text='Machining Revision')
+        tabControl.add(tab3, text='Quote Generator Revision + Machining')
 
         tabControl.pack(expand=1, fill='both')
         cxFrame = tk.Frame(tab1, bg = "#9BC2E6")#,highlightbackground="blue", highlightthickness=2)
@@ -541,12 +725,10 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         
         entryCanvas.config(yscrollcommand = yscrollbar.set)
         databaseFrame = tk.Frame(tab1,height=500, bg= "#DDEBF7")
-
         controlFrame = tk.Frame(tab1, bg= "#DDEBF7")
 
-
-        cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),sticky="new")
-        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,120),sticky="new")
+        cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),sticky="nsew")
+        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,120),sticky="nsew")
         # headerFrame.grid(row=1, column=0,sticky="sew",columnspan=2)
         m_entryFrame.grid(row=1, column=0,sticky="nsew", columnspan=2)
         xscrollbar.grid(row=1,column=0,sticky=tk.NSEW)
@@ -558,79 +740,79 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         entryCanvas.create_window((0,0),window=entryFrame,tags='expand')
         
         # entryFrame.grid(row=0,column=0)
-        tab1.grid_rowconfigure(0, weight=1) # For row 0
-        tab1.grid_rowconfigure(1, weight=6) # For row 1
-        tab1.grid_rowconfigure(2, weight=1) # For row 1
+        # tab1.grid_rowconfigure(0, weight=1) # For row 0
+        # tab1.grid_rowconfigure(1, weight=1) # For row 1
+        # tab1.grid_rowconfigure(2, weight=1) # For row 1
 
-        tab1.grid_columnconfigure(0, weight=1) # For column 0
-        tab1.grid_columnconfigure(1, weight=1) # For column 1
+        # tab1.grid_columnconfigure(0, weight=1) # For column 0
+        # tab1.grid_columnconfigure(1, weight=1) # For column 1
 
 
-        cxFrame.grid_rowconfigure(0, weight=1) # For row 0
-        cxFrame.grid_rowconfigure(1, weight=1) # For row 1
-        cxFrame.grid_rowconfigure(2, weight=1) # For row 2
-        cxFrame.grid_rowconfigure(3, weight=1) # For row 3
-        cxFrame.grid_rowconfigure(4, weight=1) # For row 4
+        # cxFrame.grid_rowconfigure(0, weight=1) # For row 0
+        # cxFrame.grid_rowconfigure(1, weight=1) # For row 1
+        # cxFrame.grid_rowconfigure(2, weight=1) # For row 2
+        # cxFrame.grid_rowconfigure(3, weight=1) # For row 3
+        # cxFrame.grid_rowconfigure(4, weight=1) # For row 4
 
-        cxFrame.grid_columnconfigure(0, weight=1) # For column 0
-        cxFrame.grid_columnconfigure(1, weight=1) # For column 1
-        cxFrame.grid_columnconfigure(2, weight=1) # For column 2
-        cxFrame.grid_columnconfigure(3, weight=1) # For column 3
+        # cxFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # cxFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # cxFrame.grid_columnconfigure(2, weight=1) # For column 2
+        # cxFrame.grid_columnconfigure(3, weight=1) # For column 3
         
-        cxFrame2.grid_rowconfigure(0, weight=1) # For row 0
-        cxFrame2.grid_rowconfigure(1, weight=1) # For row 1
-        cxFrame2.grid_rowconfigure(2, weight=1) # For row 1
+        # cxFrame2.grid_rowconfigure(0, weight=1) # For row 0
+        # cxFrame2.grid_rowconfigure(1, weight=1) # For row 1
+        # cxFrame2.grid_rowconfigure(2, weight=1) # For row 1
 
-        cxFrame2.grid_columnconfigure(0, weight=1) # For column 0
-        cxFrame2.grid_columnconfigure(1, weight=1) # For column 1
-        cxFrame2.grid_columnconfigure(2, weight=1) # For column 1
+        # cxFrame2.grid_columnconfigure(0, weight=1) # For column 0
+        # cxFrame2.grid_columnconfigure(1, weight=1) # For column 1
+        # cxFrame2.grid_columnconfigure(2, weight=1) # For column 1
 
 
-        m_entryFrame.grid_rowconfigure(0, weight=1) # For row 0
-        # m_entryFrame.grid_rowconfigure(1, weight=1) # For row 1
+        # m_entryFrame.grid_rowconfigure(0, weight=1) # For row 0
+        # # m_entryFrame.grid_rowconfigure(1, weight=1) # For row 1
 
-        m_entryFrame.grid_columnconfigure(0, weight=1) # For column 0
-        # m_entryFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # m_entryFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # # m_entryFrame.grid_columnconfigure(1, weight=1) # For column 1
 
-        entryFrame.grid_rowconfigure(0, weight=1) # For row 0
-        entryFrame.grid_rowconfigure(1, weight=1) # For row 1
-        entryFrame.grid_rowconfigure(2, weight=1) # For row 1
+        # entryFrame.grid_rowconfigure(0, weight=1) # For row 0
+        # entryFrame.grid_rowconfigure(1, weight=1) # For row 1
+        # entryFrame.grid_rowconfigure(2, weight=1) # For row 1
 
-        entryFrame.grid_columnconfigure(0, weight=1) # For column 0
-        entryFrame.grid_columnconfigure(1, weight=1) # For column 1
-        entryFrame.grid_columnconfigure(2, weight=1) # For column 2
-        entryFrame.grid_columnconfigure(3, weight=1) # For column 3
-        entryFrame.grid_columnconfigure(4, weight=1) # For column 4
-        entryFrame.grid_columnconfigure(5, weight=1) # For column 5
-        entryFrame.grid_columnconfigure(6, weight=1) # For column 6
-        entryFrame.grid_columnconfigure(7, weight=1) # For column 7
-        entryFrame.grid_columnconfigure(8, weight=1) # For column 8
-        entryFrame.grid_columnconfigure(9, weight=1) # For column 9
-        entryFrame.grid_columnconfigure(10, weight=1) # For column 10
-        entryFrame.grid_columnconfigure(11, weight=1) # For column 11
-        entryFrame.grid_columnconfigure(12, weight=1) # For column 12
-        entryFrame.grid_columnconfigure(13, weight=1) # For column 13
-        entryFrame.grid_columnconfigure(14, weight=1) # For column 14
-        entryFrame.grid_columnconfigure(15, weight=1) # For column 15
-        entryFrame.grid_columnconfigure(16, weight=1) # For column 16
-        entryFrame.grid_columnconfigure(17, weight=1) # For column 17
-        entryFrame.grid_columnconfigure(18, weight=1) # For column 18
-        entryFrame.grid_columnconfigure(19, weight=1) # For column 19
-        entryFrame.grid_columnconfigure(20, weight=1) # For column 20
-        entryFrame.grid_columnconfigure(21, weight=1) # For column 21
+        # entryFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # entryFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # entryFrame.grid_columnconfigure(2, weight=1) # For column 2
+        # entryFrame.grid_columnconfigure(3, weight=1) # For column 3
+        # entryFrame.grid_columnconfigure(4, weight=1) # For column 4
+        # entryFrame.grid_columnconfigure(5, weight=1) # For column 5
+        # entryFrame.grid_columnconfigure(6, weight=1) # For column 6
+        # entryFrame.grid_columnconfigure(7, weight=1) # For column 7
+        # entryFrame.grid_columnconfigure(8, weight=1) # For column 8
+        # entryFrame.grid_columnconfigure(9, weight=1) # For column 9
+        # entryFrame.grid_columnconfigure(10, weight=1) # For column 10
+        # entryFrame.grid_columnconfigure(11, weight=1) # For column 11
+        # entryFrame.grid_columnconfigure(12, weight=1) # For column 12
+        # entryFrame.grid_columnconfigure(13, weight=1) # For column 13
+        # entryFrame.grid_columnconfigure(14, weight=1) # For column 14
+        # entryFrame.grid_columnconfigure(15, weight=1) # For column 15
+        # entryFrame.grid_columnconfigure(16, weight=1) # For column 16
+        # entryFrame.grid_columnconfigure(17, weight=1) # For column 17
+        # entryFrame.grid_columnconfigure(18, weight=1) # For column 18
+        # entryFrame.grid_columnconfigure(19, weight=1) # For column 19
+        # entryFrame.grid_columnconfigure(20, weight=1) # For column 20
+        # entryFrame.grid_columnconfigure(21, weight=1) # For column 21
         
-        controlFrame.grid_rowconfigure(0, weight=1) # For column 21
-        controlFrame.grid_rowconfigure(1, weight=1) # For column 21
+        # controlFrame.grid_rowconfigure(0, weight=1) # For column 21
+        # controlFrame.grid_rowconfigure(1, weight=1) # For column 21
 
         
-        controlFrame.grid_rowconfigure(2, weight=1) # For column 21
+        # controlFrame.grid_rowconfigure(2, weight=1) # For column 21
     
         
-        controlFrame.grid_rowconfigure(3, weight=1) # For column 21
-        controlFrame.grid_columnconfigure(1, weight=1) # For column 21
+        # controlFrame.grid_rowconfigure(3, weight=1) # For column 21
+        # controlFrame.grid_columnconfigure(1, weight=1) # For column 21
 
-        databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
-        databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
+        # databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
+        # databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
       ###############Importing Images fir buttons #####################################
         button_dict = {}#defining dict storing images for hover effect
         home_path = resource_path("home(2).png")
@@ -657,11 +839,13 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None,None]]
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
+        nonList = [[None,None,None,None,None,None,None]]
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
-        pt.cellwidth=135
+        pt.cellwidth=145
+        pt.thefont = ('Segoe UI', 12)
+        pt.rowheight = 30
         pt.show()
 
         global cxDatadict
@@ -689,8 +873,10 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
         cxDatadict["cus_email"] = []
 
+        cxDatadict["CURRENCY"] = []
 
-        item_list = ('A4140', 'A4140M', 'A4330V', 'A4715', 'BS708M40', 'A4145M', '4542','4462')
+
+        # item_list = ('A4140', 'A4140M', 'A4330V', 'A4715', 'BS708M40', 'A4145M', '4542','4462')
 
         cxLabel = tk.Label(cxFrame, text="Customer Details", bg = "#9BC2E6")
         lb1 = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6")
@@ -699,9 +885,11 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         lb4 = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6")
         lb5 = tk.Label(cxFrame,text="Email", bg = "#9BC2E6")
         lb6 = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6")
+        lb_ex= tk.Label(cxFrame,text="Mobile No.", bg = "#9BC2E6")
         blanckLabel = tk.Label(cxFrame2,text="", bg = "#9BC2E6")
-        lb7 = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6")
-        lb8 = tk.Label(cxFrame2,text="Additional Comments", bg = "#9BC2E6")
+        lb8 = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6")
+        lb9 = tk.Label(cxFrame2,text="Additional Comments", bg = "#9BC2E6")
+        lb7 = tk.Label(cxFrame2,text="Currency", bg = "#9BC2E6")
         cxLabel.grid(row=0,column=0)
         lb1.grid(row=1,column=0)
         lb2.grid(row=1,column=1)
@@ -709,9 +897,11 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         lb4.grid(row=3,column=1)
         lb5.grid(row=3,column=2)
         lb6.grid(row=3,column=3)
+        lb_ex.grid(row=3,column=4)
         blanckLabel.grid(row=0,column=0)
-        lb7.grid(row=1,column=0,padx=(100,5))
-        lb8.grid(row=1,column=1)
+        lb7.grid(row=1,column=0)
+        lb8.grid(row=1,column=1,padx=(100,5))
+        lb9.grid(row=1,column=2)
 
         
         prep_by = ttk.Entry(cxFrame)
@@ -730,32 +920,48 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         
         #Validity
         validityVar = tk.StringVar()
-        validity = ttk.Entry(cxFrame2, textvariable=validityVar, foreground='blue', background = 'white',width = 15)
-        validity.grid(row=2,column=0,padx=(100,5),pady=5)
+        validity = ttk.Entry(cxFrame2, textvariable=validityVar, foreground='blue', background = 'white',width = 15, font=('Segoe UI', 10))
+        validity.grid(row=2,column=1,padx=(100,5),pady=5)
         validityVar.set(quotedf['VALIDITY'][0])
         
         #Additional Comments
         addCommVar = tk.StringVar()
-        addComm = ttk.Entry(cxFrame2, textvariable=addCommVar, foreground='blue', background = 'white',width = 15)
-        addComm.grid(row=2,column=1,sticky=tk.EW,padx=5,pady=5)
+        addComm = ttk.Entry(cxFrame2, textvariable=addCommVar, foreground='blue', background = 'white',width = 15, font=('Segoe UI', 10))
+        addComm.grid(row=2,column=2,sticky=tk.EW,padx=5,pady=5)
         addCommVar.set(quotedf['ADD_COMMENTS'][0])
-        
-        # addComm.bind("<Tab>",tabFunc)
-        
-        
+        addComm.bind("<Tab>",tabFunc)
+       
+        #CURRENCY
+        currencyVar = tk.StringVar()
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5, text="$")
+        currency.grid(row=2,column=0,sticky=tk.EW,padx=5,pady=5)
+        currency.insert(tk.END,str(quotedf['CURRENCY'][0]))
+        cxDatadict["CURRENCY"].append((currency, currencyVar))
 
+        #Mobile Number
+        mobileVar = tk.StringVar()
+        mobile = ttk.Entry(cxFrame, textvariable=mobileVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
+        mobile.grid(row=4,column=4,sticky=tk.EW,padx=5,pady=5)
+        mobileVar.set(quotedf['CUS_PHONE'][0])
+        # cxDatadict["mobile_number"].append((mobile, mobileVar))
+        cxDatadict["cus_phone"].append((mobile, mobileVar))
         
         #Customer Name Entry Box
         cxName1Var = tk.StringVar()
-        cxNamer = ttk.Entry(cxFrame, textvariable=cxName1Var, foreground='blue', background = 'white',width = 5)
+        cxNamer = ttk.Entry(cxFrame, textvariable=cxName1Var, foreground='blue', background = 'white',width = 5, font=('Segoe UI', 10))
         cxNamer.grid(row=4,column=0,sticky=tk.EW,padx=5,pady=5)
         cxName1Var.set(quotedf['CUS_NAME'][0])
+        cxNameVar.append((cxNamer, cxName1Var))
         
+
+
+
+
         # cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=validity))
         
         #location Address entry box
         locAddVar = tk.StringVar()
-        locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20)
+        locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
         locAdd.grid(row=4,column=1,sticky=tk.EW,padx=5,pady=5)
         locAddVar.set(quotedf['CUS_ADDRESS'][0])
         
@@ -765,7 +971,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
         #Email
         emailAddVar = tk.StringVar()
-        emailAdd = ttk.Entry(cxFrame, textvariable=emailAddVar, foreground='blue', background = 'white',width = 20)
+        emailAdd = ttk.Entry(cxFrame, textvariable=emailAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
         emailAdd.grid(row=4,column=2,sticky=tk.EW,padx=5,pady=5)
         emailAddVar.set(quotedf['CUS_EMAIL'][0])
         # cxemailAddVar = []
@@ -774,7 +980,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
         #Payment Terms Entry
         payTermVar = tk.StringVar()
-        payTerm = ttk.Entry(cxFrame, textvariable=payTermVar, foreground='blue', background = 'white',width = 20)
+        payTerm = ttk.Entry(cxFrame, textvariable=payTermVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
         payTerm.grid(row=4,column=3,sticky=tk.EW,padx=5,pady=5)
         payTermVar.set(quotedf['PAYMENT_TERM'][0])
         cxDatadict["payment_term"].append((payTerm, payTermVar))
@@ -782,8 +988,10 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
 
         home_button = tk.Button(cxFrame2, image=home_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=returnTohome)
         home_button.image = home_img #Preventing image to go into garbage
+        home_button.grid(row=0,column=3,sticky="ne")
         button_dict[home_button] = [home_img, home_img1]
-        home_button.grid(row=0,column=2,sticky="ne")
+        home_button.bind("<Enter>", on_enter)
+        home_button.bind("<Leave>", on_leave)
         # home_button.place(x=1600,y=-10,relx=0.1,rely=0.1,anchor="sw")
         #######################################
         
@@ -970,11 +1178,12 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         # spec = ttk.Entry(entryFrame,textvariable=var, foreground='blue',background='white',width=5)
         # spec.grid(row=1,column=0,sticky=tk.EW,padx=5,pady=5)
         # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=0,width=2,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+        i=0
+        while i<len(quotedf):
+            addRow(quotedf,check=True)
+            i+=1
         
-        while len(quoteYesNo)<1:
-            addRow(quotedf)
-        
-        button_dict = {}
+        # button_dict = {}
 
         addRowbut = tk.Button(controlFrame, image=add_img, command=lambda:addRow(quotedf),borderwidth=0, background=controlFrame["bg"])
         addRowbut.image = add_img
@@ -998,18 +1207,112 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
         Previewbut.bind("<Enter>", on_enter)
         Previewbut.bind("<Leave>", on_leave)
 
-        submitButton = tk.Button(controlFrame, image=submit_img, text="Submit",command=lambda: uploadDf(conn, quoteDf),borderwidth=0, background=controlFrame["bg"])
+        submitButton = tk.Button(controlFrame, image=submit_img, text="Submit",command=lambda: uploadDf(conn, quoteDf ,latest_revised_quote),borderwidth=0, background=controlFrame["bg"])
         submitButton.image = submit_img
         submitButton.configure(state='disable')
         submitButton.grid(row=3,column=1)
         button_dict[submitButton] = [submit_img, submit_img2]
         submitButton.bind("<Enter>", on_enter)
         submitButton.bind("<Leave>", on_leave)
-        cxNamer.delete(0, tk.END)
-        cxNamer.insert(tk.END, quotedf['CUS_NAME'][0])
+        
         # cxNamer.insert(tk.END, quotedf['CUS_NAME'][0])
+        ##############Adding weight to mainFrames##############
+        mainRowNum = 2
+        mainColNum = 1
+        # for i in range(mainRowNum+1):
+        #     tab1.grid_rowconfigure(index=i,weight=1)
+
+        tab1.grid_rowconfigure(0, weight=1) # For row 0
+        tab1.grid_rowconfigure(1, weight=6) # For row 1
+        tab1.grid_rowconfigure(2, weight=1) # For row 1
+        for i in range(mainColNum+1):
+            tab1.grid_columnconfigure(index=i,weight=1)
+        # tab1.grid_columnconfigure(0, weight=1) # For column 0
+        # tab1.grid_columnconfigure(1, weight=1) # For column 1
+
+        #Configuring CxFrame grids as well as Controlgrid
+        for i in range(5):
+            cxFrame.grid_rowconfigure(index=i, weight=1)
+            if i !=4:
+                cxFrame.grid_columnconfigure(index=i, weight=1)
+            #Configuring CxFrame2
+            if i<3:
+                cxFrame2.grid_rowconfigure(index=i, weight=1)
+                cxFrame2.grid_columnconfigure(index=i, weight=1)
+            #Configuring control Frame
+            controlFrame.grid_rowconfigure(index=i, weight=1)
+            if i <2:
+                controlFrame.grid_columnconfigure(index=i, weight=1)
+        # cxFrame.grid_rowconfigure(0, weight=1) # For row 0
+        # cxFrame.grid_rowconfigure(1, weight=1) # For row 1
+        # cxFrame.grid_rowconfigure(2, weight=1) # For row 2
+        # cxFrame.grid_rowconfigure(3, weight=1) # For row 3
+        # cxFrame.grid_rowconfigure(4, weight=1) # For row 4
+
+        # cxFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # cxFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # cxFrame.grid_columnconfigure(2, weight=1) # For column 2
+        # cxFrame.grid_columnconfigure(3, weight=1) # For column 3
+        
+        # cxFrame2.grid_rowconfigure(0, weight=1) # For row 0
+        # cxFrame2.grid_rowconfigure(1, weight=1) # For row 1
+        # cxFrame2.grid_rowconfigure(2, weight=1) # For row 1
+
+        # cxFrame2.grid_columnconfigure(0, weight=1) # For column 0
+        # cxFrame2.grid_columnconfigure(1, weight=1) # For column 1
+        # cxFrame2.grid_columnconfigure(2, weight=1) # For column 1
 
 
+        m_entryFrame.grid_rowconfigure(0, weight=1) # For row 0
+
+        # # m_entryFrame.grid_rowconfigure(1, weight=1) # For row 1
+
+        m_entryFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # # m_entryFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # databaseFrame.grid_rowconfigure(index=0,weight=1)
+        # databaseFrame.grid_columnconfigure(index=1,weight=1)
+
+        # bakerTableFrame.grid_rowconfigure(index=0, weight=1)
+        # bakerTableFrame.grid_columnconfigure(index=1, weight=1)
+        # entryFrame.grid_rowconfigure(0, weight=1) # For row 0
+        # entryFrame.grid_rowconfigure(1, weight=1) # For row 1
+        # entryFrame.grid_rowconfigure(2, weight=1) # For row 1
+
+        # entryFrame.grid_columnconfigure(0, weight=1) # For column 0
+        # entryFrame.grid_columnconfigure(1, weight=1) # For column 1
+        # entryFrame.grid_columnconfigure(2, weight=1) # For column 2
+        # entryFrame.grid_columnconfigure(3, weight=1) # For column 3
+        # entryFrame.grid_columnconfigure(4, weight=1) # For column 4
+        # entryFrame.grid_columnconfigure(5, weight=1) # For column 5
+        # entryFrame.grid_columnconfigure(6, weight=1) # For column 6
+        # entryFrame.grid_columnconfigure(7, weight=1) # For column 7
+        # entryFrame.grid_columnconfigure(8, weight=1) # For column 8
+        # entryFrame.grid_columnconfigure(9, weight=1) # For column 9
+        # entryFrame.grid_columnconfigure(10, weight=1) # For column 10
+        # entryFrame.grid_columnconfigure(11, weight=1) # For column 11
+        # entryFrame.grid_columnconfigure(12, weight=1) # For column 12
+        # entryFrame.grid_columnconfigure(13, weight=1) # For column 13
+        # entryFrame.grid_columnconfigure(14, weight=1) # For column 14
+        # entryFrame.grid_columnconfigure(15, weight=1) # For column 15
+        # entryFrame.grid_columnconfigure(16, weight=1) # For column 16
+        # entryFrame.grid_columnconfigure(17, weight=1) # For column 17
+        # entryFrame.grid_columnconfigure(18, weight=1) # For column 18
+        # entryFrame.grid_columnconfigure(19, weight=1) # For column 19
+        # entryFrame.grid_columnconfigure(20, weight=1) # For column 20
+        # entryFrame.grid_columnconfigure(21, weight=1) # For column 21
+        
+        # controlFrame.grid_rowconfigure(0, weight=1) # For column 21
+        # controlFrame.grid_rowconfigure(1, weight=1) # For column 21       
+        # controlFrame.grid_rowconfigure(2, weight=1) # For column 21       
+        # controlFrame.grid_rowconfigure(3, weight=1) # For column 21
+        # controlFrame.grid_columnconfigure(1, weight=1) # For column 21
+
+        databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
+        databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
+
+        #Moving horizontal scroll bar to initial position
+        entryCanvas.xview("moveto", 0)
+        df = get_inv_df(conn,table = INV_TABLE)
         def on_closing():
             if messagebox.askokcancel("Quit", "Do you want to quit?"):
                 # mainRoot.destroy()
@@ -1021,11 +1324,12 @@ def general_quote_revision(mainRoot,user,conn,quotedf):
     except Exception as e:
         raise e
     
-    # root.mainloop()
+    root.mainloop()
 
 # conn = get_connection()
 # mainRoot = tk.Tk()
 # user = "Imam"
 # quotedf=None
-# general_quote_revision(mainRoot, user, conn,quotedf)
+# df = get_inv_df(conn,table = INV_TABLE)
+# general_quote_revision(mainRoot, user, conn,quotedf,df)
 # mainRoot.mainloop()

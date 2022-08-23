@@ -1,7 +1,7 @@
 from shutil import ExecError
 import pandas as pd
 from datetime import datetime, date
-from sfTool import eagsQuotationuploader,getLatestQuote
+from RsfTool import eagsQuotationuploader,getLatestQuote
 import os, sys
 import tkinter as tk
 from tkinter import ttk
@@ -26,7 +26,7 @@ def resource_path(relative_path):
 
 
 
-def dfMaker(specialList,cxList,otherList,pt,conn):
+def dfMaker(specialList,cxList,otherList,pt,conn,quote_number):
     try:
         # colList = list(inpDict.keys())
         # for col in colList:
@@ -36,15 +36,7 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
         # Location: USA/UK/DUB/SGP
         # Year: 2022
         # Number:00xxxx
-        for i in range(len(cxList)):
-            if i == "" or i == None:
-                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview")
-                return []
-        for i in range(len(otherList)):
-            if i == "" or i == None:
-                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview")
-                return []
-        if specialList['E_Location'][0][-1][0].get() != '' and cxList[2] != '':
+        if specialList['E_Location'][0][0][0].get() != '' and cxList[2] != '':
             locDict = {"DUBAI":"DUB", "SINGAPORE":"SGP", "USA":"USA","UK":"UK"}
             locVar = specialList['E_Location'][0][0][0].get()
             if locVar != "NA":
@@ -57,18 +49,16 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
             # curr_quoteNo = f"EAGS/{location}/{input_year}/000001"
             cx_init_name = cxList[2].split(" ")[0]
             curr_quoteNo = f"{cx_init_name}_000001"
+            previous_quote_number=quote_number
+            new_quoteNo,raw_data = getLatestQuote(conn,curr_quoteNo,previous_quote_number)
 
-            new_quoteNo, raw_data = getLatestQuote(conn,curr_quoteNo, previous_quote_number=None, newQuote=True)
-
-            #Appending Previous Quote as None
-            otherList.append(None)
-            #Appending Rev_Checker
+            otherList.append(quote_number)
             otherList.append(1)
             otherList.append(date.today())
 
 
 
-            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
+            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY','CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
             'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
             'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER','INSERT_DATE']
             row = []
@@ -78,17 +68,12 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
                 rowList = []
                 rowList.append(new_quoteNo)
                 rowList.extend(cxList)
+
                 for col in colList:
                     if (col == 'E_OD2' or col == 'E_ID2' or col == 'C_Type' or col == 'E_Spec'):
                         rowList.append(specialList[col][0][i][0])
-                        if specialList[col][0][i][0] == "":
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
-                            return []
                     else:
                         rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
-                        if specialList[col][0][i][0].get() == "" and (col.upper() != "C_YIELD" and col.upper() != "E_YIELD"):
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
-                            return []
                 rowList.extend(otherList)#insert validity and additional comments
                 row.append(rowList)#Append current ith row to row List
                 #Empty rowList for fetching next row
@@ -105,12 +90,26 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
 
                 
             # print()
-            return sfDf
+            return sfDf,raw_data
         else:
             return []
     except Exception as e:
         raise e
 
+
+    # row = [[trade_date, flow_m1, ch_opis, ny_opis, flow[flow_m1][2], flow[flow_m1][3], flow[flow_m1][1],flow[flow_m1][0], in_date, up_date]]
+    #     for i in f_keys[1:len(f_keys)]:
+    #         row.append([trade_date, i, np.nan, np.nan, flow[i][2], flow[i][3], flow[i][1], flow[i][0], in_date, up_date])
+
+    #     df = pd.DataFrame(row, columns=['TRADEDATE', 'FLOWMONTH', 'OPIS_CH', 'OPIS_NY', 'NYMEX_CH', 'NYMEX_NY', 'NYMEX_RBOB', 'CORN',
+    #                                     'INSERT_DATE', 'UPDATE_DATE'], index=None)
+
+
+
+
+# 'QuoteNo, PreparedBy, Date, Cus_Name, Payment_Term, Cus_Address, Cus_Phone, Cus_Email, Cus_city_zip, C_Specification, C_Grade, C_Yield, C_OD, C_ID, C_Length, C_Qty, C_Quote Yes/No, E_Location, E_Type, E_Grade, E_Yield, E_OD, E_ID, E_Length, E_Qty, E_Selling Cost/LBS, E_UOM, E_Selling Cost / UOM, E_Additional Cost, E_Final Price'
+# 'quoteno, preparedby, date, cus_name, payment_term, cus_address, cus_phone, cus_email, cus_city_zip, c_specification, c_grade, c_yield, c_od, c_id, c_length, c_qty, c_quote yes/no, e_location, e_type, e_grade, e_yield, e_od, e_id, e_length, e_qty, e_selling cost/lbs, e_uom, e_selling cost / uom, e_additional cost, e_final price'
+# 'QUOTENO, PREPAREDBY, DATE, CUS_NAME, PAYMENT_TERM, CUS_ADDRESS, CUS_PHONE, CUS_EMAIL, CUS_CITY_ZIP, C_SPECIFICATION, C_GRADE, C_YIELD, C_OD, C_ID, C_LENGTH, C_QTY, C_QUOTE YES/NO, E_LOCATION, E_TYPE, E_GRADE, E_YIELD, E_OD, E_ID, E_LENGTH, E_QTY, E_SELLING COST/LBS, E_UOM, E_SELLING COST / UOM, E_ADDITIONAL COST, E_FINAL PRICE, VALIDITY, ADD_COMMENTS'
 
 def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
     try:
@@ -184,7 +183,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                 bakerxlDf['Location'][i] = specialList['E_Location'][0][i][0].get()
                 bakerxlDf['Lead Time'][i] = specialList['E_LeadTime'][0][i][0].get()
                 bakerxlDf['Remarks'][i] = otherList[1]
-                bakerxlDf['Dlv Date'] = bakerxlDf['Dlv Date'].astype('datetime64[ns]').astype(str)
+                bakerxlDf['DLV_DATE'] = bakerxlDf['DLV_DATE'].astype('datetime64[ns]').astype(str)
                 rowList = []
                 rowList.append(new_quoteNo)
                 rowList.extend(cxList)
@@ -201,7 +200,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                             return []
                     else:
                         print(specialList[col][0][i][0].get())
-                        if specialList[col][0][i][0].get() == "" and col!="E_Yield":
+                        if specialList[col][0][i][0].get() == "":
                             messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
                             return []
                         if col == 'E_Spec':
@@ -263,7 +262,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
 
 
 
-def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
+def specialCase(root, specialList,index,pt,df,row_num,quotedf):
     try:
         def intFloat(inStr,acttyp):
             try:
@@ -371,25 +370,42 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
                 validatecommand=(vcmd, '%P','%d'))
         od1['validatecommand'] = (od1.register(intFloat),'%P','%d')
         od1.grid(row=1,column=0,sticky=tk.EW,padx=5,pady=5)
+        od1.insert(tk.END,quotedf['E_OD1'][row_num]) 
 
         id1Var = tk.StringVar()
         id1 = ttk.Entry(entryFrame1, textvariable=id1Var, background = 'white',width = 10,validate = "key",
                 validatecommand=(vcmd, '%P','%d'))
         id1['validatecommand'] = (id1.register(intFloat),'%P','%d')
         id1.grid(row=1,column=1,sticky=tk.EW,padx=5,pady=5)
-        
+        id1.insert(tk.END,quotedf['E_ID1'][row_num])
 
-
-        boxList["E_OD2"][0][index] = customComboboxV2.myCombobox(df,toproot,frame=entryFrame2,row=1,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = boxList,pt=pt,item_list=item_list, bakerDf=bakerDf,cxDict=cxDict)
-        boxList["E_OD2"][0][index][0]['validate']='key'
-        boxList["E_OD2"][0][index][0]['validatecommand'] = (boxList["E_OD2"][0][index][0].register(intFloat),'%P','%d')
+        e_od2Var = tk.StringVar()
+        global e_od2
+        e_od2 = ttk.Entry(entryFrame2, textvariable=e_od2Var, background = 'white',width = 10,validate = "key",
+                validatecommand=(vcmd, '%P','%d'))
+        e_od2['validatecommand'] = (e_od2.register(intFloat),'%P','%d')
+        e_od2.grid(row=1,column=0,sticky=tk.EW,padx=5,pady=5)
+        if quotedf['E_OD2'][row_num]:
+            e_od2.insert(tk.END,quotedf['E_OD2'][row_num])
+        # boxList["E_OD2"][0][index] = customComboboxV2.myCombobox(df,toproot,frame=entryFrame2,row=1,column=0,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = boxList,pt=pt,item_list=item_list)
+        # boxList["E_OD2"][0][-1][0]['validate']='key'
+        # boxList["E_OD2"][0][-1][0]['validatecommand'] = (boxList["E_OD2"][0][-1][0].register(intFloat),'%P','%d')
         # e_od[-1].config(textvariable="NA", state='disabled')
         # e_od2[-1][0]['validate']='key'
         # e_od2[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
 
-        boxList["E_ID2"][0][index] = customComboboxV2.myCombobox(df,toproot,frame=entryFrame2,row=1,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = boxList,pt=pt,item_list=item_list, bakerDf=bakerDf,cxDict=cxDict)
-        boxList["E_ID2"][0][index][0]['validate']='key'
-        boxList["E_ID2"][0][index][0]['validatecommand'] = (boxList["E_ID2"][0][index][0].register(intFloat),'%P','%d')
+        e_id2Var = tk.StringVar()
+        global e_id2
+        e_id2 = ttk.Entry(entryFrame2, textvariable=e_id2Var, background = 'white',width = 10,validate = "key",
+                validatecommand=(vcmd, '%P','%d'))
+        e_id2['validatecommand'] = (e_id2.register(intFloat),'%P','%d')
+        e_id2.grid(row=1,column=1,sticky=tk.EW,padx=5,pady=5)
+        if quotedf['E_ID2'][row_num]:
+           e_id2.insert(tk.END,quotedf['E_ID2'][row_num])
+
+        # boxList["E_ID2"][0][index] = customComboboxV2.myCombobox(df,toproot,frame=entryFrame2,row=1,column=1,width=10,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = boxList,pt=pt,item_list=item_list)
+        # boxList["E_ID2"][0][-1][0]['validate']='key'
+        # boxList["E_ID2"][0][-1][0]['validatecommand'] = (boxList["E_ID2"][0][-1][0].register(intFloat),'%P','%d')
         # e_id1[-1][0]['validate']='key'
         # e_id1[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
 
@@ -401,13 +417,25 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
         # id2 = ttk.Entry(entryFrame2, textvariable=id2Var, background = 'white',width = 15)
         # id2.grid(row=1,column=1)
         def exitTrue():
-            boxList["E_OD2"][0][index] = (boxList["E_OD2"][0][index][0].get(),boxList["E_OD2"][0][index][0].get())
-            boxList["E_ID2"][0][index] = (boxList["E_ID2"][0][index][0].get(),boxList["E_ID2"][0][index][0].get())
+            specialList["E_OD2"][0][index] = (e_od2.get(),e_od2.get())
+            specialList["E_ID2"][0][index] = (e_id2.get(),e_id2.get())
             od1=od1Var.get()
             id1 = id1Var.get()
             toproot.destroy()
-            boxList['E_OD1'][0][index][1].set(float(od1))
-            boxList['E_ID1'][0][index][1].set(float(id1))
+            specialList['E_OD1'][0][index][1].set(float(od1))
+            specialList['E_ID1'][0][index][1].set(float(id1))
+            newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
+                                                & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
+                                                & (df["od_in"]==float(specialList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(specialList['E_ID2'][0][index][0]))]
+            newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
+            newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
+            newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
+            newDf= newDf[newDf['available_pieces']>0]
+            newDf = newDf.sort_values('age', ascending=False).sort_values('date_last_receipt', ascending=True)
+            
+            specialList['E_Length'][0][index][0].focus()
+            pt.model.df = newDf
+            pt.redraw()
             # toproot.destroy()
             check=True
         submitButton = tk.Button(submitFrame,text="Submit", command=exitTrue)
@@ -415,9 +443,10 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
         submitButton.grid(row=0,column=1,pady=40)
         toproot.focus()
         od1.focus()
+        toproot.mainloop()
         if check:
             toproot.destroy()
-            return od1.get(), id1.get(), boxList["E_OD2"][index][0].get(), boxList["E_ID2"][index][0].get()
+            return od1.get(), id1.get(), specialList["E_OD2"][index][0].get(), specialList["E_ID2"][index][0].get()
         else:
             return None, None, None, None
     except Exception as e:

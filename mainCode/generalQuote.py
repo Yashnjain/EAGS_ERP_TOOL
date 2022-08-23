@@ -11,7 +11,7 @@ from Tools import dfMaker, resource_path
 from sfTool import get_connection,get_cx_df, get_inv_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
-import os
+import os, shutil
 from tkPDFViewer import tkPDFViewer as pdf
 import ctypes
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -124,7 +124,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                 # update scrollregion after starting 'mainloop'
                 # when all widgets are in canvas
                 entryCanvas.configure(scrollregion=entryCanvas.bbox('all'))#,width=1890,height=380)#(0,0,300,200)
-                entryCanvas.yview_moveto('1.0')
+                # entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         def returnTohome():
@@ -217,7 +217,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                 sellCostLBS[-1][0]['validate']='key'
                 sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
                 # sellCostLBS[-1].config(textvariable="NA", state='disabled')
-                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each"],frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # e_uom[-1].config(textvariable="NA", state='disabled')
                 sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 sellCostUOM[-1][0]['validate']='key'
@@ -270,8 +270,11 @@ def quoteGenerator(mainRoot,user,conn, df):
                         specialList[key][0].pop()
                 # show bottom of canvas
                 entryCanvas.yview("moveto", 0)
+                root.update()
+                entryCanvas.yview("moveto", 0)
+
                 
-                entryCanvas.yview_moveto('1.0')
+                # entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         
@@ -309,22 +312,28 @@ def quoteGenerator(mainRoot,user,conn, df):
             try:
                 # pt.model.df = quoteDf
                 # pt.redraw()
+                submitButton.configure(state='disable')
                 if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
-                    eagsQuotationuploader(conn, quoteDf)
+                    eagsQuotationuploader(conn, quoteDf, latest_revised_quote=None)
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
-                    current_work_dir = os.getcwd()
+                    current_work_dir = os.getcwd() #Should be Shared Drive
+                    # current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".pdf"
                     save_dir = current_work_dir+"\\"+cx_init_name
                     if not os.path.exists(save_dir):
                         os.mkdir(save_dir)
                     os.rename(pdf_path,save_dir+"\\"+filename)
+                    desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
+                    if not os.path.exists(desktopDir):
+                        os.mkdir(desktopDir)
+                    shutil.copy(save_dir+"\\"+filename, desktopDir)
                     
                 else:
                     os.remove(pdf_path)
-                submitButton.configure(state='disable')
+                
             except Exception as e:
                 raise e
 
@@ -382,7 +391,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         #Frames Under Tab1
         cxFrame.grid(row=0, column=0,pady=(24,0), padx=(30,0),sticky="nsew")
-        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,120),sticky="nsew")
+        cxFrame2.grid(row=0, column=1,pady=(24,0), padx=(30,40),sticky="nsew")
         # headerFrame.grid(row=1, column=0,sticky="sew",columnspan=2)
         m_entryFrame.grid(row=1, column=0,sticky="nsew", columnspan=2)
         xscrollbar.grid(row=1,column=0,sticky=tk.NSEW)
@@ -420,9 +429,9 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None]]
+        nonList = [[None,None,None,None,None, None, None]]
         # pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in',  'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in'])
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
         pt.cellwidth=145
@@ -504,8 +513,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         
         #Currency
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text="$")
-        currency.insert(tk.END,"$")
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5)
+        # currency.insert(tk.END,"$")
         # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
         currency.grid(row=2,column=1,pady=5)
         # #Remarks
@@ -529,7 +538,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
 
         #Customer Name Entry Box
-        cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=validity))
+        cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
@@ -811,6 +820,8 @@ def quoteGenerator(mainRoot,user,conn, df):
             #Configuring CxFrame2
             if i<3:
                 cxFrame2.grid_rowconfigure(index=i, weight=1)
+                cxFrame2.grid_columnconfigure(index=i, weight=1)
+            if i==3:
                 cxFrame2.grid_columnconfigure(index=i, weight=1)
             #Configuring control Frame
             controlFrame.grid_rowconfigure(index=i, weight=1)
