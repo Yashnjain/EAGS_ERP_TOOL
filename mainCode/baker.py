@@ -927,8 +927,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
-                    current_work_dir = os.getcwd()#To be Shared Drive
-                    # current_work_dir = r'I:\EAGS\Quotes'
+                    # current_work_dir = os.getcwd()#To be Shared Drive
+                    current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".xlsx"
                     save_dir = current_work_dir+"\\"+cx_init_name
@@ -936,6 +936,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                         os.mkdir(save_dir)
                     bakerxlDf.to_excel(save_dir+"\\"+filename, index=False)
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
+                    desktopDir = os.path.join('C:', desktopDir)
                     if not os.path.exists(desktopDir):
                         os.mkdir(desktopDir)
                     shutil.copy(save_dir+"\\"+filename, desktopDir)

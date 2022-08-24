@@ -127,9 +127,14 @@ def pdf_generator(df):
                     ws1.activate()
                    
         wb.api.ActiveSheet.PageSetup.Zoom=70
-        current_work_dir = os.getcwd()
+        # current_work_dir = os.getcwd()
+        tempDir = os.path.join(os.environ["HOMEPATH"], "Temp")
+        tempDir = os.path.join('C:', tempDir)
+        if not os.path.exists(tempDir):
+                os.mkdir(tempDir)
         filename=str(df['QUOTENO'][0]).replace("/","")
-        pdf_path = os.path.join(current_work_dir, f"{filename}.pdf")
+        # pdf_path = os.path.join(current_work_dir, f"{filename}.pdf")
+        pdf_path = os.path.join(tempDir, f"{filename}.pdf")
         # Save excel workbook to pdf file
         # print(f"Saving workbook as '{pdf_path}' ...")
         ws1.api.ExportAsFixedFormat(0, pdf_path)

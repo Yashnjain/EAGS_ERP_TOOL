@@ -662,6 +662,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                         os.mkdir(save_dir)
                     os.rename(pdf_path,save_dir+"\\"+filename)
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
+                    desktopDir = os.path.join('C:', desktopDir)
                     if not os.path.exists(desktopDir):
                         os.mkdir(desktopDir)
                     shutil.copy(save_dir+"\\"+filename, desktopDir)

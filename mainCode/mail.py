@@ -39,16 +39,17 @@ def send_mail(receiver_email: str, mail_subject: str, mail_body: str, attachment
         logging.info("Attaching mail body")
         msg.attach(email.mime.text.MIMEText(body, 'html'))
         logging.info("Attching files in the mail")
-        for files_locations in attachment_locations:
-            with open(files_locations, 'r+b') as attachment:
-                # instance of MIMEBase and named as p
-                p = email.mime.base.MIMEBase('application', 'octet-stream')
-                # To change the payload into encoded form
-                p.set_payload((attachment).read())
-                encoders.encode_base64(p)  # encode into base64
-                p.add_header('Content-Disposition',
-                             "attachment; filename= %s" % files_locations)
-                msg.attach(p)  # attach the instance 'p' to instance 'msg'
+        if attachment_locations:
+            for files_locations in attachment_locations:
+                with open(files_locations, 'r+b') as attachment:
+                    # instance of MIMEBase and named as p
+                    p = email.mime.base.MIMEBase('application', 'octet-stream')
+                    # To change the payload into encoded form
+                    p.set_payload((attachment).read())
+                    encoders.encode_base64(p)  # encode into base64
+                    p.add_header('Content-Disposition',
+                                "attachment; filename= %s" % files_locations)
+                    msg.attach(p)  # attach the instance 'p' to instance 'msg'
 
         # s = smtplib.SMTP('smtp.gmail.com', 587) # creates SMTP session
         s = smtplib.SMTP('smtp.office365.com',

@@ -328,14 +328,17 @@ def quoteGenerator(mainRoot,user,conn, df):
                     # os.rename(pdf_path,save_dir+"\\"+filename)
                     shutil.move(pdf_path,save_dir+"\\"+filename)
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
-                    directories_created = [desktopDir]
-                    for directory in directories_created:
-                        path3 = os.path.join(os.getcwd(),directory)  
-                        try:
-                            os.makedirs(path3, exist_ok = True)
-                            print("Directory '%s' created successfully" % directory)
-                        except OSError as error:
-                            print("Directory '%s' can not be created" % directory) 
+                    desktopDir = os.path.join('C:', desktopDir)
+                    if not os.path.exists(desktopDir):
+                        os.mkdir(desktopDir)
+                    # directories_created = [desktopDir]
+                    # for directory in directories_created:
+                    #     path3 = os.path.join(os.getcwd(),directory)  
+                    #     try:
+                    #         os.makedirs(path3, exist_ok = True)
+                    #         print("Directory '%s' created successfully" % directory)
+                    #     except OSError as error:
+                    #         print("Directory '%s' can not be created" % directory) 
 
                     # if not os.path.exists(desktopDir):
                     #     os.mkdir(desktopDir)

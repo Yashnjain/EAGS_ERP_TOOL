@@ -1143,6 +1143,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                     
                     bakerxlDf.to_excel(save_dir+"\\"+filename, index=False)
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
+                    desktopDir = os.path.join('C:', desktopDir)
                     if not os.path.exists(desktopDir):
                         os.mkdir(desktopDir)
                     shutil.copy(save_dir+"\\"+filename, desktopDir)

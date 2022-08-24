@@ -3,24 +3,26 @@ import time
 import bu_snowflake
 import snowflake.connector
 from snowflake.connector.pandas_tools import pd_writer
+from snowflake.connector.pandas_tools import write_pandas
 
 
 
-USER = "AKSHATA"
-PASSWORD = "Biourja@2022"
+USER =  "SVC_BUIT"#  "SVC_BUITDB_DEV"
+PASSWORD = "BUIT2022"
 ACCOUNT = 'OS54042.east-us-2.azure'
 WAREHOUSE = "BUIT_WH"
-DATABASE = "BUITDB_DEV"
+DATABASE = "BUITDB"
+
 SCHEMA = "EAGS"
-ROLE = "OWNER_BUITDB_DEV"
+ROLE = "OWNER_BUITDB"
 # TABLE = 'EAGS_INVENTORY'
-# TABLE = 'EAGS_CUSTOMER'
-TABLE = 'EAGS_SALESPERSON'
+TABLE = 'EAGS_CUSTOMER'
+# TABLE = 'EAGS_SALESPERSON'
 
 
 def insert_data_to_db(df):
     
-    cnn=snowflake.connector.connect(
+    conn=snowflake.connector.connect(
 
             user=USER,
             password=PASSWORD,
@@ -42,9 +44,10 @@ def insert_data_to_db(df):
         
     # con = engine.connect()
     df.columns = map(str.upper, df.columns)
-    df.to_sql(name=TABLE, con=cnn, index=False,if_exists='append', schema=SCHEMA, method=pd_writer)
+    success, nchunks, nrows, _ = write_pandas(conn, df, TABLE)
+    # df.to_sql(name=TABLE, con=cnn, index=False,if_exists='append', schema=SCHEMA, method=pd_writer)
     print("Data successfully uploaded")
-    cnn.close()
+    conn.close()
 
 
 
@@ -57,7 +60,7 @@ def insert_data_to_db(df):
 # df['CUS_CITY_ZIP'] = df['CUS_CITY_ZIP'].astype(str)
 
 #SalespersonDataframe
-df = pd.read_excel("salespersonDatabase.xlsx")
+df = pd.read_excel("Customer info.xlsx", sheet_name="Data", usecols="A:H")
 insert_data_to_db(df)
 # df.to_csv("Inv.csv",index=False,header=False)
 
