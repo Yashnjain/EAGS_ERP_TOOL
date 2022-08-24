@@ -8,6 +8,9 @@ from tkinter.messagebox import showerror
 from generalQuote import quoteGenerator
 from baker import bakerQuoteGenerator
 import sys, traceback
+import numpy as np
+import tkcap, os
+from mail import send_mail
 from Tools import resource_path
 from quote_revision_final import quoteRevision
 import ctypes
@@ -118,7 +121,7 @@ class App():
         cent_Lable = tk.Label(mFrame,image=cent_photo,borderwidth=0,bg=root["bg"])
         cent_Lable.place(x=270, y=240)
 
-        left_button = tk.Button(mFrame, image=left_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:bakerQuoteGenerator(root,user[0],conn, inv_df))#,command=my_command)
+        left_button = tk.Button(mFrame, image=left_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:bakerQuoteGenerator(root,user[0],conn))#,command=my_command)
         # left_button.grid(row=1,column=0,padx=0)
         left_button.place(x=50,y=170)
         button_dict[left_button] = [left_img, left_imgNew]
@@ -166,7 +169,22 @@ class App():
 
         def report_callback_exception(self, exc, val, tb):
             msg = traceback.format_exc()
-            showerror("Error", message=msg)
+            msg = msg.replace('\n', '<br>')
+            nl = '<br>'
+            error_id = np.random.randint(1000000,9999999)
+            cap = tkcap.CAP(root)     # master is an instance of tkinter.Tk
+            cap.capture(f'{error_id}V1.png')
+            imageV1path = os.getcwd()+'\\'+f'{error_id}V1.png'
+            
+            dsp_msg = f"Error: {error_id}\nPlease send a screenshot of this error message along with the app window to devsupport@biourja.com"
+            showerror(f"Error", message=dsp_msg)
+            cap = tkcap.CAP(root)     # master is an instance of tkinter.Tk
+            cap.capture(f'{error_id}V2.png')       # Capture and Save the screenshot of the tkiner window
+            imageV2path = os.getcwd()+'\\'+f'{error_id}V2.png'
+            
+            send_mail(receiver_email='imam.khan@biourja.com, yashn.jain@biourja.com, devsupport@biourja.com', mail_subject="EAGS APP ERROR FOUND", 
+            mail_body=f"<strong>User: {user[0]}{nl}Error ID: {error_id}</strong>{nl}{msg}", attachment_locations=[imageV1path, imageV2path])
+            
             root.update()
         def on_closing():
             try:
@@ -247,7 +265,7 @@ class App():
 
                 loginButton.bind("<Return>", (lambda event: login_command()))
                 password.bind("<Return>", (lambda event: login_command()))
-                top_frame.focus()
+                top_frame.focus_set()
                 username.focus()
             except Exception as e:
                 raise e
