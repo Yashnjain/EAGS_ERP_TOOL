@@ -653,8 +653,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
-                    current_work_dir = os.getcwd()
-                    # current_work_dir = r'I:\EAGS\Quotes'
+                    # current_work_dir = os.getcwd()
+                    current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".pdf"
                     save_dir = current_work_dir+"\\"+cx_init_name

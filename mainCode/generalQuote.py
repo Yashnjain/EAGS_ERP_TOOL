@@ -318,17 +318,27 @@ def quoteGenerator(mainRoot,user,conn, df):
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
-                    current_work_dir = os.getcwd() #Should be Shared Drive
-                    # current_work_dir = r'I:\EAGS\Quotes'
+                    # current_work_dir = os.getcwd() #Should be Shared Drive
+                    current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".pdf"
                     save_dir = current_work_dir+"\\"+cx_init_name
                     if not os.path.exists(save_dir):
                         os.mkdir(save_dir)
-                    os.rename(pdf_path,save_dir+"\\"+filename)
+                    # os.rename(pdf_path,save_dir+"\\"+filename)
+                    shutil.move(pdf_path,save_dir+"\\"+filename)
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
-                    if not os.path.exists(desktopDir):
-                        os.mkdir(desktopDir)
+                    directories_created = [desktopDir]
+                    for directory in directories_created:
+                        path3 = os.path.join(os.getcwd(),directory)  
+                        try:
+                            os.makedirs(path3, exist_ok = True)
+                            print("Directory '%s' created successfully" % directory)
+                        except OSError as error:
+                            print("Directory '%s' can not be created" % directory) 
+
+                    # if not os.path.exists(desktopDir):
+                    #     os.mkdir(desktopDir)
                     shutil.copy(save_dir+"\\"+filename, desktopDir)
                     
                 else:

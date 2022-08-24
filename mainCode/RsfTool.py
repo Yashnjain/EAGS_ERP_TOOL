@@ -114,7 +114,8 @@ def get_cx_df(conn,table, customer= 'general'):
     try:
         # query = f"SELECT CUS_LONG_NAME, PAYMENT_TERM, CUS_ADDRESS, CUS_PHONE, CUS_EMAIL, CUS_CITY_ZIP FROM {DATABASE}.{SCHEMA}.{table}"
         if customer == 'baker':
-            query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table} WHERE COMPANY='BAKER_HUGES'"
+            # query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table} WHERE COMPANY='BAKER_HUGES'"
+            query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table} WHERE CONTAINS(CUS_LONG_NAME,'Baker')"
         else:
             query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
