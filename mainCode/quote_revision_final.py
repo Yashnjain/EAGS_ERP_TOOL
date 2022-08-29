@@ -35,7 +35,7 @@ def quoteRevision(root,user,conn,inv_df):
                 
                 print("Speak...")
                 
-                audio_input = store.record(s, duration=7)
+                audio_input = store.record(s, duration=3)
                 print("Recording time:",time.strftime("%I:%M:%S"))
                 
                 try:

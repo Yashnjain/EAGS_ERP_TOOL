@@ -405,11 +405,15 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
             boxList["E_ID2"][0][index] = (boxList["E_ID2"][0][index][0].get(),boxList["E_ID2"][0][index][0].get())
             od1=od1Var.get()
             id1 = id1Var.get()
-            toproot.destroy()
-            boxList['E_OD1'][0][index][1].set(float(od1))
-            boxList['E_ID1'][0][index][1].set(float(id1))
-            # toproot.destroy()
-            check=True
+            if (boxList["E_OD2"][0][index] is not None) and (boxList["E_ID2"][0][index] is not None) and od1 is not None and id1 is not None:
+                messagebox.showerror(title="Value Error",message="Please fill all values first")
+                return
+            else:
+                toproot.destroy()
+                boxList['E_OD1'][0][index][1].set(float(od1))
+                boxList['E_ID1'][0][index][1].set(float(id1))
+                # toproot.destroy()
+                check=True
         submitButton = tk.Button(submitFrame,text="Submit", command=exitTrue)
         # submitButton.place(relx=.5, rely=.5, anchor="center")
         submitButton.grid(row=0,column=1,pady=40)

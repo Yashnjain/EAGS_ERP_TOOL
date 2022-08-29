@@ -14,6 +14,8 @@ from sfTool import eagsQuotationuploader
 import os, shutil
 from tkPDFViewer import tkPDFViewer as pdf
 import ctypes
+
+from shpUploader import shpUploader
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 UNITS = "units"
@@ -300,8 +302,11 @@ def quoteGenerator(mainRoot,user,conn, df):
                     # Adding pdf path and width and height.
                     # zoom_scale.pack(fill='y', side='right')
                     # zoom_scale.set(10)
-                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120)
-                    pdfframe.pack()
+                    screen_width = (pdfRoot.winfo_screenwidth())//6
+                    screen_height = (pdfRoot.winfo_screenheight())//6
+                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120 ,zoomDPI=100)
+                    pdfframe.pack(expand=True, fill='both')
+                    pdfRoot.state('zoomed')
                     submitButton.configure(state='normal')
                 else:
                     messagebox.showerror("Error", "Empty dataframe was given in input")
@@ -322,11 +327,11 @@ def quoteGenerator(mainRoot,user,conn, df):
                     current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".pdf"
-                    save_dir = current_work_dir+"\\"+cx_init_name
-                    if not os.path.exists(save_dir):
-                        os.mkdir(save_dir)
-                    # os.rename(pdf_path,save_dir+"\\"+filename)
-                    shutil.move(pdf_path,save_dir+"\\"+filename)
+                    # save_dir = current_work_dir+"\\"+cx_init_name
+                    # if not os.path.exists(save_dir):
+                    #     os.mkdir(save_dir)
+                    # # os.rename(pdf_path,save_dir+"\\"+filename)
+                    # shutil.move(pdf_path,save_dir+"\\"+filename)
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
                     desktopDir = os.path.join('C:', desktopDir)
                     if not os.path.exists(desktopDir):
@@ -342,7 +347,11 @@ def quoteGenerator(mainRoot,user,conn, df):
 
                     # if not os.path.exists(desktopDir):
                     #     os.mkdir(desktopDir)
-                    shutil.copy(save_dir+"\\"+filename, desktopDir)
+                    shpUploader(pdf_path,filename)
+                    shutil.move(pdf_path,desktopDir+"\\"+filename)
+                    
+                    # shutil.copy(save_dir+"\\"+filename, desktopDir)
+                    # shutil.copy(save_dir+"\\"+filename, desktopDir)
                     
                 else:
                     os.remove(pdf_path)
@@ -442,9 +451,9 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None, None, None]]
+        nonList = [[None,None,None,None,None, None, None, None, None]]
         # pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
         pt.cellwidth=145
@@ -551,7 +560,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
 
         #Customer Name Entry Box
-        cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
+        cxNameVar.append(myCombobox(cx_df,tab1,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=25,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
@@ -619,9 +628,9 @@ def quoteGenerator(mainRoot,user,conn, df):
         sellcostUOMLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
-        addCostLabel2 = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
+        addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
-        finalPriceLabel = tk.Label(entryFrame, text="Final Price", bg= "#DDEBF7")
+        finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
 
 
 

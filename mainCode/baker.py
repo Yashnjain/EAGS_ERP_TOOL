@@ -19,6 +19,7 @@ from pandastable.core import *
 import ctypes
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 import shutil
+from shpUploader import shpUploader
 
 UNITS = "units"
 INV_TABLE = "EAGS_INVENTORY"
@@ -903,7 +904,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     xlRoot = tk.Toplevel()
                     xlRoot.title(new_quoteNo)
                     xlRoot.title(quoteDf["QUOTENO"][0])
-                    ptBakerxl = MyTable(xlRoot, editable=False,dataframe=bakerxlDf,showtoolbar=False, showstatusbar=False, maxcellwidth=1500, width=600)
+                    ptBakerxl = MyTable(xlRoot, editable=True,dataframe=bakerxlDf,showtoolbar=False, showstatusbar=False, maxcellwidth=1500, width=600)
                     ptBakerxl.font = 'Segoe UI'
                     ptBakerxl.fontsize = 10
                     ptBakerxl.thefont = ('Segoe UI', 10)
@@ -923,6 +924,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 # pt.model.df = quoteDf
                 # pt.redraw()
                 if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
+                    submitButton.configure(state='disable')
                     eagsQuotationuploader(conn, quoteDf, latest_revised_quote=None, baker=True)
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
@@ -934,18 +936,22 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     save_dir = current_work_dir+"\\"+cx_init_name
                     if not os.path.exists(save_dir):
                         os.mkdir(save_dir)
-                    bakerxlDf.to_excel(save_dir+"\\"+filename, index=False)
+
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
                     desktopDir = os.path.join('C:', desktopDir)
                     if not os.path.exists(desktopDir):
                         os.mkdir(desktopDir)
-                    shutil.copy(save_dir+"\\"+filename, desktopDir)
+                    # shutil.copy(save_dir+"\\"+filename, desktopDir)
+                    bakerxlDf.to_excel(desktopDir+"\\"+filename, index=False)
+                    localpath = desktopDir+"\\"+filename
+                    shpUploader(localpath, filename)
+                    
                     # os.rename(pdf_path,save_dir+"\\"+filename)
                     
                 else:
                     # os.remove(pdf_path)
                     pass
-                submitButton.configure(state='disable')
+                    submitButton.configure(state='disable')
             except Exception as e:
                 raise e
 
@@ -1054,9 +1060,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None, None, None]]
+        nonList = [[None,None,None,None,None, None, None, None, None]]
         # pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
         pt.cellwidth=145
@@ -1163,7 +1169,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
 
         #Customer Name Entry Box
-        cxNameVar.append(myCombobox(cx_df,tab1,item_list=item_list,frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
+        cxNameVar.append(myCombobox(cx_df,tab1,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
@@ -1222,7 +1228,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         global ptBaker
         ptBaker = MyTable(bakerTableFrame, editable=True,dataframe=pandasDf,showtoolbar=True, showstatusbar=False, maxcellwidth=1500)
         
-        ptBaker.cellwidth=100
+        ptBaker.cellwidth=130
         ptBaker.autoResizeColumns()
         subtractor=0
         if root.winfo_pixels('1i')==96:
@@ -1259,9 +1265,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         sellcostUOMLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
-        addCostLabel2 = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
+        addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
-        finalPriceLabel = tk.Label(entryFrame, text="Final Price", bg= "#DDEBF7")
+        finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
 
 
 

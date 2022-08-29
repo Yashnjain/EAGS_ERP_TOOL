@@ -427,7 +427,7 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
             newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
                                                 & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
                                                 & (df["od_in"]==float(specialList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(specialList['E_ID2'][0][index][0]))]
-            newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
+            newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
             newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
             newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
             newDf= newDf[newDf['available_pieces']>0]

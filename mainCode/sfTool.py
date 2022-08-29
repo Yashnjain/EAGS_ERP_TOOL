@@ -124,7 +124,7 @@ def get_inv_df(conn, table):
     try:
         # init_time = datetime.datetime.now()
         # print(init_time)
-        query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, RESERVED_PIECES, RESERVED_LENGTH_IN, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN, DATE_LAST_RECEIPT, AGE FROM {DATABASE}.{SCHEMA}.{table}"
+        query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN, DATE_LAST_RECEIPT, AGE, HEAT_NUMBER, LOT_SERIAL_NUMBER FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
         cur.execute(query)
         names = [ x[0] for x in cur.description]
@@ -211,7 +211,7 @@ def getLatestQuote(conn,curr_quoteNo,previous_quote_number=None, baker=False, ne
         else:
              cx_init_name_previous=previous_quote_number   
         # query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE DESC LIMIT 1"
-        if baker:
+        if baker and not newQuote:
             query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO desc LIMIT 1"  
         elif baker and newQuote:
             query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO not like '%R%' and QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO  desc LIMIT 1"

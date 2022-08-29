@@ -39,8 +39,8 @@ def formulaCalc(boxList, index):
                 
         elif boxList["E_Type"][0][index][1].get() == "BR" or boxList["E_Type"][0][index][1].get() == "HR" or boxList["E_Type"][0][index][1].get() == "HB" or boxList["E_Type"][0][index][1].get() == "HM":
             # BR
-            # mid_formula = (od*od*2.71)/12
-            mid_formula = ((e_od-wt)*wt*10.68)/12
+            mid_formula = (e_od*e_od*2.71)/12
+            # mid_formula = ((e_od-wt)*wt*10.68)/12
             if uom == "Each":
                 # For Each: 
                 # Selling cost/UOM ="SellingCost/LBS" * mid_formula * Length 
@@ -170,7 +170,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     else:
                         key, index = keyFinder(cxDict,(ent,var))
                     if key == "cus_long_name":
-                        dataList = df[(df["cus_long_name"] == value)].values.tolist()[0]
+                        df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
+                        # dataList = df[(df["cus_long_name"] == value)].values.tolist()[0]
+                        dataList = df[(df["cx_name_id"] == value)].values.tolist()[0]
                         cxDict["payment_term"][index][1].set(dataList[3])
                         # cxDict["payment_term"] = dataList[2]
 
@@ -227,7 +229,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                                 & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                                                 & (df["od_in"]==float(boxList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID1'][0][index][0].get()))]
                                     # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
-                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
+                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
                                     newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
                                     newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
                                     newDf = newDf[newDf['available_pieces']>0]
@@ -377,7 +379,11 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 if breakCheck:# or e.keysym=="Tab":
                     return "break"
             except Exception as ex:
-                raise ex
+                if len(bakerDf):
+                    if bakerDf.iloc[0,0] is None:
+                        messagebox.showerror(title="Wrong Value",message="Please paste Baker input data first")
+                    else:
+                        raise ex
 
         def list_input(e):
             try:
@@ -396,7 +402,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         
                     else:
                         key, index = keyFinder(cxDict,(ent,var))
-                        newList = df["cus_long_name"].values.tolist() 
+                        df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
+                        newList = df["cx_name_id"].values.tolist() 
                     lbframe.list.delete(0, tk.END)
                     if listCheck and len(newList):
                         for item in newList:
@@ -603,7 +610,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                                 & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                                                 & (df["od_in"]==float(boxList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0]))]
                                     # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
-                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
+                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
                                     newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
                                     newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
                                     newDf = newDf[newDf['available_pieces']>0]
@@ -620,7 +627,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         
                     elif len(cxDict):
                         key, index = keyFinder(cxDict,(ent,var))
-                        newList = df["cus_long_name"].values.tolist()
+                        df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
+                        newList = df["cx_name_id"].values.tolist()
                     
                     # lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
                     

@@ -93,7 +93,10 @@ def pdf_generator(df):
                     else:
                         pass
                     if chunk_df['E_FINAL_PRICE'][i] != "NA":
-                        ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])*float(chunk_df['E_QTY'][i])#amount
+                        if chunk_df["E_UOM"][i] == 'Inch' or chunk_df["E_UOM"][i] == 'Foot':
+                            ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])*float(chunk_df['E_LENGTH'][i])*float(chunk_df['E_QTY'][i])#amount Price x Length x Qty
+                        else:
+                            ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value=float(chunk_df['E_FINAL_PRICE'][i])*float(chunk_df['E_QTY'][i])#amount Price x Qty
                         if chunk_df['CURRENCY'][i] == "$":
                             ws1.range(f'F{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
                         else:
