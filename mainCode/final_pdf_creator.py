@@ -80,6 +80,19 @@ def pdf_generator(df):
                     customer_requirement=f'{round(float(chunk_df["C_OD"][i]),3)}"OD - {round(chunk_df["C_ID"][i],3)}"ID - {chunk_df["C_GRADE"][i]} - {chunk_df["C_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["C_QTY"][i]}@{chunk_df["C_LENGTH"][i]}"'
                     ws1.range(f'A{9+(diff*i+page_count*page_diff)}').value=customer_requirement
                     ws1.range(f'A{10+(diff*i+page_count*page_diff)}').value="EAGL Offer:"
+                    if chunk_df['E_FREIGHT_CHARGED'][i]:
+                        
+                        if float(chunk_df['E_FREIGHT_CHARGED'][i]) != float(0.0):
+                            ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value=f"Freight Charges: {chunk_df['E_FREIGHT_CHARGED'].sum()}"
+                        
+                        if chunk_df['CURRENCY'][i] == "$":
+                            ws1.range(f'A{11+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
+                        elif chunk_df['CURRENCY'][i] == "£":
+                            ws1.range(f'A{11+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
+                        else:
+                            pass
+                    
+                    
                     
                     ws1.range(f'D{10+(diff*i+page_count*page_diff)}').value=chunk_df['E_UOM'][i]#UOM    [$$-en-US]#,##0.00   [$£-en-GB]#,##0.00
                     if chunk_df['E_FINAL_PRICE'][i] != "NA":
@@ -129,7 +142,7 @@ def pdf_generator(df):
                     last_column_letter=num_to_col_letters(ws2.range('A7').end('right').end('right').column)
                     ws2.range(f"A1:{last_column_letter}{last_row}").copy(ws1.range(f"A{page_count*page_diff+1}"))    
                     ws1.activate()
-                   
+                  
         wb.api.ActiveSheet.PageSetup.Zoom=70
         # current_work_dir = os.getcwd()
         tempDir = os.path.join(os.environ["HOMEPATH"], "Temp")

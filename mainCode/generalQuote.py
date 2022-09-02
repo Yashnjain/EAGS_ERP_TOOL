@@ -1,3 +1,4 @@
+from re import search
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
@@ -7,7 +8,7 @@ from datetime import date
 import sys
 import pandas as pd
 from pandastable import Table
-from Tools import dfMaker, resource_path
+from Tools import dfMaker, resource_path, starSearch, rangeSearch
 from sfTool import get_connection,get_cx_df, get_inv_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
@@ -150,14 +151,14 @@ def quoteGenerator(mainRoot,user,conn, df):
                 row_num = len(quoteYesNo)
                 
                 cx_spec.append((ttk.Entry(entryFrame,width=15),None))
-                cx_spec[-1][0].grid(row=2+row_num,column=0,padx=(15,0))
+                cx_spec[-1][0].grid(row=2+row_num,column=0,padx=(10,0))
 
                 cx_type.append((None, None))
                 # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=1,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-                cx_grade.append((ttk.Entry(entryFrame,width=15),None))
+                cx_grade.append((ttk.Entry(entryFrame,width=10),None))
                 cx_grade[-1][0].grid(row=2+row_num,column=1)
                 # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=2,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
-                cx_yield.append((ttk.Entry(entryFrame,width=15),None))
+                cx_yield.append((ttk.Entry(entryFrame,width=10),None))
                 cx_yield[-1][0].grid(row=2+row_num,column=2)
                 # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=3,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
                 
@@ -205,6 +206,9 @@ def quoteGenerator(mainRoot,user,conn, df):
 
                 e_od2.append((None, None))
                 e_id2.append((None, None))
+                # searchGrade.append((None, None))
+                # searchYield.append((None, None))
+                searchLocation.append((None, None))
 
                 # e_id[-1].config(textvariable="NA", state='disabled')
                 e_len.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -215,25 +219,48 @@ def quoteGenerator(mainRoot,user,conn, df):
                 e_qty[-1][0]['validate']='key'
                 e_qty[-1][0]['validatecommand'] = (e_qty[-1][0].register(intChecker),'%P','%d')
                 # e_qty[-1].config(textvariable="NA", state='disabled')
-                sellCostLBS.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                e_cost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_cost[-1][0]['validate']='key'
+                e_cost[-1][0]['validatecommand'] = (e_cost[-1][0].register(intFloat),'%P','%d')
+
+                sellCostLBS.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 sellCostLBS[-1][0]['validate']='key'
                 sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
+
+                marginlbs.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # sellCostLBS[-1].config(textvariable="NA", state='disabled')
-                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # e_uom[-1].config(textvariable="NA", state='disabled')
-                sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 sellCostUOM[-1][0]['validate']='key'
                 sellCostUOM[-1][0]['validatecommand'] = (sellCostUOM[-1][0].register(intFloat),'%P','%d')
                 # sellCostUOM[-1].config(textvariable="NA", state='disabled')
-                addCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                addCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=21,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 addCost[-1][0]['validate']='key'
                 addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
                 # addCost[-1].config(textvariable="NA", state='disabled')
-                leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=22,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # leadTime[-1].config(textvariable="NA", state='disabled')
-                finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=21,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=23,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 finalCost[-1][0]['validate']='key'
                 finalCost[-1][0]['validatecommand'] = (finalCost[-1][0].register(intFloat),'%P','%d')
+                
+
+                freightIncured.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=24,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                
+                freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=25,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+
+
+                
+
+                marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=26,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                lot_serial_number.append((None, None))
+
+
             except Exception as e:
                 raise e
 
@@ -359,6 +386,9 @@ def quoteGenerator(mainRoot,user,conn, df):
             except Exception as e:
                 raise e
 
+        
+        
+        
         mainRoot.withdraw()
         global row_num
         row_num=0
@@ -460,6 +490,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         pt.thefont = ('Segoe UI', 12)
         pt.rowheight = 30
         pt.show()
+        
 
         global cxDatadict
         cxDatadict = {}
@@ -500,6 +531,11 @@ def quoteGenerator(mainRoot,user,conn, df):
         locAddLb = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6", font=("Segoe UI", 10))
         emailLb = tk.Label(cxFrame,text="Email", bg = "#9BC2E6", font=("Segoe UI", 10))
         payTermLb = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6", font=("Segoe UI", 10))
+
+        #Adding Search button in cxFrame 2
+        starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
+        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
+
         mobileLb = tk.Label(cxFrame2, text="Mobile", bg = "#9BC2E6", font=("Segoe UI", 10))
         currencyLabel = tk.Label(cxFrame2,text="Currency", bg = "#9BC2E6", font=("Segoe UI", 10))
         valLb = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -516,7 +552,11 @@ def quoteGenerator(mainRoot,user,conn, df):
         payTermLb.grid(row=3,column=3)
 
         #label grid using cxFrame2
+
+        #Adding Search button in cxFrame 2
+        starButton.grid(row=0, column=0, pady=(20,0))
         mobileLb.grid(row=1, column=0, pady=(20,0))
+        rangeButton.grid(row=0,column=1, pady=(20,0))
         currencyLabel.grid(row=1,column=1, pady=(20,0))
         # remarksLabel.grid(row=1,column=2, pady=(20,0))#padx=(50,5)
         valLb.grid(row=1,column=2, pady=(20,0))#5x=(50,5)
@@ -535,8 +575,10 @@ def quoteGenerator(mainRoot,user,conn, df):
         
         #Currency
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5)
-        # currency.insert(tk.END,"$")
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text='$')
+    
+        # currencyVar.set("$")
+        currency.insert(tk.END,'$')
         # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
         currency.grid(row=2,column=1,pady=5)
         # #Remarks
@@ -622,15 +664,33 @@ def quoteGenerator(mainRoot,user,conn, df):
         e_idLabel = tk.Label(entryFrame, text="ID", bg= "#DDEBF7")
         e_Length = tk.Label(entryFrame, text="Length", bg= "#DDEBF7")
         e_Qty = tk.Label(entryFrame, text="Qty", bg= "#DDEBF7")
+
+        e_costLabel = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
+
         sellcostLbsLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostLbsLabel2 = tk.Label(entryFrame, text="Cost/LBS", bg= "#DDEBF7")
+
+        marginLBSLabel1 = tk.Label(entryFrame, text="Margin/LBS", bg= "#DDEBF7")
+        marginLBSLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
+
         uom = tk.Label(entryFrame, text="UOM", bg= "#DDEBF7")
         sellcostUOMLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
         addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
-        leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        leadTimeLabel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+
         finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
+
+        freightCostLabel1 = tk.Label(entryFrame, text="Freight", bg= "#DDEBF7")
+        freightCostLabel2 = tk.Label(entryFrame, text="Incured", bg= "#DDEBF7")
+        freightSaleLabel1 = tk.Label(entryFrame, text="Freight to", bg= "#DDEBF7")
+        freightSaleLabel2 = tk.Label(entryFrame, text="be Charged", bg= "#DDEBF7")
+        
+        
+
+        marginFreightLabel1 = tk.Label(entryFrame, text="Freight Margin", bg= "#DDEBF7")
+        marginFreightLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
 
 
 
@@ -651,15 +711,33 @@ def quoteGenerator(mainRoot,user,conn, df):
         e_idLabel.grid(row=0,column=13, sticky="ew")
         e_Length.grid(row=0,column=14, sticky="ew")
         e_Qty.grid(row=0,column=15, sticky="ew")
-        sellcostLbsLabel1.grid(row=0,column=16, sticky="ew")
-        sellcostLbsLabel2.grid(row=1,column=16, sticky="ew")
-        uom.grid(row=0,column=17, sticky="ew")
-        sellcostUOMLabel1.grid(row=0,column=18, sticky="ew")
-        sellcostUOMLabel2.grid(row=1,column=18, sticky="ew")
-        addCostLabel1.grid(row=0,column=19, sticky="ew")
-        addCostLabel2.grid(row=1,column=19, sticky="ew")
-        leadTimeLAbel.grid(row=0,column=20, sticky="ew")
-        finalPriceLabel.grid(row=0,column=21,padx=(0,10), sticky="ew")
+        e_costLabel.grid(row=0,column=16, sticky="ew")
+
+        sellcostLbsLabel1.grid(row=0,column=17, sticky="ew")
+        sellcostLbsLabel2.grid(row=1,column=17, sticky="ew")
+
+        marginLBSLabel1.grid(row=0,column=18, sticky="ew")
+        marginLBSLabel2.grid(row=1,column=18, sticky="ew")
+
+        uom.grid(row=0,column=19, sticky="ew")
+
+        sellcostUOMLabel1.grid(row=0,column=20, sticky="ew")
+        sellcostUOMLabel2.grid(row=1,column=20, sticky="ew")
+        addCostLabel1.grid(row=0,column=21, sticky="ew")
+        addCostLabel2.grid(row=1,column=21, sticky="ew")
+        leadTimeLabel.grid(row=0,column=22, sticky="ew")
+
+        finalPriceLabel.grid(row=0,column=23,padx=(0,10), sticky="ew")
+
+        freightCostLabel1.grid(row=0,column=24, sticky="ew")
+        freightCostLabel2.grid(row=1,column=24, sticky="ew")
+        freightSaleLabel1.grid(row=0,column=25, sticky="ew")
+        freightSaleLabel2.grid(row=1,column=25, sticky="ew")
+
+        
+
+        marginFreightLabel1.grid(row=0,column=26,padx=(0,10), sticky="ew")
+        marginFreightLabel2.grid(row=1,column=26,padx=(0,10), sticky="ew")
         ###################################################################
         ######################Defining List variables for various entry boxes######################
         global specialList
@@ -742,6 +820,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         specialList["E_ID2"] = []
         specialList["E_ID2"].append(e_id2)
 
+        
+
         e_len = []
         specialList["E_Length"] = []
         specialList["E_Length"].append(e_len)
@@ -750,9 +830,17 @@ def quoteGenerator(mainRoot,user,conn, df):
         specialList["E_Qty"] = []
         specialList["E_Qty"].append(e_qty)
 
+        e_cost = []
+        specialList["E_COST"] = []
+        specialList["E_COST"].append(e_cost)
+
         sellCostLBS = []
         specialList["E_Selling Cost/LBS"] = []
         specialList["E_Selling Cost/LBS"].append(sellCostLBS)
+
+        marginlbs = []
+        specialList["E_MarginLBS"] = []
+        specialList["E_MarginLBS"].append(marginlbs)
 
         e_uom = []
         specialList["E_UOM"] = []
@@ -773,6 +861,38 @@ def quoteGenerator(mainRoot,user,conn, df):
         finalCost = []
         specialList["E_Final Price"] = []
         specialList["E_Final Price"].append(finalCost)
+
+        freightIncured = []
+        specialList["E_freightIncured"] = []
+        specialList["E_freightIncured"].append(freightIncured)
+
+        freightCharged = []
+        specialList["E_freightCharged"] = []
+        specialList["E_freightCharged"].append(freightCharged)
+
+        
+
+        marginFreight = []
+        specialList["E_Margin_Freight"] = []
+        specialList["E_Margin_Freight"].append(marginFreight)
+
+        lot_serial_number = []
+        specialList["Lot_Serial_Number"] = []
+        specialList["Lot_Serial_Number"].append(lot_serial_number)
+
+        searchLocation = []
+        specialList["searchLocation"] = []
+        specialList["searchLocation"].append(searchLocation)
+
+        # searchGrade = []
+        # specialList["searchGrade"] = []
+        # specialList["searchGrade"].append(searchGrade)
+
+        # searchYield = []
+        # specialList["searchYield"] = []
+        # specialList["searchYield"].append(searchYield)
+
+        
 
         # specialList = [[quoteYesNo],[e_location], [e_type], [e_grade], [e_yield], [e_od], [e_id], [e_len], [e_qty], [sellCostLBS], [sellCostUOM],
         # [e_uom], [addCost], [leadTime], [finalCost]]
@@ -917,6 +1037,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
 
         #Moving horizontal scroll bar to initial position
+        entryCanvas.xview("moveto", 0)
+        root.update()
         entryCanvas.xview("moveto", 0)
 
         def on_closing():
