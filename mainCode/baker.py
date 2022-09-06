@@ -7,7 +7,7 @@ from datetime import date
 import sys
 import pandas as pd
 from pandastable import Table
-from Tools import dfMaker, resource_path, bakerMaker
+from Tools import dfMaker, resource_path, bakerMaker, starSearch, rangeSearch
 from sfTool import get_connection,get_cx_df, get_inv_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
@@ -416,8 +416,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 bakerDf = df.copy()
                 bakerDf["C_Quote Yes/No"], bakerDf["E_Location"], bakerDf["E_Type"],bakerDf["E_Spec"], bakerDf["E_Grade"], bakerDf["E_Yield"], bakerDf["E_OD1"], bakerDf["E_ID1"] = [None, None, None, None, None, None, None, None]
                 bakerDf["E_OD2"], bakerDf["E_ID2"] = [None, None]
-                bakerDf["E_Length"], bakerDf["E_Qty"], bakerDf["E_Selling Cost/LBS"], bakerDf["E_UOM"], bakerDf["E_Selling Cost/UOM"], bakerDf["E_Additional_Cost"] = [None, None, None, None, None, None]
-                bakerDf["E_LeadTime"], bakerDf["E_Final Price"] = [None, None]
+                bakerDf["E_Length"], bakerDf["E_Qty"], bakerDf["E_COST"] , bakerDf["E_MarginLBS"],bakerDf["E_Selling Cost/LBS"], bakerDf["E_UOM"] = [None, None, None, None, None, None]
+                bakerDf["E_Selling Cost/UOM"], bakerDf["E_Additional_Cost"], bakerDf["E_LeadTime"], bakerDf["E_Final Price"] = [None, None, None, None]
+                bakerDf["E_freightIncured"], bakerDf["E_freightCharged"], bakerDf["E_Margin_Freight"], bakerDf["Lot_Serial_Number"] = [None, None, None, None]
                 # bakerDf['Quote_Yes_No'], bakerDf['Location'], bakerDf['Type'],bakerDf['Spec'], bakerDf['Grade'], bakerDf['Yield'], bakerDf['OD'], bakerDf['ID'] = [None, None, None, None, None, None, None, None]
                 # bakerDf['Length'], bakerDf['Qty'], bakerDf['E_SELLING_COST/LBS'], bakerDf['UOM'], bakerDf["E_SELLING_COST/UOM"], bakerDf['ADDITIONAL_COST'] = [None, None, None, None, None, None]
                 # bakerDf['LEAD_TIME'], bakerDf['FINAL_PRICE'] = [None, None]
@@ -479,7 +480,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         
         def tempbakerDfUpdate():
             
-            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "E_OD2", "E_ID2"]
+            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "E_OD2", "E_ID2", "Lot_Serial_Number", "searchLocation"]
             for index in range(len(temp_bakerDf)):
                 for key in specialList.keys():
                     if key not in xlList:
@@ -618,8 +619,14 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 e_qty[row_number][0].configure(state='normal')
                 e_qty[row_number][1].set(temp_bakerDf["E_Qty"][index_num] if temp_bakerDf["E_Qty"][index_num]!=None else "")
                 root.update()
+                e_cost[row_number][0].configure(state='normal')
+                e_cost[row_number][1].set(temp_bakerDf["E_COST"][index_num] if temp_bakerDf["E_COST"][index_num]!=None else "")
+                root.update()
                 sellCostLBS[row_number][0].configure(state='normal')
                 sellCostLBS[row_number][1].set(temp_bakerDf["E_Selling Cost/LBS"][index_num] if temp_bakerDf["E_Selling Cost/LBS"][index_num]!=None else "")
+                root.update()
+                marginlbs[row_number][0].configure(state='normal')
+                marginlbs[row_number][1].set(temp_bakerDf["E_MarginLBS"][index_num] if temp_bakerDf["E_MarginLBS"][index_num]!=None else "")
                 root.update()
                 e_uom[row_number][0].configure(state='normal')
                 e_uom[row_number][1].set(temp_bakerDf["E_UOM"][index_num] if temp_bakerDf["E_UOM"][index_num]!=None else "")
@@ -632,6 +639,15 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 root.update()
                 finalCost[row_number][0].configure(state='normal')
                 finalCost[row_number][1].set(temp_bakerDf["E_Final Price"][index_num] if temp_bakerDf["E_Final Price"][index_num]!=None else "")
+                root.update()
+                freightIncured[row_number][0].configure(state='normal')
+                freightIncured[row_number][1].set(temp_bakerDf["E_freightIncured"][index_num] if temp_bakerDf["E_freightIncured"][index_num]!=None else "")
+                root.update()
+                freightCharged[row_number][0].configure(state='normal')
+                freightCharged[row_number][1].set(temp_bakerDf["E_freightCharged"][index_num] if temp_bakerDf["E_freightCharged"][index_num]!=None else "")
+                root.update()
+                marginFreight[row_number][0].configure(state='normal')
+                marginFreight[row_number][1].set(temp_bakerDf["E_Margin_Freight"][index_num] if temp_bakerDf["E_Margin_Freight"][index_num]!=None else "")
                 root.update()
             except Exception as e:
                 raise e
@@ -654,7 +670,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 # if row_num!=0:
                 if row_num == 1:
                     if not check:
-                        xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty"]
+                        xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "Lot_Serial_Number", "searchLocation"]
                         for key in specialList.keys():
                             
                             # specialList[key][0][-1][1].destroy()
@@ -768,6 +784,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 e_od2.append((None, None))
                 e_id2.append((None, None))
 
+                searchLocation.append((None, None))
+
                 # e_id[-1].config(textvariable="NA", state='disabled')
                 e_len.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = e_len[0][1]
@@ -781,38 +799,59 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 e_qty[-1][0]['validate']='key'
                 e_qty[-1][0]['validatecommand'] = (e_qty[-1][0].register(intChecker),'%P','%d')
                 # e_qty[-1].config(textvariable="NA", state='disabled')
-                sellCostLBS.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=10,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+
+                e_cost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=10,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_cost[-1][0]['validate']='key'
+                e_cost[-1][0]['validatecommand'] = (e_cost[-1][0].register(intFloat),'%P','%d')
+
+
+                sellCostLBS.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = sellCostLBS[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=10,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 sellCostLBS[-1][0]['validate']='key'
                 sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
                 # sellCostLBS[-1].config(textvariable="NA", state='disabled')
-                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+                marginlbs.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=12,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=13,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = e_uom[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=["Inch","Each"],frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 # e_uom[-1].config(textvariable="NA", state='disabled')
-                sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=12,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+                
+                sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = sellCostUOM[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=12,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 sellCostUOM[-1][0]['validate']='key'
                 sellCostUOM[-1][0]['validatecommand'] = (sellCostUOM[-1][0].register(intFloat),'%P','%d')
                 # sellCostUOM[-1].config(textvariable="NA", state='disabled')
-                addCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=13,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+                addCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = addCost[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=13,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 addCost[-1][0]['validate']='key'
                 addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
                 # addCost[-1].config(textvariable="NA", state='disabled')
-                leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+                leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = leadTime[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 # leadTime[-1].config(textvariable="NA", state='disabled')
-                finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+                finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
                 # finalCost[0].bind("<Enter>", jump_to_widget_top)
                 # temp_bakerDf = finalCost[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 finalCost[-1][0]['validate']='key'
                 finalCost[-1][0]['validatecommand'] = (finalCost[-1][0].register(intFloat),'%P','%d')
+
+                freightIncured.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                
+                freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+
+
+                
+
+                marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                lot_serial_number.append((None, None))
 
                 
                 if row_num==1:
@@ -854,7 +893,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 ptBaker.model.df.drop(ptBaker.model.df.tail(1).index,inplace=True)
                 ptBaker.redraw()
                 submitButton.configure(state='disable')
-                xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty"]
+                xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "Lot_Serial_Number", "searchLocation"]
                 for key in specialList.keys():
                     
                     # specialList[key][0][-1][1].destroy()
@@ -1109,6 +1148,11 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         locAddLb = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6", font=("Segoe UI", 10))
         emailLb = tk.Label(cxFrame,text="Email", bg = "#9BC2E6", font=("Segoe UI", 10))
         payTermLb = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6", font=("Segoe UI", 10))
+
+        #Adding Search button in cxFrame 2
+        starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
+        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
+
         mobileLb = tk.Label(cxFrame2, text="Mobile", bg = "#9BC2E6", font=("Segoe UI", 10))
         currencyLabel = tk.Label(cxFrame2,text="Currency", bg = "#9BC2E6", font=("Segoe UI", 10))
         # valLb = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -1125,7 +1169,10 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         payTermLb.grid(row=3,column=3)
         
         #label grid using cxFrame2
+        starButton.grid(row=0, column=0, pady=(20,0))
         mobileLb.grid(row=1, column=0, pady=(20,0))
+        rangeButton.grid(row=0,column=1, pady=(20,0))
+        currencyLabel.grid(row=1,column=1, pady=(20,0))
         currencyLabel.grid(row=1,column=1, pady=(20,0))
         remarksLabel.grid(row=1,column=2, pady=(20,0))#padx=(50,5)
         # valLb.grid(row=1,column=2, pady=(20,0))#5x=(50,5)
@@ -1144,8 +1191,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         
         #Currency
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5)
-        
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text='$')
+        currency.delete(0, tk.END)
+        currency.insert(tk.END,'$')
         # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
         currency.grid(row=2,column=1,pady=5)
         #Remarks
@@ -1217,8 +1265,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         bakerDf = pd.DataFrame(nonList,columns=['Work Order', 'Dlv Date',	'MaterialNumber', 'Materialdescription', 'Qty', 'RM', 'RMQty', 'Saw Cut'])
         bakerDf["C_Quote Yes/No"], bakerDf["E_Location"], bakerDf["E_Type"],bakerDf["E_Spec"], bakerDf["E_Grade"], bakerDf["E_Yield"], bakerDf["E_OD1"], bakerDf["E_ID1"] = [None, None, None, None, None, None, None, None]
         bakerDf["E_OD2"], bakerDf["E_ID2"] = [None, None]
-        bakerDf["E_Length"], bakerDf["E_Qty"], bakerDf["E_Selling Cost/LBS"], bakerDf["E_UOM"], bakerDf["E_Selling Cost/UOM"], bakerDf["E_Additional_Cost"] = [None, None, None, None, None, None]
-        bakerDf["E_LeadTime"], bakerDf["E_Final Price"] = [None, None]
+        bakerDf["E_Length"], bakerDf["E_Qty"], bakerDf["E_COST"] , bakerDf["E_MarginLBS"],bakerDf["E_Selling Cost/LBS"], bakerDf["E_UOM"] = [None, None, None, None, None, None]
+        bakerDf["E_Selling Cost/UOM"], bakerDf["E_Additional_Cost"], bakerDf["E_LeadTime"], bakerDf["E_Final Price"] = [None, None, None, None]
+        bakerDf["E_freightIncured"], bakerDf["E_freightCharged"], bakerDf["E_Margin_Freight"], bakerDf["Lot_Serial_Number"] = [None, None, None, None]
         # bakerDf['Quote_Yes_No'], bakerDf['Location'], bakerDf['Type'],bakerDf['Spec'], bakerDf['Grade'], bakerDf['Yield'], bakerDf['OD'], bakerDf['ID'] = [None, None, None, None, None, None, None, None]
         # bakerDf['Length'], bakerDf['Qty'], bakerDf['E_SELLING_COST/LBS'], bakerDf['UOM'], bakerDf["E_SELLING_COST/UOM"], bakerDf['ADDITIONAL_COST'] = [None, None, None, None, None, None]
         # bakerDf['LEAD_TIME'], bakerDf['FINAL_PRICE'] = [None, None]
@@ -1259,17 +1308,34 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         e_idLabel = tk.Label(entryFrame, text="ID", bg= "#DDEBF7")
         e_Length = tk.Label(entryFrame, text="Length", bg= "#DDEBF7")
         e_Qty = tk.Label(entryFrame, text="Qty", bg= "#DDEBF7")
+
+        e_costLabel = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
+
+
         sellcostLbsLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostLbsLabel2 = tk.Label(entryFrame, text="Cost/LBS", bg= "#DDEBF7")
+
+        marginLBSLabel1 = tk.Label(entryFrame, text="Margin/LBS", bg= "#DDEBF7")
+        marginLBSLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
+
         uom = tk.Label(entryFrame, text="UOM", bg= "#DDEBF7")
         sellcostUOMLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
         addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        
         finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
 
+        freightCostLabel1 = tk.Label(entryFrame, text="Freight", bg= "#DDEBF7")
+        freightCostLabel2 = tk.Label(entryFrame, text="Incured", bg= "#DDEBF7")
+        freightSaleLabel1 = tk.Label(entryFrame, text="Freight to", bg= "#DDEBF7")
+        freightSaleLabel2 = tk.Label(entryFrame, text="be Charged", bg= "#DDEBF7")
+        
+        
 
+        marginFreightLabel1 = tk.Label(entryFrame, text="Freight Margin", bg= "#DDEBF7")
+        marginFreightLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
 
         # specLabel.grid(row=0,column=0,padx=(15,0), sticky="ew")
         # gradeLabel.grid(row=0,column=1, sticky="ew")
@@ -1289,15 +1355,33 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         e_idLabel.grid(row=0,column=7, sticky="ew")
         e_Length.grid(row=0,column=8, sticky="ew")
         e_Qty.grid(row=0,column=9, sticky="ew")
-        sellcostLbsLabel1.grid(row=0,column=10, sticky="ew")
-        sellcostLbsLabel2.grid(row=1,column=10, sticky="ew")
-        uom.grid(row=0,column=11, sticky="ew")
-        sellcostUOMLabel1.grid(row=0,column=12, sticky="ew")
-        sellcostUOMLabel2.grid(row=1,column=12, sticky="ew")
-        addCostLabel1.grid(row=0,column=13, sticky="ew")
-        addCostLabel2.grid(row=1,column=13, sticky="ew")
-        leadTimeLAbel.grid(row=0,column=14, sticky="ew")
-        finalPriceLabel.grid(row=0,column=15,padx=(0,10), sticky="ew")
+
+        e_costLabel.grid(row=0,column=10, sticky="ew")
+
+        sellcostLbsLabel1.grid(row=0,column=11, sticky="ew")
+        sellcostLbsLabel2.grid(row=1,column=11, sticky="ew")
+
+        marginLBSLabel1.grid(row=0,column=12, sticky="ew")
+        marginLBSLabel2.grid(row=1,column=12, sticky="ew")
+
+        uom.grid(row=0,column=13, sticky="ew")
+        sellcostUOMLabel1.grid(row=0,column=14, sticky="ew")
+        sellcostUOMLabel2.grid(row=1,column=14, sticky="ew")
+        addCostLabel1.grid(row=0,column=15, sticky="ew")
+        addCostLabel2.grid(row=1,column=15, sticky="ew")
+        leadTimeLAbel.grid(row=0,column=16, sticky="ew")
+
+        finalPriceLabel.grid(row=0,column=17,padx=(0,10), sticky="ew")
+
+        freightCostLabel1.grid(row=0,column=18, sticky="ew")
+        freightCostLabel2.grid(row=1,column=18, sticky="ew")
+        freightSaleLabel1.grid(row=0,column=19, sticky="ew")
+        freightSaleLabel2.grid(row=1,column=19, sticky="ew")
+
+        
+
+        marginFreightLabel1.grid(row=0,column=20,padx=(0,10), sticky="ew")
+        marginFreightLabel2.grid(row=1,column=20,padx=(0,10), sticky="ew")
         ###################################################################
         ######################Defining List variables for various entry boxes######################
         global specialList
@@ -1392,9 +1476,20 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         specialList["E_Qty"] = []
         specialList["E_Qty"].append(e_qty)
 
+        #Adding for margin
+        e_cost = []
+        specialList["E_COST"] = []
+        specialList["E_COST"].append(e_cost)
+
         sellCostLBS = []
         specialList["E_Selling Cost/LBS"] = []
         specialList["E_Selling Cost/LBS"].append(sellCostLBS)
+
+        #Adding for margin
+        marginlbs = []
+        specialList["E_MarginLBS"] = []
+        specialList["E_MarginLBS"].append(marginlbs)
+
 
         e_uom = []
         specialList["E_UOM"] = []
@@ -1415,6 +1510,29 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         finalCost = []
         specialList["E_Final Price"] = []
         specialList["E_Final Price"].append(finalCost)
+
+        #Adding for margin
+        freightIncured = []
+        specialList["E_freightIncured"] = []
+        specialList["E_freightIncured"].append(freightIncured)
+
+        freightCharged = []
+        specialList["E_freightCharged"] = []
+        specialList["E_freightCharged"].append(freightCharged)
+
+        
+
+        marginFreight = []
+        specialList["E_Margin_Freight"] = []
+        specialList["E_Margin_Freight"].append(marginFreight)
+
+        lot_serial_number = []
+        specialList["Lot_Serial_Number"] = []
+        specialList["Lot_Serial_Number"].append(lot_serial_number)
+
+        searchLocation = []
+        specialList["searchLocation"] = []
+        specialList["searchLocation"].append(searchLocation)
 
         # specialList = [[quoteYesNo],[e_location], [e_type], [e_grade], [e_yield], [e_od], [e_id], [e_len], [e_qty], [sellCostLBS], [sellCostUOM],
         # [e_uom], [addCost], [leadTime], [finalCost]]

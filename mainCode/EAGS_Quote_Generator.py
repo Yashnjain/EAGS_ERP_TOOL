@@ -76,50 +76,50 @@ class App():
         w_scale_factor = screen_width/1920
         h_scale_factor = screen_height/1080
         image1 = Image.open(entry1_path)
-        # image1 = image1.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.ANTIALIAS)
-        image1 = image1.resize((420,199), Image.ANTIALIAS)
+        # image1 = image1.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
+        image1 = image1.resize((420,199), Image.Resampling.LANCZOS)
         top_img = ImageTk.PhotoImage(image1)
 
         entry1New_path = resource_path("Entry1New.png")
         image1New = Image.open(entry1New_path)
-        # image1New = image1New.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.ANTIALIAS)
-        image1New = image1New.resize((420,199), Image.ANTIALIAS)
+        # image1New = image1New.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
+        image1New = image1New.resize((420,199), Image.Resampling.LANCZOS)
         top_imgNew = ImageTk.PhotoImage(image1New)
 
         entry2_path = resource_path("Entry2.png")
         image2 = Image.open(entry2_path)
-        # image2 = image2.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.ANTIALIAS)
-        image2 = image2.resize((204,423), Image.ANTIALIAS)
+        # image2 = image2.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
+        image2 = image2.resize((204,423), Image.Resampling.LANCZOS)
         left_img = ImageTk.PhotoImage(image2)
 
         entry2New_path = resource_path("Entry2New.png")
         image2New = Image.open(entry2New_path)
-        # image2New = image2New.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.ANTIALIAS)
-        image2New = image2New.resize((204,423), Image.ANTIALIAS)
+        # image2New = image2New.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
+        image2New = image2New.resize((204,423), Image.Resampling.LANCZOS)
         left_imgNew = ImageTk.PhotoImage(image2New)
 
         entry3_path = resource_path("Entry3.png")
         image3 = Image.open(entry3_path)
-        # image3 = image3.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.ANTIALIAS)
-        image3 = image3.resize((204,423), Image.ANTIALIAS)
+        # image3 = image3.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
+        image3 = image3.resize((204,423), Image.Resampling.LANCZOS)
         right_img = ImageTk.PhotoImage(image3)
 
         entry3New_path = resource_path("Entry3New.png")
         image3New = Image.open(entry3New_path)
-        # image3New = image3New.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.ANTIALIAS)
-        image3New = image3New.resize((204,423), Image.ANTIALIAS)
+        # image3New = image3New.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
+        image3New = image3New.resize((204,423), Image.Resampling.LANCZOS)
         right_imgNew = ImageTk.PhotoImage(image3New)
 
         entry4_path = resource_path("Entry4.png")
         image4 = Image.open(entry4_path)
-        # image4 = image4.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.ANTIALIAS)
-        image4 = image4.resize((420,199), Image.ANTIALIAS)
+        # image4 = image4.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
+        image4 = image4.resize((420,199), Image.Resampling.LANCZOS)
         bottom_img = ImageTk.PhotoImage(image4)
 
         entry4New_path = resource_path("Entry4New.png")
         image4New = Image.open(entry4New_path)
-        # image4New = image4New.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.ANTIALIAS)
-        image4New = image4New.resize((420,199), Image.ANTIALIAS)
+        # image4New = image4New.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
+        image4New = image4New.resize((420,199), Image.Resampling.LANCZOS)
         bottom_imgNew = ImageTk.PhotoImage(image4New)
 
 
@@ -127,8 +127,8 @@ class App():
 
         center_img_path = resource_path("center.png")
         center_img = Image.open(center_img_path)
-        # center_img = center_img.resize((int(285*w_scale_factor),int(285*h_scale_factor)), Image.ANTIALIAS)
-        center_img = center_img.resize((285,285), Image.ANTIALIAS)
+        # center_img = center_img.resize((int(285*w_scale_factor),int(285*h_scale_factor)), Image.Resampling.LANCZOS)
+        center_img = center_img.resize((285,285), Image.Resampling.LANCZOS)
         cent_photo = ImageTk.PhotoImage(center_img)
 
 

@@ -578,6 +578,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text='$')
     
         # currencyVar.set("$")
+        currency.delete(0, tk.END)
         currency.insert(tk.END,'$')
         # currency = ttk.Entry(cxFrame2, textvariable=currencyVar, foreground='blue', background = 'white',width = 10, font=('Segoe UI', 10))
         currency.grid(row=2,column=1,pady=5)
@@ -879,7 +880,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         lot_serial_number = []
         specialList["Lot_Serial_Number"] = []
         specialList["Lot_Serial_Number"].append(lot_serial_number)
-
+        #For range search
         searchLocation = []
         specialList["searchLocation"] = []
         specialList["searchLocation"].append(searchLocation)

@@ -561,7 +561,7 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
                             rowList.append(specialList[col][0][i][0])
                         else:
                             rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
-                            if specialList[col][0][i][0].get() == "" and (col.upper() != "C_YIELD" and col.upper() != "E_YIELD" and col.upper() != "C_Specification" and col.upper() != "C_Grade"):
+                            if specialList[col][0][i][0].get() == "" and (col.upper() != "C_YIELD" and col.upper() != "E_YIELD" and col.upper() != "C_SPECIFICATION" and col.upper() != "C_GRADE"):
                                 messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
                                 return []
                 rowList.extend(otherList)#insert validity and additional comments
@@ -631,7 +631,8 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
 
             columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
             'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
-            'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER', 'INSERT_DATE']
+            'E_QTY', 'E_COST', 'E_SELLING_COST/LBS', 'E_MARGIN_LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'E_FREIGHT_INCURED', 'E_FREIGHT_CHARGED',
+            'E_MARGIN_FREIGHT','LOT_SERIAL_NUMBER', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER', 'INSERT_DATE']
 
             # columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL',
             #  'CUS_CITY_ZIP','C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2',
@@ -640,8 +641,9 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
             row = []
             bakerxlDf = ptBaker.model.df.copy()
             bakerxlDf['RM Offer'], bakerxlDf['Price'], bakerxlDf['Location'], bakerxlDf['Lead Time'], bakerxlDf['Remarks'] = [None, None, None, None, None]
-            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty"]
+            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty", 'Lot_Serial_Number']
             colList = list(specialList.keys())
+            
             
             #Inserting quote number in bakerxlDf
             bakerxlDf.insert(0, 'QUOTENO', new_quoteNo)
@@ -666,7 +668,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                 for col in colList:
                     #Adding condition for not including extracted cx details
                     # if col not in xlList:
-                    if col == 'C_QRD' or col == 'searchYield' or col == 'searchGrade':
+                    if col == 'C_QRD' or col == 'searchYield' or col == 'searchGrade' or col == 'searchLocation':
                         pass
                     elif col == 'E_OD2' or col == 'E_ID2' or col in xlList:
                         print(specialList[col][0][i][0])
@@ -675,10 +677,11 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                             messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
                             return []
                     else:
-                        print(specialList[col][0][i][0].get())
+                        
                         if specialList[col][0][i][0].get() == "" and col!="E_Yield":
                             messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
                             return []
+                        
                         if col == 'E_Spec':
                             rowList.append(specialList[col][0][i][0].get().upper())
                         else:
@@ -1004,33 +1007,72 @@ def starSearch(root, df):
                 yieldField = yieldVar.get()
                 od = odVar.get()
                 idField = idVar.get()
+
+                filtered_df = df.copy()
+
+                #Filtering based on Grade
+                if grade == "*":
+                    pass
+
                 
-                if grade != "*" and yieldField != "*" and od != "*" and idField != "*":
-                    filtered_df = df.loc[
-                                        df["global_grade"].str.startswith(grade.replace('*','')) &
-                                        df["heat_condition"].str.startswith(yieldField.replace('*','')) &
-                                        df["od_in"].str.startswith(od.replace('*','')) &
-                                        df["od_in_2"].str.startswith(idField.replace('*',''))
-                                    ]
+                elif "*" not in grade:
+                    filtered_df  = filtered_df[ (filtered_df["global_grade"]==grade)]
+                else:# gradeValue != "*":
+                    filtered_df = filtered_df.loc[df["global_grade"].str.startswith(grade.replace('*',''))]
+
+                if len(filtered_df)!=0:
+                    #Filtering based on Yield
+                    if yieldField == "*":
+                            pass
+                    elif "*" not in yieldField:
+                        filtered_df  = filtered_df[ (filtered_df["heat_condition"]==yieldField)]
+                    else: # yieldValue != "*":
+                        filtered_df = filtered_df.loc[df["heat_condition"].str.startswith(yieldField.replace('*',''))]
+                    if len(filtered_df)!=0:
+                        #Filtering based on od
+                        if od == "*":
+                                pass
+                        elif "*" not in od:
+                            filtered_df  = filtered_df[ (filtered_df["od_in"]==od)]
+                        else: # yieldValue != "*":
+                            filtered_df = filtered_df.loc[df["od_in"].str.startswith(od.replace('*',''))]
+                        if len(filtered_df)!=0:
+                            #Filtering based on Yield
+                            if idField == "*":
+                                    pass
+                            elif "*" not in idField:
+                                filtered_df  = filtered_df[ (filtered_df["od_in_2"]==idField)]
+                            else: # yieldValue != "*":
+                                filtered_df = filtered_df.loc[df["od_in_2"].str.startswith(idField.replace('*',''))]
+
+                
+                
+                # if grade != "*" and yieldField != "*" and od != "*" and idField != "*":
+                #     filtered_df = df.loc[
+                #                         df["global_grade"].str.startswith(grade.replace('*','')) &
+                #                         df["heat_condition"].str.startswith(yieldField.replace('*','')) &
+                #                         df["od_in"].str.startswith(od.replace('*','')) &
+                #                         df["od_in_2"].str.startswith(idField.replace('*',''))
+                #                     ]
                     
-                elif grade != "*" and yieldField != "*" and od != "*":
-                    filtered_df  = df.loc[
-                                            df["global_grade"].str.startswith(grade.replace('*','')) &
-                                            df["heat_condition"].str.startswith(yieldField.replace('*','')) &
-                                            df["od_in"].str.startswith(od.replace('*',''))
-                                        ]
-                elif grade != "*" and yieldField != "*":
-                    filtered_df  = df.loc[
-                                            df["global_grade"].str.startswith(grade.replace('*','')) &
-                                            df["heat_condition"].str.startswith(yieldField.replace('*',''))
-                                        ]
-                elif grade != "*":
-                    filtered_df  = df.loc[
-                                            df["global_grade"].str.startswith(grade.replace('*',''))
-                                        ]
-                else:
-                    messagebox.showerror("Error", f"Please check search query and try again")
-                    return
+                # elif grade != "*" and yieldField != "*" and od != "*":
+                #     filtered_df  = df.loc[
+                #                             df["global_grade"].str.startswith(grade.replace('*','')) &
+                #                             df["heat_condition"].str.startswith(yieldField.replace('*','')) &
+                #                             df["od_in"].str.startswith(od.replace('*',''))
+                #                         ]
+                # elif grade != "*" and yieldField != "*":
+                #     filtered_df  = df.loc[
+                #                             df["global_grade"].str.startswith(grade.replace('*','')) &
+                #                             df["heat_condition"].str.startswith(yieldField.replace('*',''))
+                #                         ]
+                # elif grade != "*":
+                #     filtered_df  = df.loc[
+                #                             df["global_grade"].str.startswith(grade.replace('*',''))
+                #                         ]
+                # else:
+                #     messagebox.showerror("Error", f"Please check search query and try again")
+                #     return
                 if len(filtered_df):
                     filtered_df = filtered_df[["global_grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in']]
                     filtered_df = filtered_df.sort_values(["global_grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, False])
