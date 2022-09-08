@@ -1447,7 +1447,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 rowclicked_single = pt.get_row_clicked(e)
                 print(f"Row clicked is {rowclicked_single+1}")
                 if len(specialList):
-                            
+                    if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:
                             varname = focused_entry.cget("textvariable")
                             focused_var = focused_entry.getvar(varname)
                             key, index = keyFinder2(specialList,(focused_entry,varname))
