@@ -24,9 +24,9 @@ def quoteRevision(root,user,conn,inv_df):
             quotedf=getfullquote(conn,quote_number)
             quoteList.destroy()
             if 'Baker' in quotedf['QUOTENO'][0]:
-                bakerQuoteGenerator(root,user,conn,quotedf,quote_number)
+                bakerQuoteGenerator(root,user,conn,quotedf,quote_number, inv_df)
             else:    
-                general_quote_revision(root,user,conn,quotedf,quote_number)
+                general_quote_revision(root,user,conn,quotedf,quote_number, inv_df)
             print("sdfgvsd")
 
         def speech_recognizer(): 

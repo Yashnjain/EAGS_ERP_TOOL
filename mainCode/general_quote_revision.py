@@ -15,6 +15,7 @@ import os, shutil
 from tkPDFViewer import tkPDFViewer as pdf
 import ctypes
 from mail import send_mail
+from Tools import starSearch, rangeSearch
 from shpUploader import shpUploader
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
@@ -75,7 +76,7 @@ def keyFinder(dict, tupleValue):
 
 
 
-def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
+def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
     try:
 
         # def list_up(specialList,cx_type_list_var,tupVar):
@@ -84,6 +85,42 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         #         specialList[key][0][index][1].set("")
         #         messagebox.showerror(title="Wrong Value",message="Please enter value from list only!")
         #     return
+
+        def margin_cal(specialList, tupVar):
+            try:
+                if len(specialList):
+                        key, index = keyFinder(specialList,tupVar) 
+                if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '':
+                                        salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
+                                        costPrice = float(specialList["E_COST"][0][index][0].get())
+                                        margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
+                                        specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
+                                        specialList["E_UOM"][0][index][0].focus()
+                                        # breakCheck = True
+                else:
+                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
+                    return
+            except Exception as ex:
+                raise ex
+
+        def freight_cal(specialList, tupVar):
+            try:
+                if len(specialList):
+                        key, index = keyFinder(specialList,tupVar) 
+                if specialList["E_freightIncured"][0][index][0].get() != '' and specialList["E_freightCharged"][0][index][0].get() != '':
+                                        #Calculating Freight Margin
+                                        fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
+                                        fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
+                                        if fcostPrice != 0 and fsalePrice != 0:
+                                            margin_freight = round(((fsalePrice - fcostPrice)/fsalePrice) * 100, 2)
+                                        specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
+                                        
+                                        # breakCheck = True
+                else:
+                    messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes")
+                    return 
+            except Exception as ex:
+                raise ex          
 
         def addCostCalc(specialList,index):
             try:
@@ -127,9 +164,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                         else:
                             sellCostUOM = round((sellCostLBS * mid_formula),2)
                             sellCostUOM = sellCostUOM *12
-                    elif specialList["E_Type"][0][index][1].get() == "BR" or specialList["E_Type"][0][index][1].get() == "HR" or specialList["E_Type"][0][index][1].get() == "HB" or specialList["E_Type"][0][index][1].get() == "HM":
+                    elif specialList["E_Type"][0][index][1].get() == "BR" or specialList["E_Type"][0][index][1].get() == "HR" or specialList["E_Type"][0][index][1].get() == "HB":
                         # BR
-                        mid_formula = (e_od*e_od*2.71)/12
+                        # mid_formula = (od*od*2.71)/12
                         mid_formula = ((e_od-wt)*wt*10.68)/12
                         if uom == "Each":
                             # For Each: 
@@ -157,7 +194,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                 newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
                             & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
                             & (df["od_in"]==float(specialList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(specialList['E_ID1'][0][index][0].get()))]
-                newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
+                newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
                 newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
                 newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
                 newDf= newDf[newDf['available_pieces']>0]
@@ -413,7 +450,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     if check:
                         e_od1[i][1].set(quotedf['E_OD1'][i])
                     cx_ent_od1.bind('<1>',lambda a:tui_hr_cehcker(specialList,quotedf,row_num,tupVar = (cx_ent_od1, cx_od1_var),df=df))
-
+                    cx_ent_od1.bind('<FocusIn>',remember_focus)
                  
 
                     # E_OD1=quotedf['E_OD1'][i]
@@ -437,7 +474,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     # e_id1[row_num][0].bind_class("mytag", '<1>',lambda a:display(specialList,tupVar = (e_id1[-1][0], e_id1[-1][1]),df=df))
 
                     cx_ent_id1.bind('<1>',lambda a:display(specialList,tupVar = (cx_ent_id1, cx_id1_var),df=df))
-                    
+                    cx_ent_id1.bind('<FocusIn>',remember_focus)
 
 
                     # E_ID1=quotedf['E_ID1'][i]
@@ -451,12 +488,13 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     # e_id[-1].config(textvariable="NA", state='disabled')
 
                     cx_lnth_var = tk.StringVar()
-                    e_len.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_lnth_var), cx_lnth_var))
+                    e_len_ent = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_lnth_var)
+                    e_len.append((e_len_ent, cx_lnth_var))
                     e_len[-1][0].grid(row=2+row_num,column=14)
                     e_len[-1][0]['validatecommand'] = (e_len[-1][0].register(intFloat),'%P','%d')
                     if check:
                         e_len[i][1].set(quotedf['E_LENGTH'][i])
-
+                    e_len_ent.bind('<FocusIn>',remember_focus)
                     # E_LENGTH=quotedf['E_LENGTH'][i]
                     # e_len.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                     # e_len[-1][0]['validate']='key'
@@ -468,12 +506,29 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
 
                     # e_len[-1].config(textvariable="NA", state='disabled')
                     cx_qty_var = tk.StringVar()
-                    e_qty.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_qty_var), cx_qty_var))
+                    e_qty_ent = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_qty_var)
+                    e_qty.append((e_qty_ent, cx_qty_var))
                     e_qty[-1][0].grid(row=2+row_num,column=15)
                     e_qty[-1][0]['validatecommand'] = (e_qty[-1][0].register(intFloat),'%P','%d')
                     if check:
                         e_qty[i][1].set(quotedf['E_QTY'][i])
 
+                    e_qty_ent.bind('<FocusIn>',remember_focus)
+
+                    # e_cost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                    e_cost_var = tk.StringVar()
+                    e_cost_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=e_cost_var)
+                    e_cost.append((e_cost_entry_var, e_cost_var))
+                    e_cost[-1][0].grid(row=2+row_num,column=16)
+                    e_cost[-1][0]['validate']='key'
+                    e_cost[-1][0]['validatecommand'] = (e_cost[-1][0].register(intFloat),'%P','%d')
+                    if check:
+                        e_cost[i][1].set(quotedf['E_COST'][i])
+
+                    # cx_ent_finalcost.bind('<1>',lambda a:formulaCalc(specialList,tupVar = (cx_ent_finalcost, cx_fc_var)))
+                    e_cost_entry_var.bind("<Leave>", lambda a:margin_cal(specialList,tupVar = (e_cost_entry_var, e_cost_var)))
+                    e_cost_entry_var.bind("<Tab>", lambda a:margin_cal(specialList,tupVar = (e_cost_entry_var, e_cost_var)))
+               
                     # E_QTY=quotedf['E_QTY'][i]
                     # e_qty.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                     # e_qty[-1][0]['validate']='key'
@@ -482,14 +537,24 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
 
                     # e_qty[-1].config(textvariable="NA", state='disabled')
                     cx_scl_var = tk.StringVar()
-                    sellCostLBS.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_scl_var), cx_scl_var))
-                    sellCostLBS[-1][0].grid(row=2+row_num,column=16)
+                    cx_scl_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_scl_var)
+                    sellCostLBS.append((cx_scl_entry_var, cx_scl_var))
+                    sellCostLBS[-1][0].grid(row=2+row_num,column=17)
                     sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
                     if check:
                         sellCostLBS[i][1].set(quotedf['E_SELLING_COST/LBS'][i])
 
+                    cx_scl_entry_var.bind("<Leave>", lambda a:margin_cal(specialList,tupVar = (cx_scl_entry_var, cx_scl_var)))
+                    cx_scl_entry_var.bind("<Tab>", lambda a:margin_cal(specialList,tupVar = (cx_scl_entry_var, cx_scl_var)))
 
-
+                    # marginlbs.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                    marginlbs_var = tk.StringVar()
+                    marginlbs.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=marginlbs_var), marginlbs_var))
+                    marginlbs[-1][0].grid(row=2+row_num,column=18)
+                    marginlbs[-1][0]['validate']='key'
+                    marginlbs[-1][0]['validatecommand'] = (marginlbs[-1][0].register(intFloat),'%P','%d')
+                    if check:
+                        marginlbs[i][1].set(quotedf['E_MARGIN_LBS'][i])
                     # E_SELLING_COST_LBS=quotedf['E_SELLING_COST/LBS'][i]
                     # sellCostLBS.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                     # sellCostLBS[-1][0]['validate']='key'
@@ -504,7 +569,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     cx_uom_var_list = ["Inch","Each","Foot"]
                     cx_uom_entry_var = ttk.Combobox(entryFrame, background='white', font=('Segoe UI', 10), justify='center',textvariable=cx_uom_var,values=cx_uom_var_list, width=5)
                     e_uom.append((cx_uom_entry_var, cx_uom_var))
-                    e_uom[-1][0].grid(row=2+row_num,column=17)
+                    e_uom[-1][0].grid(row=2+row_num,column=19)
                     if check:
                         cx_uom_entry_var.insert(tk.END,str(quotedf['E_UOM'][i]))
                     # cx_uom_entry_var.bind("<Leave>",lambda a:list_up(specialList,cx_uom_var_list,tupVar = (cx_uom_entry_var, cx_uom_var)))
@@ -520,7 +585,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
 
                     cx_cuom_var = tk.StringVar()
                     sellCostUOM.append((ttk.Entry(entryFrame, width=8, validate = "key",textvariable=cx_cuom_var), cx_cuom_var))
-                    sellCostUOM[-1][0].grid(row=2+row_num,column=18)
+                    sellCostUOM[-1][0].grid(row=2+row_num,column=20)
                     sellCostUOM[-1][0]['validatecommand'] = (sellCostUOM[-1][0].register(intFloat),'%P','%d')
                     if check:
                         sellCostUOM[i][1].set(quotedf['E_SELLING_COST/UOM'][i])
@@ -535,7 +600,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     # sellCostUOM[-1].config(textvariable="NA", state='disabled')
                     cx_ac_var = tk.StringVar()
                     addCost.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=cx_ac_var), cx_ac_var))
-                    addCost[-1][0].grid(row=2+row_num,column=19)
+                    addCost[-1][0].grid(row=2+row_num,column=21)
                     addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
                     if check:
                         addCost[i][1].set(quotedf['E_ADDITIONAL_COST'][i])
@@ -550,7 +615,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     # addCost[-1].config(textvariable="NA", state='disabled')
                     cx_lt_var = tk.StringVar()
                     leadTime.append((ttk.Entry(entryFrame, width=10, validate = "key",textvariable=cx_lt_var), cx_lt_var))
-                    leadTime[-1][0].grid(row=2+row_num,column=20)
+                    leadTime[-1][0].grid(row=2+row_num,column=22)
                     if check:
                         leadTime[i][1].set(quotedf['LEAD_TIME'][i])
                     # LEAD_TIME=quotedf['LEAD_TIME'][i]
@@ -562,13 +627,47 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     cx_fc_var = tk.StringVar()
                     cx_ent_finalcost = ttk.Entry(entryFrame, width=8, validate = "key",textvariable=cx_fc_var)
                     finalCost.append((cx_ent_finalcost, cx_fc_var))
-                    finalCost[-1][0].grid(row=2+row_num,column=21)
+                    finalCost[-1][0].grid(row=2+row_num,column=23)
                     finalCost[-1][0]['validatecommand'] = (finalCost[-1][0].register(intFloat),'%P','%d')
                     if check:
                         finalCost[i][1].set(quotedf['E_FINAL_PRICE'][i])
                     
                         
                     cx_ent_finalcost.bind('<1>',lambda a:formulaCalc(specialList,tupVar = (cx_ent_finalcost, cx_fc_var)))
+
+
+                    # freightIncured.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=24,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                    freightIncured_var = tk.StringVar()
+                    freightIncured_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=freightIncured_var)
+                    freightIncured.append((freightIncured_entry_var, freightIncured_var))
+                    freightIncured[-1][0].grid(row=2+row_num,column=24)
+                    if check:
+                        freightIncured[i][1].set(quotedf['E_FREIGHT_INCURED'][i])
+
+                    freightIncured_entry_var.bind("<Leave>", lambda a:freight_cal(specialList,tupVar = (freightIncured_entry_var, freightIncured_var)))    
+                    freightIncured_entry_var.bind("<Tab>", lambda a:freight_cal(specialList,tupVar = (freightIncured_entry_var, freightIncured_var)))    
+
+                    # freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=25,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                    freightCharged_var = tk.StringVar()
+                    freightCharged_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=freightCharged_var)
+                    freightCharged.append((freightCharged_entry_var, freightCharged_var))
+                    freightCharged[-1][0].grid(row=2+row_num,column=25)
+                    if check:
+                        freightCharged[i][1].set(quotedf['E_FREIGHT_CHARGED'][i])
+
+                    freightIncured_entry_var.bind("<Leave>", lambda a:freight_cal(specialList,tupVar = (freightCharged_entry_var, freightCharged_var)))
+                    freightIncured_entry_var.bind("<Tab>", lambda a:freight_cal(specialList,tupVar = (freightCharged_entry_var, freightCharged_var)))
+
+                    # marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=26,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                    marginFreight_var = tk.StringVar()
+                    marginFreight.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=marginFreight_var), marginFreight_var))
+                    marginFreight[-1][0].grid(row=2+row_num,column=26)
+                    if check:
+                        marginFreight[i][1].set(quotedf['E_MARGIN_FREIGHT'][i])
+                    
+                    lot_serial_number.append((None, None))
 
                     # E_FINAL_PRICE=quotedf['E_FINAL_PRICE'][i]
                     # finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=21,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -636,9 +735,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     # Adding pdf path and width and height.
                     # zoom_scale.pack(fill='y', side='right')
                     # zoom_scale.set(10)
-                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120, zoomDPI=100)
+                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120)
                     pdfframe.pack()
-                    pdfRoot.state('zoomed')
                     submitButton.configure(state='normal')
                 else:
                     messagebox.showerror("Error", "Empty dataframe was given in input")
@@ -655,22 +753,21 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
                     
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
-                    # current_work_dir = os.getcwd()
+                    current_work_dir = os.getcwd()
                     # current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".pdf"
                     # save_dir = current_work_dir+"\\"+cx_init_name
                     # if not os.path.exists(save_dir):
                     #     os.mkdir(save_dir)
+                    # os.rename(pdf_path,save_dir+"\\"+filename)
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
                     desktopDir = os.path.join('C:', desktopDir)
                     if not os.path.exists(desktopDir):
                         os.mkdir(desktopDir)
-
-                    shpUploader(pdf_path, filename) 
-                    shutil.move(pdf_path,desktopDir+"\\"+filename)
-                    
                     # shutil.copy(save_dir+"\\"+filename, desktopDir)
+                    shpUploader(pdf_path,filename)
+                    shutil.move(pdf_path,desktopDir+"\\"+filename)
                     send_mail(receiver_email = user[-1], mail_subject=f"ALERT Revision generated by {user[0]} for {quoteDf['QUOTENO'][0]}", 
                     mail_body= f"{user[0]} has generated revision for quote number {quoteDf['QUOTENO'][0]}, initial quote was {quote_number}  on {str(date.today())}",
                     attachment_locations=[desktopDir+"\\"+filename])
@@ -681,6 +778,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
             except Exception as e:
                 raise e
 
+        def remember_focus(event):
+            global focused_entry
+            focused_entry = event.widget
         mainRoot.withdraw()
         global row_num
         row_num=0
@@ -691,7 +791,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         
         # df = pd.read_excel("sampleInventory.xlsx")
         # Getting Cx Dataframe
-        cx_df = get_cx_df(conn,table = CX_TABLE)
+        # cx_df = get_cx_df(conn,table = CX_TABLE)
         # cx_df = pd.read_excel("cxDatabase.xlsx")
 
         count = 0
@@ -845,8 +945,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None,None,None, None, None]]
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number'])
+        nonList = [[None,None,None,None,None,None,None]]
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
         pt.cellwidth=145
@@ -891,6 +991,11 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         lb4 = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6")
         lb5 = tk.Label(cxFrame,text="Email", bg = "#9BC2E6")
         lb6 = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6")
+
+        #Adding Search button in cxFrame 2
+        # starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
+        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
+
         lb_ex= tk.Label(cxFrame,text="Mobile No.", bg = "#9BC2E6")
         blanckLabel = tk.Label(cxFrame2,text="", bg = "#9BC2E6")
         lb8 = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6")
@@ -903,6 +1008,11 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         lb4.grid(row=3,column=1)
         lb5.grid(row=3,column=2)
         lb6.grid(row=3,column=3)
+
+        #Adding Search button in cxFrame 2
+        # starButton.grid(row=0, column=0, pady=(20,0))
+        rangeButton.grid(row=0,column=1, pady=(20,0))
+
         lb_ex.grid(row=3,column=4)
         blanckLabel.grid(row=0,column=0)
         lb7.grid(row=1,column=0)
@@ -939,7 +1049,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
        
         #CURRENCY
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5, text="$")
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5)
         currency.grid(row=2,column=0,sticky=tk.EW,padx=5,pady=5)
         currency.insert(tk.END,str(quotedf['CURRENCY'][0]))
         cxDatadict["CURRENCY"].append((currency, currencyVar))
@@ -952,9 +1062,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         # cxDatadict["mobile_number"].append((mobile, mobileVar))
         cxDatadict["cus_phone"].append((mobile, mobileVar))
         
-        
+        #Customer Name Entry Box
         cxName1Var = tk.StringVar()
-        cxNamer = ttk.Entry(cxFrame, textvariable=cxName1Var, foreground='blue', background = 'white',width = len(quotedf['CUS_NAME'][0])+1, font=('Segoe UI', 10))
+        cxNamer = ttk.Entry(cxFrame, textvariable=cxName1Var, foreground='blue', background = 'white',width = 5, font=('Segoe UI', 10))
         cxNamer.grid(row=4,column=0,sticky=tk.EW,padx=5,pady=5)
         cxName1Var.set(quotedf['CUS_NAME'][0])
         cxNameVar.append((cxNamer, cxName1Var))
@@ -1024,16 +1134,32 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         e_idLabel = tk.Label(entryFrame, text="ID", bg= "#DDEBF7")
         e_Length = tk.Label(entryFrame, text="Length", bg= "#DDEBF7")
         e_Qty = tk.Label(entryFrame, text="Qty", bg= "#DDEBF7")
+
+        e_costLabel = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
+
         sellcostLbsLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostLbsLabel2 = tk.Label(entryFrame, text="Cost/LBS", bg= "#DDEBF7")
+
+        marginLBSLabel1 = tk.Label(entryFrame, text="Margin/LBS", bg= "#DDEBF7")
+        marginLBSLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
+
         uom = tk.Label(entryFrame, text="UOM", bg= "#DDEBF7")
         sellcostUOMLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
-        addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
+        addCostLabel2 = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
         leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
-        finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
+        finalPriceLabel = tk.Label(entryFrame, text="Final Price", bg= "#DDEBF7")
 
+        freightCostLabel1 = tk.Label(entryFrame, text="Freight", bg= "#DDEBF7")
+        freightCostLabel2 = tk.Label(entryFrame, text="Incured", bg= "#DDEBF7")
+        freightSaleLabel1 = tk.Label(entryFrame, text="Freight to", bg= "#DDEBF7")
+        freightSaleLabel2 = tk.Label(entryFrame, text="be Charged", bg= "#DDEBF7")
+        
+        
+
+        marginFreightLabel1 = tk.Label(entryFrame, text="Freight Margin", bg= "#DDEBF7")
+        marginFreightLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
 
 
         specLabel.grid(row=0,column=0,padx=(15,0), sticky="ew")
@@ -1053,15 +1179,31 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         e_idLabel.grid(row=0,column=13, sticky="ew")
         e_Length.grid(row=0,column=14, sticky="ew")
         e_Qty.grid(row=0,column=15, sticky="ew")
-        sellcostLbsLabel1.grid(row=0,column=16, sticky="ew")
-        sellcostLbsLabel2.grid(row=1,column=16, sticky="ew")
-        uom.grid(row=0,column=17, sticky="ew")
-        sellcostUOMLabel1.grid(row=0,column=18, sticky="ew")
-        sellcostUOMLabel2.grid(row=1,column=18, sticky="ew")
-        addCostLabel1.grid(row=0,column=19, sticky="ew")
-        addCostLabel2.grid(row=1,column=19, sticky="ew")
-        leadTimeLAbel.grid(row=0,column=20, sticky="ew")
-        finalPriceLabel.grid(row=0,column=21,padx=(0,10), sticky="ew")
+
+        e_costLabel.grid(row=0,column=16, sticky="ew")
+
+        sellcostLbsLabel1.grid(row=0,column=17, sticky="ew")
+        sellcostLbsLabel2.grid(row=1,column=17, sticky="ew")
+
+        marginLBSLabel1.grid(row=0,column=18, sticky="ew")
+        marginLBSLabel2.grid(row=1,column=18, sticky="ew")
+
+        uom.grid(row=0,column=19, sticky="ew")
+        sellcostUOMLabel1.grid(row=0,column=20, sticky="ew")
+        sellcostUOMLabel2.grid(row=1,column=20, sticky="ew")
+        addCostLabel1.grid(row=0,column=21, sticky="ew")
+        addCostLabel2.grid(row=1,column=21, sticky="ew")
+        leadTimeLAbel.grid(row=0,column=22, sticky="ew")
+        finalPriceLabel.grid(row=0,column=23,padx=(0,10), sticky="ew")
+        freightCostLabel1.grid(row=0,column=24, sticky="ew")
+        freightCostLabel2.grid(row=1,column=24, sticky="ew")
+        freightSaleLabel1.grid(row=0,column=25, sticky="ew")
+        freightSaleLabel2.grid(row=1,column=25, sticky="ew")
+
+        
+
+        marginFreightLabel1.grid(row=0,column=26,padx=(0,10), sticky="ew")
+        marginFreightLabel2.grid(row=1,column=26,padx=(0,10), sticky="ew")
         ###################################################################
         ######################Defining List variables for various entry boxes######################
         global specialList
@@ -1152,9 +1294,18 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         specialList["E_Qty"] = []
         specialList["E_Qty"].append(e_qty)
 
+        e_cost = []
+        specialList["E_COST"] = []
+        specialList["E_COST"].append(e_cost)
+
+
         sellCostLBS = []
         specialList["E_Selling Cost/LBS"] = []
         specialList["E_Selling Cost/LBS"].append(sellCostLBS)
+
+        marginlbs = []
+        specialList["E_MarginLBS"] = []
+        specialList["E_MarginLBS"].append(marginlbs)
 
         e_uom = []
         specialList["E_UOM"] = []
@@ -1175,6 +1326,28 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         finalCost = []
         specialList["E_Final Price"] = []
         specialList["E_Final Price"].append(finalCost)
+
+        freightIncured = []
+        specialList["E_freightIncured"] = []
+        specialList["E_freightIncured"].append(freightIncured)
+
+        freightCharged = []
+        specialList["E_freightCharged"] = []
+        specialList["E_freightCharged"].append(freightCharged)
+
+        
+
+        marginFreight = []
+        specialList["E_Margin_Freight"] = []
+        specialList["E_Margin_Freight"].append(marginFreight)
+
+        lot_serial_number = []
+        specialList["Lot_Serial_Number"] = []
+        specialList["Lot_Serial_Number"].append(lot_serial_number)
+        #For range search
+        searchLocation = []
+        specialList["searchLocation"] = []
+        specialList["searchLocation"].append(searchLocation)
 
         # specialList = [[quoteYesNo],[e_location], [e_type], [e_grade], [e_yield], [e_od], [e_id], [e_len], [e_qty], [sellCostLBS], [sellCostUOM],
         # [e_uom], [addCost], [leadTime], [finalCost]]
@@ -1221,6 +1394,44 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
         submitButton.bind("<Enter>", on_enter)
         submitButton.bind("<Leave>", on_leave)
         
+        
+        def keyFinder2(dict, tupleValue):
+            try:
+                for key, value in dict.items():
+                    for index in range(len(value[0])):
+                        
+                        if value[0][index][0] == tupleValue[0] and value[0][index][1]._name == tupleValue[1]:
+                            return key,index
+            except Exception as e:
+                raise e 
+
+        def handle_left_click(e):
+            try:
+                rowclicked_single = pt.get_row_clicked(e)
+                print(f"Row clicked is {rowclicked_single+1}")
+                if len(specialList):
+                            
+                            varname = focused_entry.cget("textvariable")
+                            focused_var = focused_entry.getvar(varname)
+                            key, index = keyFinder2(specialList,(focused_entry,varname))
+                            print(key, index)
+                            specialList['Lot_Serial_Number'][0][index] = (pt.model.df['lot_serial_number'][rowclicked_single], None)
+                            specialList['E_COST'][0][index][1].set(float(pt.model.df['onhand_dollars_per_pounds'][rowclicked_single]))
+
+                            specialList['E_freightIncured'][0][index][1].set(0)
+                            specialList['E_freightCharged'][0][index][1].set(0)
+                            specialList['E_Margin_Freight'][0][index][1].set(0)
+                            specialList['E_Additional_Cost'][0][index][1].set(0)
+                pt.setSelectedRow(rowclicked_single)
+                pt.redraw()
+            except Exception as e:
+                raise e
+
+        
+
+        # ent.bind('<FocusIn>',remember_focus)
+        if pt is not None:
+            pt.bind('<Button-1>',handle_left_click)
         # cxNamer.insert(tk.END, quotedf['CUS_NAME'][0])
         ##############Adding weight to mainFrames##############
         mainRowNum = 2
@@ -1318,7 +1529,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number):
 
         #Moving horizontal scroll bar to initial position
         entryCanvas.xview("moveto", 0)
-        df = get_inv_df(conn,table = INV_TABLE)
+        # df = get_inv_df(conn,table = INV_TABLE)
         def on_closing():
             if messagebox.askokcancel("Quit", "Do you want to quit?"):
                 # mainRoot.destroy()

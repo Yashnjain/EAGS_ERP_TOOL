@@ -81,16 +81,16 @@ def pdf_generator(df):
                     ws1.range(f'A{9+(diff*i+page_count*page_diff)}').value=customer_requirement
                     ws1.range(f'A{10+(diff*i+page_count*page_diff)}').value="EAGL Offer:"
                     if chunk_df['E_FREIGHT_CHARGED'][i]:
-                        
-                        if float(chunk_df['E_FREIGHT_CHARGED'][i]) != float(0.0):
-                            ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value=f"Freight Charges: {chunk_df['E_FREIGHT_CHARGED'].sum()}"
-                        
-                        if chunk_df['CURRENCY'][i] == "$":
-                            ws1.range(f'A{11+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
-                        elif chunk_df['CURRENCY'][i] == "£":
-                            ws1.range(f'A{11+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
-                        else:
-                            pass
+                        if chunk_df['E_FREIGHT_CHARGED'][i] != 'NA':
+                            if float(chunk_df['E_FREIGHT_CHARGED'][i]) != float(0.0):
+                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value=f"Freight Charges: {chunk_df['E_FREIGHT_CHARGED'].sum()}"
+                            
+                            if chunk_df['CURRENCY'][i] == "$":
+                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
+                            elif chunk_df['CURRENCY'][i] == "£":
+                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
+                            else:
+                                pass
                     
                     
                     

@@ -17,8 +17,9 @@ from pandastable.dialogs import *
 from pandastable.core import *
 from mail import send_mail
 import ctypes
-ctypes.windll.shcore.SetProcessDpiAwareness(2)
+from Tools import starSearch, rangeSearch
 from shpUploader import shpUploader
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 UNITS = "units"
 INV_TABLE = "EAGS_INVENTORY"
@@ -199,7 +200,7 @@ class myFilterBar(FilterBar):
         return col, val, op, booleanop
 
 
-def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
+def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
     try:
         class myQueryDialog(QueryDialog):
             """Use string query to filter. Will not work with spaces in column
@@ -525,10 +526,10 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                         else:
                             sellCostUOM = round((sellCostLBS * mid_formula),2)
                             sellCostUOM = sellCostUOM *12
-                    elif specialList["E_Type"][0][index][1].get() == "BR" or specialList["E_Type"][0][index][1].get() == "HR" or specialList["E_Type"][0][index][1].get() == "HB" or specialList["E_Type"][0][index][1].get() == "HM":
+                    elif specialList["E_Type"][0][index][1].get() == "BR" or specialList["E_Type"][0][index][1].get() == "HR" or specialList["E_Type"][0][index][1].get() == "HB":
                         # BR
-                        mid_formula = (e_od*e_od*2.71)/12
-                        # mid_formula = ((e_od-wt)*wt*10.68)/12
+                        # mid_formula = (od*od*2.71)/12
+                        mid_formula = ((e_od-wt)*wt*10.68)/12
                         if uom == "Each":
                             # For Each: 
                             # Selling cost/UOM ="SellingCost/LBS" * mid_formula * Length 
@@ -555,7 +556,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
                             & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
                             & (df["od_in"]==float(specialList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(specialList['E_ID1'][0][index][0].get()))]
-                newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
+                newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
                 newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
                 newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
                 newDf= newDf[newDf['available_pieces']>0]
@@ -573,7 +574,8 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         
         def tempbakerDfUpdate():
             
-            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "E_OD2", "E_ID2"]
+            # xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "E_OD2", "E_ID2"]
+            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number', "searchLocation"]
             for index in range(len(temp_bakerDf)):
                 for key in specialList.keys():
                     if key not in xlList:
@@ -730,6 +732,24 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         #     except Exception as e:
         #         raise e
 
+        def margin_cal(specialList, tupVar):
+            try:
+                if len(specialList):
+                        key, index = keyFinder(specialList,tupVar) 
+                if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '':
+                                        salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
+                                        costPrice = float(specialList["E_COST"][0][index][0].get())
+                                        margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
+                                        specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
+                                        specialList["E_UOM"][0][index][0].focus()
+                                        # breakCheck = True
+                else:
+                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
+                    return
+            except Exception as ex:
+                raise ex
+
+        
         def addRow(quotedf,i,check=False,check2=False):
             global bakerDf
             global temp_bakerDf
@@ -893,7 +913,8 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 e_od1[-1][0].grid(row=2+row_num,column=6,sticky = "nsew")
                 if check:
                     e_od1[i][1].set(quotedf['E_OD1'][i])
-                e_ent_od1_var.bind('<1>',lambda a:tui_hr_cehcker(specialList,quotedf,row_num,tupVar = (e_ent_od1_var, e_od1_var),df=df))    
+                e_ent_od1_var.bind('<1>',lambda a:tui_hr_cehcker(specialList,quotedf,row_num,tupVar = (e_ent_od1_var, e_od1_var),df=df))
+                e_od1.bind('<FocusIn>',remember_focus)    
                 # -----e_od1.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt,entpady=entpady, bakerDf=temp_bakerDf))
                 # temp_bakerDf = e_od1[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt,entpady=entpady, bakerDf=temp_bakerDf)[1]
@@ -912,7 +933,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 e_id1[-1][0]['validate']='key'
                 e_id1[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
                 e_ent_id1_var.bind('<1>',lambda a:display(specialList,tupVar = (e_ent_id1_var, e_id1_var),df=df))
-
+                e_id1.bind('<FocusIn>',remember_focus)
                 e_od2.append((None, None))
                 e_id2.append((None, None))
 
@@ -927,6 +948,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 e_len[-1][0]['validate']='key'
                 e_len[-1][0]['validatecommand'] = (e_len[-1][0].register(intFloat),'%P','%d')
+                e_len.bind('<FocusIn>',remember_focus)
                 # e_len[-1].config(textvariable="NA", state='disabled')
                 e_qty_var = tk.StringVar()
                 e_qty.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=e_qty_var,foreground='blue', background='white'), e_qty_var))
@@ -938,10 +960,24 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 e_qty[-1][0]['validate']='key'
                 e_qty[-1][0]['validatecommand'] = (e_qty[-1][0].register(intChecker),'%P','%d')
+                e_qty.bind('<FocusIn>',remember_focus)
+
+                e_cost_var = tk.StringVar()
+                e_cost_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=e_cost_var)
+                e_cost.append((e_cost_entry_var, e_cost_var))
+                e_cost[-1][0].grid(row=2+row_num,column=10)
+                e_cost[-1][0]['validate']='key'
+                e_cost[-1][0]['validatecommand'] = (e_cost[-1][0].register(intFloat),'%P','%d')
+                if check:
+                    e_cost[i][1].set(quotedf['E_COST'][i])
+                e_cost_entry_var.bind("<Leave>", lambda a:margin_cal(specialList,tupVar = (e_cost_entry_var, e_cost_var)))    
+                e_cost_entry_var.bind("<Tab>", lambda a:margin_cal(specialList,tupVar = (e_cost_entry_var, e_cost_var)))    
+
                 # e_qty[-1].config(textvariable="NA", state='disabled')
                 sellCostLBS_var = tk.StringVar()
-                sellCostLBS.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=sellCostLBS_var,foreground='blue', background='white'), sellCostLBS_var))
-                sellCostLBS[-1][0].grid(row=2+row_num,column=10,sticky = "nsew")
+                sellCostLBS_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=sellCostLBS_var,foreground='blue', background='white')
+                sellCostLBS.append((sellCostLBS_entry_var, sellCostLBS_var))
+                sellCostLBS[-1][0].grid(row=2+row_num,column=11,sticky = "nsew")
                 if check:
                     sellCostLBS[i][1].set(quotedf['E_SELLING_COST/LBS'][i])
                 # -----sellCostLBS.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=10,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
@@ -950,11 +986,22 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 sellCostLBS[-1][0]['validate']='key'
                 sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
                 # sellCostLBS[-1].config(textvariable="NA", state='disabled')
+                sellCostLBS_entry_var.bind("<Leave>", lambda a:margin_cal(specialList,tupVar = (sellCostLBS_entry_var, sellCostLBS_var)))
+                sellCostLBS_entry_var.bind("<Tab>", lambda a:margin_cal(specialList,tupVar = (sellCostLBS_entry_var, sellCostLBS_var)))
+
+                marginlbs_var = tk.StringVar()
+                marginlbs.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=marginlbs_var), marginlbs_var))
+                marginlbs[-1][0].grid(row=2+row_num,column=12)
+                marginlbs[-1][0]['validate']='key'
+                marginlbs[-1][0]['validatecommand'] = (marginlbs[-1][0].register(intFloat),'%P','%d')
+                if check:
+                    marginlbs[i][1].set(quotedf['E_MARGIN_LBS'][i])
+
                 e_uom_var = tk.StringVar()
                 e_uom_var_list = ["Inch","Each","Foot"]
                 e_uom_entry_var = ttk.Combobox(entryFrame, background='white', font=('Segoe UI', 10), justify='center',textvariable=e_uom_var,values=e_uom_var_list, width=5)
                 e_uom.append((e_uom_entry_var, e_uom_var))
-                e_uom[-1][0].grid(row=2+row_num,column=11,sticky = "nsew")
+                e_uom[-1][0].grid(row=2+row_num,column=13,sticky = "nsew")
                 if check:
                     e_uom_entry_var.insert(tk.END,str(quotedf['E_UOM'][i]))
                 # e_uom_entry_var.bind("<Leave>",lambda a:list_up(specialList,e_uom_var_list,tupVar = (e_uom_entry_var, e_uom_var))) 
@@ -964,7 +1011,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 # e_uom[-1].config(textvariable="NA", state='disabled')
                 sellCostUOM_var = tk.StringVar()
                 sellCostUOM.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=sellCostUOM_var,foreground='blue', background='white'), sellCostUOM_var))
-                sellCostUOM[-1][0].grid(row=2+row_num,column=12,sticky = "nsew")
+                sellCostUOM[-1][0].grid(row=2+row_num,column=14,sticky = "nsew")
                 if check:
                     sellCostUOM[i][1].set(quotedf['E_SELLING_COST/UOM'][i])
                 # -----sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=12,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
@@ -975,7 +1022,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 # sellCostUOM[-1].config(textvariable="NA", state='disabled')
                 addCost_var = tk.StringVar()
                 addCost.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=addCost_var,foreground='blue', background='white'), addCost_var))
-                addCost[-1][0].grid(row=2+row_num,column=13,sticky = "nsew")
+                addCost[-1][0].grid(row=2+row_num,column=15,sticky = "nsew")
                 if check:
                     addCost[i][1].set(quotedf['E_ADDITIONAL_COST'][i])
                 # -----addCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=13,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
@@ -986,7 +1033,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 # addCost[-1].config(textvariable="NA", state='disabled')
                 leadeTime_var = tk.StringVar()
                 leadTime.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=leadeTime_var,foreground='blue', background='white'), leadeTime_var))
-                leadTime[-1][0].grid(row=2+row_num,column=14,sticky = "nsew")
+                leadTime[-1][0].grid(row=2+row_num,column=16,sticky = "nsew")
                 if check:
                     leadTime[i][1].set(quotedf['LEAD_TIME'][i])
                 # -----leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
@@ -996,7 +1043,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 finalCost_var = tk.StringVar()
                 finalCost_ent_var=ttk.Entry(entryFrame, width=5, validate = "key",textvariable=finalCost_var,foreground='blue', background='white')
                 finalCost.append((finalCost_ent_var, finalCost_var))
-                finalCost[-1][0].grid(row=2+row_num,column=15,sticky = "nsew")
+                finalCost[-1][0].grid(row=2+row_num,column=17,sticky = "nsew")
                 if check:
                     finalCost[i][1].set(quotedf['E_FINAL_PRICE'][i])
                 # -----finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
@@ -1007,7 +1054,22 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 finalCost[-1][0]['validatecommand'] = (finalCost[-1][0].register(intFloat),'%P','%d')
                 finalCost_ent_var.bind('<1>',lambda a:formulaCalc(specialList,tupVar = (finalCost_ent_var, finalCost_var)))
 
-                
+                freightIncured.append(None, None)
+
+                # freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                freightCharged.append(None, None)
+
+
+
+
+               
+
+
+
+                # marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+
+                marginFreight.append(None, None)
                 # if row_num==1:
                 #     entryBoxUpdater(row_number=0)
                 #     entryBoxUpdater(row_number=1)
@@ -1149,7 +1211,6 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                     localpath = desktopDir+"\\"+filename
                     shpUploader(localpath, filename)
                     
-                    # shutil.copy(desktopDir+"\\"+filename, desktopDir)
                     send_mail(receiver_email = user[-1], mail_subject=f"ALERT Revision generated by {user[0]} for {quoteDf['QUOTENO'][0]}", 
                     mail_body= f"{user[0]} has generated revision for quote number {quoteDf['QUOTENO'][0]}, initial quote was {quote_number}  on {str(date.today())}",
                     attachment_locations=[desktopDir+"\\"+filename])
@@ -1174,7 +1235,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         
         # df = pd.read_csv("sampleInventory.csv")
         # Getting Cx Dataframe
-        cx_df = get_cx_df(conn,table = CX_TABLE, customer='baker')
+        # cx_df = get_cx_df(conn,table = CX_TABLE, customer='baker')
         # cx_df = pd.read_excel("cxDatabase.xlsx")
 
         count = 0
@@ -1267,9 +1328,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None,None,None, None, None]]
+        nonList = [[None,None,None,None,None,None,None]]
         # pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in'])
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number'])
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
         pt.cellwidth=145
@@ -1318,6 +1379,13 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         locAddLb = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6", font=("Segoe UI", 10))
         emailLb = tk.Label(cxFrame,text="Email", bg = "#9BC2E6", font=("Segoe UI", 10))
         payTermLb = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6", font=("Segoe UI", 10))
+
+        #Adding Search button in cxFrame 2
+        # starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
+        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
+
+
+
         mobileLb = tk.Label(cxFrame2, text="Mobile", bg = "#9BC2E6", font=("Segoe UI", 10))
         currencyLabel = tk.Label(cxFrame2,text="Currency", bg = "#9BC2E6", font=("Segoe UI", 10))
         # valLb = tk.Label(cxFrame2,text="Validity", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -1334,6 +1402,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         payTermLb.grid(row=3,column=3)
         
         #label grid using cxFrame2
+        #Adding Search button in cxFrame 2
+        # starButton.grid(row=0, column=0, pady=(20,0))
+        rangeButton.grid(row=0,column=0, pady=(20,0))
         mobileLb.grid(row=1, column=0, pady=(20,0))
         currencyLabel.grid(row=1,column=1, pady=(20,0))
         remarksLabel.grid(row=1,column=2, pady=(20,0))#padx=(50,5)
@@ -1384,7 +1455,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         
         #Customer Name Entry Box
         cxName1Var = tk.StringVar()
-        cxNamer = ttk.Entry(cxFrame, textvariable=cxName1Var, foreground='blue', background = 'white',width = len(quotedf['CUS_NAME'][0])+1, font=('Segoe UI', 10))
+        cxNamer = ttk.Entry(cxFrame, textvariable=cxName1Var, foreground='blue', background = 'white',width = 5, font=('Segoe UI', 10))
         cxNamer.grid(row=4,column=0,sticky=tk.NSEW,padx=5,pady=5)
         cxName1Var.set(quotedf['CUS_NAME'][0])
         cxNameVar.append((cxNamer, cxName1Var))
@@ -1490,15 +1561,22 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         e_idLabel = tk.Label(entryFrame, text="ID", bg= "#DDEBF7")
         e_Length = tk.Label(entryFrame, text="Length", bg= "#DDEBF7")
         e_Qty = tk.Label(entryFrame, text="Qty", bg= "#DDEBF7")
+
+        e_costLabel = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
+
         sellcostLbsLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostLbsLabel2 = tk.Label(entryFrame, text="Cost/LBS", bg= "#DDEBF7")
+
+        marginLBSLabel1 = tk.Label(entryFrame, text="Margin/LBS", bg= "#DDEBF7")
+        marginLBSLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
+
         uom = tk.Label(entryFrame, text="UOM", bg= "#DDEBF7")
         sellcostUOMLabel1 = tk.Label(entryFrame, text="Selling", bg= "#DDEBF7")
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
-        addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
+        addCostLabel2 = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
         leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
-        finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
+        finalPriceLabel = tk.Label(entryFrame, text="Final Price", bg= "#DDEBF7")
 
 
 
@@ -1520,15 +1598,22 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         e_idLabel.grid(row=0,column=7, sticky="ew")
         e_Length.grid(row=0,column=8, sticky="ew")
         e_Qty.grid(row=0,column=9, sticky="ew")
-        sellcostLbsLabel1.grid(row=0,column=10, sticky="ew")
-        sellcostLbsLabel2.grid(row=1,column=10, sticky="ew")
-        uom.grid(row=0,column=11, sticky="ew")
-        sellcostUOMLabel1.grid(row=0,column=12, sticky="ew")
-        sellcostUOMLabel2.grid(row=1,column=12, sticky="ew")
-        addCostLabel1.grid(row=0,column=13, sticky="ew")
-        addCostLabel2.grid(row=1,column=13, sticky="ew")
-        leadTimeLAbel.grid(row=0,column=14, sticky="ew")
-        finalPriceLabel.grid(row=0,column=15,padx=(0,10), sticky="ew")
+
+        e_costLabel.grid(row=0,column=10, sticky="ew")
+
+        sellcostLbsLabel1.grid(row=0,column=11, sticky="ew")
+        sellcostLbsLabel2.grid(row=1,column=11, sticky="ew")
+
+        marginLBSLabel1.grid(row=0,column=12, sticky="ew")
+        marginLBSLabel2.grid(row=1,column=12, sticky="ew")
+
+        uom.grid(row=0,column=13, sticky="ew")
+        sellcostUOMLabel1.grid(row=0,column=14, sticky="ew")
+        sellcostUOMLabel2.grid(row=1,column=14, sticky="ew")
+        addCostLabel1.grid(row=0,column=15, sticky="ew")
+        addCostLabel2.grid(row=1,column=15, sticky="ew")
+        leadTimeLAbel.grid(row=0,column=16, sticky="ew")
+        finalPriceLabel.grid(row=0,column=17,padx=(0,10), sticky="ew")
         ###################################################################
         ######################Defining List variables for various entry boxes######################
         global specialList
@@ -1623,9 +1708,18 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         specialList["E_Qty"] = []
         specialList["E_Qty"].append(e_qty)
 
+        e_cost = []
+        specialList["E_COST"] = []
+        specialList["E_COST"].append(e_cost)
+
         sellCostLBS = []
         specialList["E_Selling Cost/LBS"] = []
         specialList["E_Selling Cost/LBS"].append(sellCostLBS)
+
+        marginlbs = []
+        specialList["E_MarginLBS"] = []
+        specialList["E_MarginLBS"].append(marginlbs)
+
 
         e_uom = []
         specialList["E_UOM"] = []
@@ -1646,6 +1740,29 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         finalCost = []
         specialList["E_Final Price"] = []
         specialList["E_Final Price"].append(finalCost)
+
+        freightIncured = []
+        specialList["E_freightIncured"] = []
+        specialList["E_freightIncured"].append(freightIncured)
+
+        freightCharged = []
+        specialList["E_freightCharged"] = []
+        specialList["E_freightCharged"].append(freightCharged)
+
+        
+
+        marginFreight = []
+        specialList["E_Margin_Freight"] = []
+        specialList["E_Margin_Freight"].append(marginFreight)
+
+        lot_serial_number = []
+        specialList["Lot_Serial_Number"] = []
+        specialList["Lot_Serial_Number"].append(lot_serial_number)
+        #For range search
+        searchLocation = []
+        specialList["searchLocation"] = []
+        specialList["searchLocation"].append(searchLocation)
+
 
         # specialList = [[quoteYesNo],[e_location], [e_type], [e_grade], [e_yield], [e_od], [e_id], [e_len], [e_qty], [sellCostLBS], [sellCostUOM],
         # [e_uom], [addCost], [leadTime], [finalCost]]
@@ -1691,7 +1808,45 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
         submitButton.bind("<Enter>", on_enter)
         submitButton.bind("<Leave>", on_leave)
 
-    
+        def keyFinder2(dict, tupleValue):
+            try:
+                for key, value in dict.items():
+                    for index in range(len(value[0])):
+                        
+                        if value[0][index][0] == tupleValue[0] and value[0][index][1]._name == tupleValue[1]:
+                            return key,index
+            except Exception as e:
+                raise e 
+
+        def handle_left_click(e):
+            try:
+                rowclicked_single = pt.get_row_clicked(e)
+                print(f"Row clicked is {rowclicked_single+1}")
+                if len(specialList):
+                            
+                            varname = focused_entry.cget("textvariable")
+                            focused_var = focused_entry.getvar(varname)
+                            key, index = keyFinder2(specialList,(focused_entry,varname))
+                            print(key, index)
+                            specialList['Lot_Serial_Number'][0][index] = (pt.model.df['lot_serial_number'][rowclicked_single], None)
+                            specialList['E_COST'][0][index][1].set(float(pt.model.df['onhand_dollars_per_pounds'][rowclicked_single]))
+
+                            specialList['E_freightIncured'][0][index][1].set(0)
+                            specialList['E_freightCharged'][0][index][1].set(0)
+                            specialList['E_Margin_Freight'][0][index][1].set(0)
+                            specialList['E_Additional_Cost'][0][index][1].set(0)
+                pt.setSelectedRow(rowclicked_single)
+                pt.redraw()
+            except Exception as e:
+                raise e
+
+        def remember_focus(event):
+            global focused_entry
+            focused_entry = event.widget
+
+        # ent.bind('<FocusIn>',remember_focus)
+        if pt is not None:
+            pt.bind('<Button-1>',handle_left_click)
 
         ##############Adding weight to mainFrames##############
         mainRowNum = 2
@@ -1802,7 +1957,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number):
                 sys.exit()
         root.protocol("WM_DELETE_WINDOW", on_closing)
         root.protocol("WM_DELETE_WINDOW", on_closing)
-        df = get_inv_df(conn,table = INV_TABLE)       
+        # df = get_inv_df(conn,table = INV_TABLE)       
     except Exception as e:
         raise e
     

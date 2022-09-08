@@ -641,7 +641,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
             row = []
             bakerxlDf = ptBaker.model.df.copy()
             bakerxlDf['RM Offer'], bakerxlDf['Price'], bakerxlDf['Location'], bakerxlDf['Lead Time'], bakerxlDf['Remarks'] = [None, None, None, None, None]
-            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty", 'Lot_Serial_Number']
+            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number']
             colList = list(specialList.keys())
             
             
@@ -1028,22 +1028,22 @@ def starSearch(root, df):
                         filtered_df  = filtered_df[ (filtered_df["heat_condition"]==yieldField)]
                     else: # yieldValue != "*":
                         filtered_df = filtered_df.loc[df["heat_condition"].str.startswith(yieldField.replace('*',''))]
-                    if len(filtered_df)!=0:
-                        #Filtering based on od
-                        if od == "*":
-                                pass
-                        elif "*" not in od:
-                            filtered_df  = filtered_df[ (filtered_df["od_in"]==od)]
-                        else: # yieldValue != "*":
-                            filtered_df = filtered_df.loc[df["od_in"].str.startswith(od.replace('*',''))]
-                        if len(filtered_df)!=0:
-                            #Filtering based on Yield
-                            if idField == "*":
-                                    pass
-                            elif "*" not in idField:
-                                filtered_df  = filtered_df[ (filtered_df["od_in_2"]==idField)]
-                            else: # yieldValue != "*":
-                                filtered_df = filtered_df.loc[df["od_in_2"].str.startswith(idField.replace('*',''))]
+                if len(filtered_df)!=0:
+                    #Filtering based on od
+                    if od == "*":
+                            pass
+                    elif "*" not in od:
+                        filtered_df  = filtered_df[ (filtered_df["od_in"]==od)]
+                    else: # yieldValue != "*":
+                        filtered_df = filtered_df.loc[df["od_in"].str.startswith(od.replace('*',''))]
+                if len(filtered_df)!=0:
+                    #Filtering based on Yield
+                    if idField == "*":
+                            pass
+                    elif "*" not in idField:
+                        filtered_df  = filtered_df[ (filtered_df["od_in_2"]==idField)]
+                    else: # yieldValue != "*":
+                        filtered_df = filtered_df.loc[df["od_in_2"].str.startswith(idField.replace('*',''))]
 
                 
                 
@@ -1357,8 +1357,8 @@ def rangeSearch(root, df, boxList, index):
                 #     messagebox.showerror("Error", f"Please fill grade and yield")
                     return
                 if len(filtered_df):
-                    filtered_df = filtered_df[["site", "global_grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in']]
-                    filtered_df = filtered_df.sort_values(["global_grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, False])
+                    filtered_df = filtered_df[["site", "global_grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in', 'heat_number', 'lot_serial_number']]
+                    filtered_df = filtered_df.sort_values(["site","global_grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, True, False])
                     
                     screen_width = toproot.winfo_screenwidth()
                     screen_height = toproot.winfo_screenheight()

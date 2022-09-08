@@ -69,57 +69,44 @@ class App():
                 e.widget['image'] = button_dict[e.widget][0]
             except Exception as e:
                 raise e
-        def resize_image(event):
-            new_width = event.width
-            new_height = event.height
         entry1_path = resource_path("Entry1.png")
-        w_scale_factor = screen_width/1920
-        h_scale_factor = screen_height/1080
         image1 = Image.open(entry1_path)
-        # image1 = image1.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
-        image1 = image1.resize((420,199), Image.Resampling.LANCZOS)
+        image1 = image1.resize((420,199), Image.ANTIALIAS)
         top_img = ImageTk.PhotoImage(image1)
 
         entry1New_path = resource_path("Entry1New.png")
         image1New = Image.open(entry1New_path)
-        # image1New = image1New.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
-        image1New = image1New.resize((420,199), Image.Resampling.LANCZOS)
+        image1New = image1New.resize((420,199), Image.ANTIALIAS)
         top_imgNew = ImageTk.PhotoImage(image1New)
 
         entry2_path = resource_path("Entry2.png")
         image2 = Image.open(entry2_path)
-        # image2 = image2.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
-        image2 = image2.resize((204,423), Image.Resampling.LANCZOS)
+        image2 = image2.resize((204,423), Image.ANTIALIAS)
         left_img = ImageTk.PhotoImage(image2)
 
         entry2New_path = resource_path("Entry2New.png")
         image2New = Image.open(entry2New_path)
-        # image2New = image2New.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
-        image2New = image2New.resize((204,423), Image.Resampling.LANCZOS)
+        image2New = image2New.resize((204,423), Image.ANTIALIAS)
         left_imgNew = ImageTk.PhotoImage(image2New)
 
         entry3_path = resource_path("Entry3.png")
         image3 = Image.open(entry3_path)
-        # image3 = image3.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
-        image3 = image3.resize((204,423), Image.Resampling.LANCZOS)
+        image3 = image3.resize((204,423), Image.ANTIALIAS)
         right_img = ImageTk.PhotoImage(image3)
 
         entry3New_path = resource_path("Entry3New.png")
         image3New = Image.open(entry3New_path)
-        # image3New = image3New.resize((int(204*w_scale_factor),int(423*h_scale_factor)), Image.Resampling.LANCZOS)
-        image3New = image3New.resize((204,423), Image.Resampling.LANCZOS)
+        image3New = image3New.resize((204,423), Image.ANTIALIAS)
         right_imgNew = ImageTk.PhotoImage(image3New)
 
         entry4_path = resource_path("Entry4.png")
         image4 = Image.open(entry4_path)
-        # image4 = image4.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
-        image4 = image4.resize((420,199), Image.Resampling.LANCZOS)
+        image4 = image4.resize((420,199), Image.ANTIALIAS)
         bottom_img = ImageTk.PhotoImage(image4)
 
         entry4New_path = resource_path("Entry4New.png")
         image4New = Image.open(entry4New_path)
-        # image4New = image4New.resize((int(420*w_scale_factor),int(199*h_scale_factor)), Image.Resampling.LANCZOS)
-        image4New = image4New.resize((420,199), Image.Resampling.LANCZOS)
+        image4New = image4New.resize((420,199), Image.ANTIALIAS)
         bottom_imgNew = ImageTk.PhotoImage(image4New)
 
 
@@ -127,44 +114,36 @@ class App():
 
         center_img_path = resource_path("center.png")
         center_img = Image.open(center_img_path)
-        # center_img = center_img.resize((int(285*w_scale_factor),int(285*h_scale_factor)), Image.Resampling.LANCZOS)
-        center_img = center_img.resize((285,285), Image.Resampling.LANCZOS)
+        center_img = center_img.resize((285,285), Image.ANTIALIAS)
         cent_photo = ImageTk.PhotoImage(center_img)
 
 
 
         cent_Lable = tk.Label(mFrame,image=cent_photo,borderwidth=0,bg=root["bg"])
-        cent_Lable.place(x=270, y=240)#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
-        # cent_Lable.place(x=int(270*w_scale_factor), y=int(240*h_scale_factor))#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
+        cent_Lable.place(x=270, y=240)
 
         left_button = tk.Button(mFrame, image=left_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:bakerQuoteGenerator(root,user[0],conn, inv_df))#,command=my_command)
         # left_button.grid(row=1,column=0,padx=0)
-        left_button.bind('<Configure>', resize_image)
-        left_button.place(x=50,y=170)#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
-        # left_button.place(x=int(50*w_scale_factor),y=int(170*h_scale_factor))#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
-        
+        left_button.place(x=50,y=170)
         button_dict[left_button] = [left_img, left_imgNew]
         left_button.bind("<Enter>", on_enter)
         left_button.bind("<Leave>", on_leave)
 
         right_button = tk.Button(mFrame, image=right_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"])
-        right_button.place(x=570, y=170)#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
-        # right_button.place(x=int(570*w_scale_factor), y=int(170*h_scale_factor))#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
+        right_button.place(x=570, y=170)
         button_dict[right_button] = [right_img, right_imgNew]
         right_button.bind("<Enter>", on_enter)
         right_button.bind("<Leave>", on_leave)
 
 
         top_button = tk.Button(mFrame, image=top_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=lambda:quoteGenerator(root,user[0],conn, inv_df))
-        top_button.place(x=200, y=20)#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
-        # top_button.place(x=int(200*w_scale_factor), y=int(20*h_scale_factor))#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
+        top_button.place(x=200, y=20)
         button_dict[top_button] = [top_img, top_imgNew]
         top_button.bind("<Enter>", on_enter)
         top_button.bind("<Leave>", on_leave)
         
         bottom_button = tk.Button(mFrame, image=bottom_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"], command = lambda:quoteRevision(root,user,conn, inv_df))
-        bottom_button.place(x=200, y=540)#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
-        # bottom_button.place(x=int(200*w_scale_factor), y=int(540*h_scale_factor))#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
+        bottom_button.place(x=200, y=540)
         button_dict[bottom_button] = [bottom_img, bottom_imgNew]
         bottom_button.bind("<Enter>", on_enter)
         bottom_button.bind("<Leave>", on_leave)
@@ -188,6 +167,7 @@ class App():
         s.configure("TMenubutton", background="#f5fcfc",width=19, font=("Book Antiqua", 12))
         s.configure("TMenu", width=19)
         s.configure("TFrame", background="white")
+
         def report_callback_exception(self, exc, val, tb):
             msg = traceback.format_exc()
             msg = msg.replace('\n', '<br>')
@@ -215,8 +195,7 @@ class App():
             
 
             
-            # dsp_msg = f"Error: {error_id}\nPlease send a screenshot of this error message along with the app window to devsupport@biourja.com"
-            dsp_msg = f"A Report for this issue has been sent to IT India Team with Error ID: {error_id}, it will be resolved soon\nPlease capture this error id for future reference"
+            dsp_msg = f"Error: {error_id}\nPlease send a screenshot of this error message along with the app window to devsupport@biourja.com"
             showerror(f"Error", message=dsp_msg)
             imageV2path = os.path.join(tempDir,f'{error_id}V2.png')
             cap = tkcap.CAP(root)     # master is an instance of tkinter.Tk
@@ -224,7 +203,7 @@ class App():
             # imageV2path = os.getcwd()+'\\'+f'{error_id}V2.png'
             
             
-            send_mail(receiver_email='imam.khan@biourja.com, yashn.jain@biourja.com, devsupport@biourja.com', mail_subject=f"EAGS APP ERROR FOUND {user[0]} {error_id}", 
+            send_mail(receiver_email='imam.khan@biourja.com, yashn.jain@biourja.com, devsupport@biourja.com', mail_subject="EAGS APP ERROR FOUND", 
             mail_body=f"<strong>User: {user[0]}{nl}Error ID: {error_id}</strong>{nl}{msg}", attachment_locations=[imageV1path, imageV2path])
             
             root.update()

@@ -58,9 +58,13 @@ def dfMaker(specialList,cxList,otherList,pt,conn,quote_number):
 
 
 
-            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY','CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
+            # columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY','CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
+            # 'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
+            # 'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER','INSERT_DATE']
+            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
             'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
-            'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER','INSERT_DATE']
+            'E_QTY', 'E_COST', 'E_SELLING_COST/LBS', 'E_MARGIN_LBS','E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'E_FREIGHT_INCURED', 'E_FREIGHT_CHARGED', 
+            'E_MARGIN_FREIGHT','LOT_SERIAL_NUMBER','VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER','INSERT_DATE']
             row = []
             
             colList = list(specialList.keys())
@@ -70,10 +74,21 @@ def dfMaker(specialList,cxList,otherList,pt,conn,quote_number):
                 rowList.extend(cxList)
 
                 for col in colList:
-                    if (col == 'E_OD2' or col == 'E_ID2' or col == 'C_Type' or col == 'E_Spec'):
+                    if col == 'searchYield' or col == 'searchGrade' or col == 'searchLocation':
+                        pass
+                    elif (col == 'E_OD2' or col == 'E_ID2' or col == 'C_Type' or col == 'E_Spec'):
                         rowList.append(specialList[col][0][i][0])
+                        if specialList[col][0][i][0] == "":
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            return []
                     else:
-                        rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
+                        if col == 'Lot_Serial_Number':
+                            rowList.append(specialList[col][0][i][0])
+                        else:
+                            rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
+                            if specialList[col][0][i][0].get() == "" and (col.upper() != "C_YIELD" and col.upper() != "E_YIELD" and col.upper() != "C_SPECIFICATION" and col.upper() != "C_GRADE"):
+                                messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                                return []
                 rowList.extend(otherList)#insert validity and additional comments
                 row.append(rowList)#Append current ith row to row List
                 #Empty rowList for fetching next row
@@ -153,9 +168,14 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
 
 
 
+            # columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
+            # 'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
+            # 'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER', 'INSERT_DATE']
+
             columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
             'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
-            'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER', 'INSERT_DATE']
+            'E_QTY', 'E_COST', 'E_SELLING_COST/LBS', 'E_MARGIN_LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'E_FREIGHT_INCURED', 'E_FREIGHT_CHARGED',
+            'E_MARGIN_FREIGHT','LOT_SERIAL_NUMBER', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER', 'INSERT_DATE']
 
             # columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL',
             #  'CUS_CITY_ZIP','C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2',
@@ -164,7 +184,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
             row = []
             bakerxlDf = ptBaker.model.df.copy()
             bakerxlDf['RM Offer'], bakerxlDf['Price'], bakerxlDf['Location'], bakerxlDf['Lead Time'], bakerxlDf['Remarks'] = [None, None, None, None, None]
-            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty"]
+            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number']
             colList = list(specialList.keys())
             
             #Inserting quote number in bakerxlDf
@@ -190,7 +210,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                 for col in colList:
                     #Adding condition for not including extracted cx details
                     # if col not in xlList:
-                    if col == 'C_QRD':
+                    if col == 'C_QRD' or col == 'searchYield' or col == 'searchGrade' or col == 'searchLocation':
                         pass
                     elif col == 'E_OD2' or col == 'E_ID2' or col in xlList:
                         print(specialList[col][0][i][0])
@@ -199,8 +219,8 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                             messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
                             return []
                     else:
-                        print(specialList[col][0][i][0].get())
-                        if specialList[col][0][i][0].get() == "":
+                        # print(specialList[col][0][i][0].get())
+                        if specialList[col][0][i][0].get() == "" and col!="E_Yield":
                             messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
                             return []
                         if col == 'E_Spec':

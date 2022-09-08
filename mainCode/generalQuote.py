@@ -8,7 +8,7 @@ from datetime import date
 import sys
 import pandas as pd
 from pandastable import Table
-from Tools import dfMaker, resource_path, starSearch, rangeSearch
+from Tools import dfMaker, resource_path, rangeSearch
 from sfTool import get_connection,get_cx_df, get_inv_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
@@ -533,7 +533,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         payTermLb = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6", font=("Segoe UI", 10))
 
         #Adding Search button in cxFrame 2
-        starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
+        # starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
         rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
 
         mobileLb = tk.Label(cxFrame2, text="Mobile", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -554,9 +554,9 @@ def quoteGenerator(mainRoot,user,conn, df):
         #label grid using cxFrame2
 
         #Adding Search button in cxFrame 2
-        starButton.grid(row=0, column=0, pady=(20,0))
+        rangeButton.grid(row=0, column=0, pady=(20,0))
         mobileLb.grid(row=1, column=0, pady=(20,0))
-        rangeButton.grid(row=0,column=1, pady=(20,0))
+        # rangeButton.grid(row=0,column=1, pady=(20,0))
         currencyLabel.grid(row=1,column=1, pady=(20,0))
         # remarksLabel.grid(row=1,column=2, pady=(20,0))#padx=(50,5)
         valLb.grid(row=1,column=2, pady=(20,0))#5x=(50,5)

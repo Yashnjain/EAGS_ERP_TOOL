@@ -640,15 +640,15 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 finalCost[row_number][0].configure(state='normal')
                 finalCost[row_number][1].set(temp_bakerDf["E_Final Price"][index_num] if temp_bakerDf["E_Final Price"][index_num]!=None else "")
                 root.update()
-                freightIncured[row_number][0].configure(state='normal')
-                freightIncured[row_number][1].set(temp_bakerDf["E_freightIncured"][index_num] if temp_bakerDf["E_freightIncured"][index_num]!=None else "")
-                root.update()
-                freightCharged[row_number][0].configure(state='normal')
-                freightCharged[row_number][1].set(temp_bakerDf["E_freightCharged"][index_num] if temp_bakerDf["E_freightCharged"][index_num]!=None else "")
-                root.update()
-                marginFreight[row_number][0].configure(state='normal')
-                marginFreight[row_number][1].set(temp_bakerDf["E_Margin_Freight"][index_num] if temp_bakerDf["E_Margin_Freight"][index_num]!=None else "")
-                root.update()
+                # freightIncured[row_number][0].configure(state='normal')
+                # freightIncured[row_number][1].set(temp_bakerDf["E_freightIncured"][index_num] if temp_bakerDf["E_freightIncured"][index_num]!=None else "")
+                # root.update()
+                # freightCharged[row_number][0].configure(state='normal')
+                # freightCharged[row_number][1].set(temp_bakerDf["E_freightCharged"][index_num] if temp_bakerDf["E_freightCharged"][index_num]!=None else "")
+                # root.update()
+                # marginFreight[row_number][0].configure(state='normal')
+                # marginFreight[row_number][1].set(temp_bakerDf["E_Margin_Freight"][index_num] if temp_bakerDf["E_Margin_Freight"][index_num]!=None else "")
+                # root.update()
             except Exception as e:
                 raise e
 
@@ -670,7 +670,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 # if row_num!=0:
                 if row_num == 1:
                     if not check:
-                        xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "Lot_Serial_Number", "searchLocation"]
+                        # xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "Lot_Serial_Number", "searchLocation"]
+                        xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number', "searchLocation"]
                         for key in specialList.keys():
                             
                             # specialList[key][0][-1][1].destroy()
@@ -841,16 +842,16 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 finalCost[-1][0]['validate']='key'
                 finalCost[-1][0]['validatecommand'] = (finalCost[-1][0].register(intFloat),'%P','%d')
 
-                freightIncured.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                # freightIncured.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                freightIncured.append((None, None))
+                # freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                freightCharged.append((None, None))
+
+
                 
-                freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
 
-
-
-                
-
-                marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
-
+                # marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                marginFreight.append((None, None))
                 lot_serial_number.append((None, None))
 
                 
@@ -969,12 +970,12 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     messagebox.showinfo("Info", "Data uploaded Successfully!")
 
                     # current_work_dir = os.getcwd()#To be Shared Drive
-                    current_work_dir = r'I:\EAGS\Quotes'
+                    # current_work_dir = r'I:\EAGS\Quotes'
                     cx_init_name = str(quoteDf['QUOTENO'][0]).split("_")[0]
                     filename = str(quoteDf['QUOTENO'][0])+".xlsx"
-                    save_dir = current_work_dir+"\\"+cx_init_name
-                    if not os.path.exists(save_dir):
-                        os.mkdir(save_dir)
+                    # save_dir = current_work_dir+"\\"+cx_init_name
+                    # if not os.path.exists(save_dir):
+                    #     os.mkdir(save_dir)
 
                     desktopDir = os.path.join(os.environ["HOMEPATH"], "Desktop\\EAGS_Quotes")
                     desktopDir = os.path.join('C:', desktopDir)
@@ -1150,7 +1151,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         payTermLb = tk.Label(cxFrame,text="Payment Terms", bg = "#9BC2E6", font=("Segoe UI", 10))
 
         #Adding Search button in cxFrame 2
-        starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
+        # starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
         rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
 
         mobileLb = tk.Label(cxFrame2, text="Mobile", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -1169,9 +1170,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         payTermLb.grid(row=3,column=3)
         
         #label grid using cxFrame2
-        starButton.grid(row=0, column=0, pady=(20,0))
+        # starButton.grid(row=0, column=0, pady=(20,0))
         mobileLb.grid(row=1, column=0, pady=(20,0))
-        rangeButton.grid(row=0,column=1, pady=(20,0))
+        rangeButton.grid(row=0,column=0, pady=(20,0))
         currencyLabel.grid(row=1,column=1, pady=(20,0))
         currencyLabel.grid(row=1,column=1, pady=(20,0))
         remarksLabel.grid(row=1,column=2, pady=(20,0))#padx=(50,5)
@@ -1327,15 +1328,15 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         
         finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
 
-        freightCostLabel1 = tk.Label(entryFrame, text="Freight", bg= "#DDEBF7")
-        freightCostLabel2 = tk.Label(entryFrame, text="Incured", bg= "#DDEBF7")
-        freightSaleLabel1 = tk.Label(entryFrame, text="Freight to", bg= "#DDEBF7")
-        freightSaleLabel2 = tk.Label(entryFrame, text="be Charged", bg= "#DDEBF7")
+        # freightCostLabel1 = tk.Label(entryFrame, text="Freight", bg= "#DDEBF7")
+        # freightCostLabel2 = tk.Label(entryFrame, text="Incured", bg= "#DDEBF7")
+        # freightSaleLabel1 = tk.Label(entryFrame, text="Freight to", bg= "#DDEBF7")
+        # freightSaleLabel2 = tk.Label(entryFrame, text="be Charged", bg= "#DDEBF7")
         
         
 
-        marginFreightLabel1 = tk.Label(entryFrame, text="Freight Margin", bg= "#DDEBF7")
-        marginFreightLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
+        # marginFreightLabel1 = tk.Label(entryFrame, text="Freight Margin", bg= "#DDEBF7")
+        # marginFreightLabel2 = tk.Label(entryFrame, text="%", bg= "#DDEBF7")
 
         # specLabel.grid(row=0,column=0,padx=(15,0), sticky="ew")
         # gradeLabel.grid(row=0,column=1, sticky="ew")
@@ -1373,15 +1374,15 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         finalPriceLabel.grid(row=0,column=17,padx=(0,10), sticky="ew")
 
-        freightCostLabel1.grid(row=0,column=18, sticky="ew")
-        freightCostLabel2.grid(row=1,column=18, sticky="ew")
-        freightSaleLabel1.grid(row=0,column=19, sticky="ew")
-        freightSaleLabel2.grid(row=1,column=19, sticky="ew")
+        # freightCostLabel1.grid(row=0,column=18, sticky="ew")
+        # freightCostLabel2.grid(row=1,column=18, sticky="ew")
+        # freightSaleLabel1.grid(row=0,column=19, sticky="ew")
+        # freightSaleLabel2.grid(row=1,column=19, sticky="ew")
 
         
 
-        marginFreightLabel1.grid(row=0,column=20,padx=(0,10), sticky="ew")
-        marginFreightLabel2.grid(row=1,column=20,padx=(0,10), sticky="ew")
+        # marginFreightLabel1.grid(row=0,column=20,padx=(0,10), sticky="ew")
+        # marginFreightLabel2.grid(row=1,column=20,padx=(0,10), sticky="ew")
         ###################################################################
         ######################Defining List variables for various entry boxes######################
         global specialList
