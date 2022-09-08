@@ -89,14 +89,16 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
         def margin_cal(specialList, tupVar):
             try:
                 if len(specialList):
-                        key, index = keyFinder(specialList,tupVar) 
-                if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '':
-                                        salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
-                                        costPrice = float(specialList["E_COST"][0][index][0].get())
-                                        margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
-                                        specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
-                                        specialList["E_UOM"][0][index][0].focus()
-                                        # breakCheck = True
+                    key, index = keyFinder(specialList,tupVar) 
+                    if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '' and (specialList["E_Selling Cost/LBS"][0][index][0].get()).strip() != 'NA':
+                        salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
+                        costPrice = float(specialList["E_COST"][0][index][0].get())
+                        margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
+                        specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
+                        specialList["E_UOM"][0][index][0].focus()
+                        # breakCheck = True
+                    else:
+                        pass
                 else:
                     messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
                     return
@@ -106,16 +108,18 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
         def freight_cal(specialList, tupVar):
             try:
                 if len(specialList):
-                        key, index = keyFinder(specialList,tupVar) 
-                if specialList["E_freightIncured"][0][index][0].get() != '' and specialList["E_freightCharged"][0][index][0].get() != '':
-                                        #Calculating Freight Margin
-                                        fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
-                                        fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
-                                        if fcostPrice != 0 and fsalePrice != 0:
-                                            margin_freight = round(((fsalePrice - fcostPrice)/fsalePrice) * 100, 2)
-                                        specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
-                                        
-                                        # breakCheck = True
+                    key, index = keyFinder(specialList,tupVar) 
+                    if specialList["E_freightIncured"][0][index][0].get() != '' and specialList["E_freightCharged"][0][index][0].get() != '' and (specialList["E_freightIncured"][0][index][0].get()).strip() != 'NA':
+                        #Calculating Freight Margin
+                        fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
+                        fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
+                        if fcostPrice != 0 and fsalePrice != 0:
+                            margin_freight = round(((fsalePrice - fcostPrice)/fsalePrice) * 100, 2)
+                        specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
+                        
+                        # breakCheck = True
+                    else:
+                        pass
                 else:
                     messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes")
                     return 
@@ -190,16 +194,18 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
 
         def display(specialList,tupVar,df):
             key, index = keyFinder(specialList,tupVar)
-            if key == 'E_ID1':
+            if key == 'E_ID1' and specialList['E_ID1'][0][index][0].get()!="" and specialList['E_ID1'][0][index][0].get()!="NA":
                 newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
                             & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
                             & (df["od_in"]==float(specialList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(specialList['E_ID1'][0][index][0].get()))]
-                newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
+                newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
                 newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
                 newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
                 newDf= newDf[newDf['available_pieces']>0]
                 newDf = newDf.sort_values('age', ascending=False).sort_values('date_last_receipt', ascending=True)
                 specialList['E_Length'][0][index][0].focus()
+                #Resetting Index
+                newDf.reset_index(inplace=True, drop=True)
                 pt.model.df = newDf
                 pt.redraw()
 
@@ -207,8 +213,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
         def tui_hr_cehcker(specialList,quotedf,row_num,tupVar,df):
             print('sdgvdf')
             key, index = keyFinder(specialList,tupVar)
-            if specialList['E_Type'][0][index][0].get()=='TUI' or specialList['E_Type'][0][index][0].get()=='HR':
-                specialCase(root, specialList,index,pt,df,row_num,quotedf)
+            if key == 'E_OD1' and specialList['E_OD1'][0][index][0].get()!="" and specialList['E_OD1'][0][index][0].get()!="NA":
+                if specialList['E_Type'][0][index][0].get()=='TUI' or specialList['E_Type'][0][index][0].get()=='HR':
+                    specialCase(root, specialList,index,pt,df,row_num,quotedf)
                 
 
         def set_mousewheel(widget, command):
@@ -450,6 +457,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     if check:
                         e_od1[i][1].set(quotedf['E_OD1'][i])
                     cx_ent_od1.bind('<1>',lambda a:tui_hr_cehcker(specialList,quotedf,row_num,tupVar = (cx_ent_od1, cx_od1_var),df=df))
+                    cx_ent_od1.bind('<Tab>',lambda a:tui_hr_cehcker(specialList,quotedf,row_num,tupVar = (cx_ent_od1, cx_od1_var),df=df))
                     cx_ent_od1.bind('<FocusIn>',remember_focus)
                  
 
@@ -474,6 +482,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     # e_id1[row_num][0].bind_class("mytag", '<1>',lambda a:display(specialList,tupVar = (e_id1[-1][0], e_id1[-1][1]),df=df))
 
                     cx_ent_id1.bind('<1>',lambda a:display(specialList,tupVar = (cx_ent_id1, cx_id1_var),df=df))
+                    cx_ent_id1.bind('<Tab>',lambda a:display(specialList,tupVar = (cx_ent_id1, cx_id1_var),df=df))
+
                     cx_ent_id1.bind('<FocusIn>',remember_focus)
 
 
@@ -945,8 +955,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
 
         #Creating list to be sent fro df creation 
         #df = pd.read_clipboard(sep=',',on_bad_lines='skip')
-        nonList = [[None,None,None,None,None,None,None]]
-        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age'])
+        nonList = [[None,None,None,None,None,None,None,None,None]]
+        pandasDf = pd.DataFrame(nonList,columns=['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number'])
         # pandasDf = pd.DataFrame(cx_df)
         pt = Table(databaseFrame, editable=False,dataframe=pandasDf,showtoolbar=False, showstatusbar=True, maxcellwidth=1500)
         pt.cellwidth=145

@@ -184,6 +184,7 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
             row = []
             bakerxlDf = ptBaker.model.df.copy()
             bakerxlDf['RM Offer'], bakerxlDf['Price'], bakerxlDf['Location'], bakerxlDf['Lead Time'], bakerxlDf['Remarks'] = [None, None, None, None, None]
+            # xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number']
             xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number']
             colList = list(specialList.keys())
             
@@ -454,6 +455,8 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
             newDf = newDf.sort_values('age', ascending=False).sort_values('date_last_receipt', ascending=True)
             
             specialList['E_Length'][0][index][0].focus()
+            #Resetting Index
+            newDf.reset_index(inplace=True, drop=True)
             pt.model.df = newDf
             pt.redraw()
             # toproot.destroy()
