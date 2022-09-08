@@ -86,11 +86,33 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
         #         messagebox.showerror(title="Wrong Value",message="Please enter value from list only!")
         #     return
 
+        def cost_error(specialList, tupVar):
+            try:
+                if len(specialList):
+                    key, index = keyFinder(specialList,tupVar) 
+                    if key=='E_Qty' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
+                            if specialList["E_COST"][0][index][0].get()=='':
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                specialList["E_Qty"][0][index][0].focus()
+
+                    elif key=='E_Selling Cost/LBS' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
+                            if specialList["E_COST"][0][index][0].get() == '':
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                specialList["E_COST"][0][index][0].focus()
+                    else:
+                        specialList["E_Selling Cost/LBS"][0][index][0].focus()
+                                                  
+                # else:
+                #     messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
+                #     return
+            except Exception as ex:
+                raise ex
+
         def margin_cal(specialList, tupVar):
             try:
                 if len(specialList):
                     key, index = keyFinder(specialList,tupVar) 
-                    if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '' and (specialList["E_Selling Cost/LBS"][0][index][0].get()).strip() != 'NA':
+                    if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
                         salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
                         costPrice = float(specialList["E_COST"][0][index][0].get())
                         margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
@@ -109,7 +131,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
             try:
                 if len(specialList):
                     key, index = keyFinder(specialList,tupVar) 
-                    if specialList["E_freightIncured"][0][index][0].get() != '' and specialList["E_freightCharged"][0][index][0].get() != '' and (specialList["E_freightIncured"][0][index][0].get()).strip() != 'NA':
+                    if specialList["E_freightIncured"][0][index][0].get() != '' and specialList["E_freightCharged"][0][index][0].get() != '' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
                         #Calculating Freight Margin
                         fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
                         fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
@@ -523,6 +545,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     if check:
                         e_qty[i][1].set(quotedf['E_QTY'][i])
 
+                    e_qty_ent.bind("<Tab>", lambda a:cost_error(specialList,tupVar = (e_qty_ent, cx_qty_var)))
+                    e_qty_ent.bind("<Leave>", lambda a:cost_error(specialList,tupVar = (e_qty_ent, cx_qty_var)))
                     e_qty_ent.bind('<FocusIn>',remember_focus)
 
                     # e_cost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -554,6 +578,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     if check:
                         sellCostLBS[i][1].set(quotedf['E_SELLING_COST/LBS'][i])
 
+
+                    # cx_scl_entry_var.bind("<Tab>", lambda a:cost_error(specialList,tupVar = (cx_scl_entry_var, cx_scl_var)))
+                    # cx_scl_entry_var.bind("<Leave>", lambda a:cost_error(specialList,tupVar = (cx_scl_entry_var, cx_scl_var)))
                     cx_scl_entry_var.bind("<Leave>", lambda a:margin_cal(specialList,tupVar = (cx_scl_entry_var, cx_scl_var)))
                     cx_scl_entry_var.bind("<Tab>", lambda a:margin_cal(specialList,tupVar = (cx_scl_entry_var, cx_scl_var)))
 

@@ -754,6 +754,28 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
             except Exception as ex:
                 raise ex
 
+
+        def cost_error(specialList, tupVar):
+            try:
+                if len(specialList):
+                    key, index = keyFinder(specialList,tupVar) 
+                    if key=='E_Qty' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
+                            if specialList["E_COST"][0][index][0].get()=='':
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                specialList["E_Qty"][0][index][0].focus()
+
+                    elif key=='E_Selling Cost/LBS' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
+                            if specialList["E_COST"][0][index][0].get() == '':
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                specialList["E_COST"][0][index][0].focus()
+                    else:
+                        specialList["E_Selling Cost/LBS"][0][index][0].focus()
+                                                  
+                # else:
+                #     messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
+                #     return
+            except Exception as ex:
+                raise ex
         
         def addRow(quotedf,i,check=False,check2=False):
             global bakerDf
@@ -967,6 +989,8 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 e_qty[-1][0]['validate']='key'
                 e_qty[-1][0]['validatecommand'] = (e_qty[-1][0].register(intChecker),'%P','%d')
+                e_qty_ent_var.bind("<Tab>", lambda a:cost_error(specialList,tupVar = (e_qty_ent_var, e_qty_var)))
+                e_qty_ent_var.bind("<Leave>", lambda a:cost_error(specialList,tupVar = (e_qty_ent_var, e_qty_var)))
                 e_qty_ent_var.bind('<FocusIn>',remember_focus)
 
                 e_cost_var = tk.StringVar()
