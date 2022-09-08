@@ -546,7 +546,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                         e_qty[i][1].set(quotedf['E_QTY'][i])
 
                     e_qty_ent.bind("<Tab>", lambda a:cost_error(specialList,tupVar = (e_qty_ent, cx_qty_var)))
-                    e_qty_ent.bind("<Leave>", lambda a:cost_error(specialList,tupVar = (e_qty_ent, cx_qty_var)))
+                    # e_qty_ent.bind("<Leave>", lambda a:cost_error(specialList,tupVar = (e_qty_ent, cx_qty_var)))
                     e_qty_ent.bind('<FocusIn>',remember_focus)
 
                     # e_cost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -772,8 +772,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     # Adding pdf path and width and height.
                     # zoom_scale.pack(fill='y', side='right')
                     # zoom_scale.set(10)
-                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120)
-                    pdfframe.pack()
+                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120 ,zoomDPI=100)
+                    pdfframe.pack(expand=True, fill='both')
+                    pdfRoot.state('zoomed')
                     submitButton.configure(state='normal')
                 else:
                     messagebox.showerror("Error", "Empty dataframe was given in input")

@@ -883,7 +883,8 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
             boxList["E_ID2"][0][index] = (boxList["E_ID2"][0][index][0].get(),boxList["E_ID2"][0][index][0].get())
             od1=od1Var.get()
             id1 = id1Var.get()
-            if (boxList["E_OD2"][0][index] is not None) and (boxList["E_ID2"][0][index] is not None) and od1 is not None and id1 is not None:
+            # if (boxList["E_OD2"][0][index] is not None) and (boxList["E_ID2"][0][index] is not None) and od1 is not None and id1 is not None:
+            if (boxList["E_OD2"][0][index] == ('', '')) or (boxList["E_ID2"][0][index] == ('', '')) or od1 == '' or id1 == '':
                 messagebox.showerror(title="Value Error",message="Please fill all values first")
                 return
             else:

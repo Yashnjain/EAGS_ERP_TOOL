@@ -626,7 +626,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 rowclicked_single = pt.get_row_clicked(e)
                 print(f"Row clicked is {rowclicked_single+1}")
                 if len(boxList):
-                            
+                    if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:        
                             varname = focused_entry.cget("textvariable")
                             focused_var = focused_entry.getvar(varname)
                             key, index = keyFinder2(boxList,(focused_entry,varname))
@@ -638,10 +638,12 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 boxList['E_freightCharged'][0][index][1].set(0)
                                 boxList['E_Margin_Freight'][0][index][1].set(0)
                             boxList['E_Additional_Cost'][0][index][1].set(0)
+                    else:
+                        pass
                 pt.setSelectedRow(rowclicked_single)
                 pt.redraw()
-            except Exception as e:
-                raise e
+            except Exception as ex:
+                raise ex
         def remember_focus(event):
             global focused_entry
             focused_entry = event.widget
@@ -814,28 +816,29 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     addCostCalc(boxList, index)
                             elif (key == 'E_ID1' or key == 'E_OD1') and (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM"):
                                 check = False
-                                if key == 'E_ID1' and (boxList['E_OD2'][0][index][0] != '' and boxList['E_ID2'][0][index][0] != ''):
+                                if key == 'E_ID1':
+                                    if (boxList['E_OD2'][0][index][0] != '' and boxList['E_ID2'][0][index][0] != ''):
                                     
-                                    # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
-                                    newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
-                                                & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
-                                                & (df["od_in"]==float(boxList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0]))]
-                                    # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
-                                    newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
-                                    newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
-                                    newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
-                                    newDf = newDf[newDf['available_pieces']>0]
-                                    newDf = newDf.sort_values('age', ascending=False).sort_values('date_last_receipt', ascending=True)
-                                    boxList['E_Length'][0][index][0].focus()
-                                    #Resetting Index
-                                    newDf.reset_index(inplace=True, drop=True)
-                                    if pt is not None:
-                                        pt.model.df = newDf
-                                        pt.redraw()
-                                        pt.rowheader.bind('<Button-1>',handle_left_click)
-                                        breakCheck = True
-                                else:
-                                    messagebox.showerror(title="Wrong Value",message="Please enter value in E_OD2 and I_ED2")
+                                        # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
+                                        newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
+                                                    & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
+                                                    & (df["od_in"]==float(boxList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0]))]
+                                        # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
+                                        newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
+                                        newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
+                                        newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
+                                        newDf = newDf[newDf['available_pieces']>0]
+                                        newDf = newDf.sort_values('age', ascending=False).sort_values('date_last_receipt', ascending=True)
+                                        boxList['E_Length'][0][index][0].focus()
+                                        #Resetting Index
+                                        newDf.reset_index(inplace=True, drop=True)
+                                        if pt is not None:
+                                            pt.model.df = newDf
+                                            pt.redraw()
+                                            pt.rowheader.bind('<Button-1>',handle_left_click)
+                                            breakCheck = True
+                                    else:
+                                        messagebox.showerror(title="Wrong Value",message="Please enter value in E_OD2 and I_ED2")
                             
                             else:
                                 if key != "E_UOM":
