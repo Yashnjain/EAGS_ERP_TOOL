@@ -1458,7 +1458,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
 
         #CURRENCY
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5, text="$")
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","€"], width=5)
         currency.grid(row=2,column=1,pady=5)
         currency.insert(tk.END,str(quotedf['CURRENCY'][0]))
         cxDatadict["currency"].append((currency, currencyVar))
