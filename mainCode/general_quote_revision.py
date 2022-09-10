@@ -136,7 +136,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                         fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
                         fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
                         if fcostPrice != 0 and fsalePrice != 0:
-                            margin_freight = round(((fsalePrice - fcostPrice)/fsalePrice) * 100, 2)
+                            margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
                         specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
                         
                         # breakCheck = True
@@ -514,8 +514,14 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     # e_id1[-1][0]['validate']='key'
                     # e_id1[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
                     # e_od1[0][1].set(E_ID1)
-                    e_od2.append((None, None))
-                    e_id2.append((None, None))
+                    if check:
+                        e_od2.append((quotedf['E_OD2'][i], quotedf['E_OD2'][i]))
+                        e_id2.append((quotedf['E_ID2'][i], quotedf['E_ID2'][i]))
+                    else:
+                        e_od2.append((None, None))
+                        e_id2.append((None, None))
+
+                    searchLocation.append((None, None))
 
                     # e_id[-1].config(textvariable="NA", state='disabled')
 
@@ -554,7 +560,6 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     e_cost_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=e_cost_var)
                     e_cost.append((e_cost_entry_var, e_cost_var))
                     e_cost[-1][0].grid(row=2+row_num,column=16)
-                    e_cost[-1][0]['validate']='key'
                     e_cost[-1][0]['validatecommand'] = (e_cost[-1][0].register(intFloat),'%P','%d')
                     if check:
                         e_cost[i][1].set(quotedf['E_COST'][i])
@@ -588,7 +593,6 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     marginlbs_var = tk.StringVar()
                     marginlbs.append((ttk.Entry(entryFrame, width=5, validate = "key",textvariable=marginlbs_var), marginlbs_var))
                     marginlbs[-1][0].grid(row=2+row_num,column=18)
-                    marginlbs[-1][0]['validate']='key'
                     marginlbs[-1][0]['validatecommand'] = (marginlbs[-1][0].register(intFloat),'%P','%d')
                     if check:
                         marginlbs[i][1].set(quotedf['E_MARGIN_LBS'][i])
@@ -653,6 +657,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     cx_lt_var = tk.StringVar()
                     leadTime.append((ttk.Entry(entryFrame, width=10, validate = "key",textvariable=cx_lt_var), cx_lt_var))
                     leadTime[-1][0].grid(row=2+row_num,column=22)
+                    leadTime[-1][0]['validatecommand'] = (leadTime[-1][0].register(intFloat),'%P','%d')
                     if check:
                         leadTime[i][1].set(quotedf['LEAD_TIME'][i])
                     # LEAD_TIME=quotedf['LEAD_TIME'][i]
@@ -678,6 +683,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     freightIncured_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=freightIncured_var)
                     freightIncured.append((freightIncured_entry_var, freightIncured_var))
                     freightIncured[-1][0].grid(row=2+row_num,column=24)
+                    freightIncured[-1][0]['validate']='key'
+                    freightIncured[-1][0]['validatecommand'] = (freightIncured[-1][0].register(intFloat),'%P','%d')
                     if check:
                         freightIncured[i][1].set(quotedf['E_FREIGHT_INCURED'][i])
 
@@ -690,11 +697,14 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     freightCharged_entry_var = ttk.Entry(entryFrame, width=5, validate = "key",textvariable=freightCharged_var)
                     freightCharged.append((freightCharged_entry_var, freightCharged_var))
                     freightCharged[-1][0].grid(row=2+row_num,column=25)
+                    freightCharged[-1][0]['validate']='key'
+                    freightCharged[-1][0]['validatecommand'] = (freightCharged[-1][0].register(intFloat),'%P','%d')
                     if check:
                         freightCharged[i][1].set(quotedf['E_FREIGHT_CHARGED'][i])
 
-                    freightIncured_entry_var.bind("<Leave>", lambda a:freight_cal(specialList,tupVar = (freightCharged_entry_var, freightCharged_var)))
-                    freightIncured_entry_var.bind("<Tab>", lambda a:freight_cal(specialList,tupVar = (freightCharged_entry_var, freightCharged_var)))
+                    freightCharged_entry_var.bind("<Leave>", lambda a:freight_cal(specialList,tupVar = (freightCharged_entry_var, freightCharged_var)))
+                    freightCharged_entry_var.bind("<Tab>", lambda a:freight_cal(specialList,tupVar = (freightCharged_entry_var, freightCharged_var)))
+
 
                     # marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=26,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
 
@@ -704,7 +714,10 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     if check:
                         marginFreight[i][1].set(quotedf['E_MARGIN_FREIGHT'][i])
                     
-                    lot_serial_number.append((None, None))
+                    if check:
+                        lot_serial_number.append((quotedf['LOT_SERIAL_NUMBER'][i], quotedf['LOT_SERIAL_NUMBER'][i]))
+                    else:
+                        lot_serial_number.append((None, None))
 
                     # E_FINAL_PRICE=quotedf['E_FINAL_PRICE'][i]
                     # finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=21,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -731,26 +744,29 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 raise e
         def deleteRow():
             try:
-                global quoteDf
-                quoteDf = []
-                submitButton.configure(state='disable')
-                for key in specialList.keys():
-                    
-                    # specialList[key][0][-1][1].destroy()
-                    if (len(specialList[key][0])==1):
-                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
-                            specialList[key][0][0][0].configure(state='normal')
-                            specialList[key][0][0][0].delete(0, tk.END)
+                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
+                    global quoteDf
+                    quoteDf = []
+                    submitButton.configure(state='disable')
+                    for key in specialList.keys():
                         
-                        # time.sleep(1)
-                        # addRow()
-                    else:
-                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
-                            specialList[key][0][-1][0].destroy()
-                        specialList[key][0].pop()
-                # show bottom of canvas
-                entryCanvas.yview("moveto", 0)
-                entryCanvas.yview_moveto('1.0')
+                        # specialList[key][0][-1][1].destroy()
+                        if (len(specialList[key][0])==1):
+                            if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec' and key != 'Lot_Serial_Number' and key != 'searchLocation':
+                                specialList[key][0][0][0].configure(state='normal')
+                                specialList[key][0][0][0].delete(0, tk.END)
+                            
+                            # time.sleep(1)
+                            # addRow()
+                        else:
+                            if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec' and key != 'Lot_Serial_Number' and key != 'searchLocation':
+                                specialList[key][0][-1][0].destroy()
+                            specialList[key][0].pop()
+                    # show bottom of canvas
+                    entryCanvas.yview("moveto", 0)
+                    entryCanvas.yview_moveto('1.0')
+                else:
+                    pass
             except Exception as e:
                 raise e
         
@@ -1186,7 +1202,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
         addCostLabel2 = tk.Label(entryFrame, text="Cost", bg= "#DDEBF7")
-        leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        leadTimeLabel1 = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        leadTimeLabel2 = tk.Label(entryFrame, text="in Days", bg= "#DDEBF7")
         finalPriceLabel = tk.Label(entryFrame, text="Final Price", bg= "#DDEBF7")
 
         freightCostLabel1 = tk.Label(entryFrame, text="Freight", bg= "#DDEBF7")
@@ -1231,7 +1248,8 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
         sellcostUOMLabel2.grid(row=1,column=20, sticky="ew")
         addCostLabel1.grid(row=0,column=21, sticky="ew")
         addCostLabel2.grid(row=1,column=21, sticky="ew")
-        leadTimeLAbel.grid(row=0,column=22, sticky="ew")
+        leadTimeLabel1.grid(row=0,column=22, sticky="ew")
+        leadTimeLabel2.grid(row=1,column=22, sticky="ew")
         finalPriceLabel.grid(row=0,column=23,padx=(0,10), sticky="ew")
         freightCostLabel1.grid(row=0,column=24, sticky="ew")
         freightCostLabel2.grid(row=1,column=24, sticky="ew")

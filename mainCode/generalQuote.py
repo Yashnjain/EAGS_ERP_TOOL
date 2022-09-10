@@ -206,8 +206,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
                 e_od2.append((None, None))
                 e_id2.append((None, None))
-                # searchGrade.append((None, None))
-                # searchYield.append((None, None))
+                
                 searchLocation.append((None, None))
 
                 # e_id[-1].config(textvariable="NA", state='disabled')
@@ -241,6 +240,8 @@ def quoteGenerator(mainRoot,user,conn, df):
                 addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
                 # addCost[-1].config(textvariable="NA", state='disabled')
                 leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=22,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                leadTime[-1][0]['validate']='key'
+                leadTime[-1][0]['validatecommand'] = (leadTime[-1][0].register(intFloat),'%P','%d')
                 # leadTime[-1].config(textvariable="NA", state='disabled')
 
                 finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=23,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
@@ -249,9 +250,12 @@ def quoteGenerator(mainRoot,user,conn, df):
                 
 
                 freightIncured.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=24,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                freightIncured[-1][0]['validate']='key'
+                freightIncured[-1][0]['validatecommand'] = (freightIncured[-1][0].register(intFloat),'%P','%d')
                 
                 freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=25,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
-
+                freightCharged[-1][0]['validate']='key'
+                freightCharged[-1][0]['validatecommand'] = (freightCharged[-1][0].register(intFloat),'%P','%d')
 
 
                 
@@ -280,27 +284,30 @@ def quoteGenerator(mainRoot,user,conn, df):
                 raise e
         def deleteRow():
             try:
-                global quoteDf
-                quoteDf = []
-                submitButton.configure(state='disable')
-                for key in specialList.keys():
-                    
-                    # specialList[key][0][-1][1].destroy()
-                    if (len(specialList[key][0])==1):
-                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
-                            specialList[key][0][0][0].configure(state='normal')
-                            specialList[key][0][0][0].delete(0, tk.END)
+                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
+                    global quoteDf
+                    quoteDf = []
+                    submitButton.configure(state='disable')
+                    for key in specialList.keys():
                         
-                        # time.sleep(1)
-                        # addRow()
-                    else:
-                        if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec':
-                            specialList[key][0][-1][0].destroy()
-                        specialList[key][0].pop()
-                # show bottom of canvas
-                entryCanvas.yview("moveto", 0)
-                root.update()
-                entryCanvas.yview("moveto", 0)
+                        # specialList[key][0][-1][1].destroy()
+                        if (len(specialList[key][0])==1):
+                            if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec' and key != 'Lot_Serial_Number' and key != 'searchLocation':
+                                specialList[key][0][0][0].configure(state='normal')
+                                specialList[key][0][0][0].delete(0, tk.END)
+                            
+                            # time.sleep(1)
+                            # addRow()
+                        else:
+                            if key!='E_OD2' and key != 'E_ID2' and key != 'C_Type' and key != 'E_Spec' and key != 'Lot_Serial_Number' and key != 'searchLocation':
+                                specialList[key][0][-1][0].destroy()
+                            specialList[key][0].pop()
+                    # show bottom of canvas
+                    entryCanvas.yview("moveto", 0)
+                    root.update()
+                    entryCanvas.yview("moveto", 0)
+                else:
+                    pass
 
                 
                 # entryCanvas.yview_moveto('1.0')
@@ -679,7 +686,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
         addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
-        leadTimeLabel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        leadTimeLabel1 = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        leadTimeLabel2 = tk.Label(entryFrame, text="in Days", bg= "#DDEBF7")
 
         finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
 
@@ -726,7 +734,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         sellcostUOMLabel2.grid(row=1,column=20, sticky="ew")
         addCostLabel1.grid(row=0,column=21, sticky="ew")
         addCostLabel2.grid(row=1,column=21, sticky="ew")
-        leadTimeLabel.grid(row=0,column=22, sticky="ew")
+        leadTimeLabel1.grid(row=0,column=22, sticky="ew")
+        leadTimeLabel2.grid(row=1,column=22, sticky="ew")
 
         finalPriceLabel.grid(row=0,column=23,padx=(0,10), sticky="ew")
 

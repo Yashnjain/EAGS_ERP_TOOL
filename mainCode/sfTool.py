@@ -3,7 +3,7 @@ from snowflake.connector.pandas_tools import write_pandas
 # from snowflake.sqlalchemy import URL
 # from sqlalchemy import create_engine
 import pandas as pd
-# import datetime
+import datetime
 
 USER =  "SVC_BUIT"#  "SVC_BUITDB_DEV"
 PASSWORD = "BUIT2022"
@@ -109,11 +109,21 @@ def get_cx_df(conn,table, customer= 'general'):
         else:
             query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
+        init_time = datetime.datetime.now()
+        print(init_time)
         cur.execute(query)
-        names = [ x[0] for x in cur.description]
-        rows = cur.fetchall()
-        df= pd.DataFrame( rows, columns=names)
-        # df = cur.fetch_pandas_all()
+
+        # names = [ x[0] for x in cur.description]
+        # rows = cur.fetchall()
+        # df= pd.DataFrame(rows, columns=names)
+        # timeTaken = datetime.datetime.now() - init_time
+        # print(f"current time taken for cur.fetch_all = {timeTaken}")
+        # init_time = datetime.datetime.now()
+        # print(init_time)
+        # cur.execute(query)
+        df = cur.fetch_pandas_all()
+        # timeTaken = datetime.datetime.now() - init_time
+        # print(f"current time taken for cur.fetch_pandas_all = {timeTaken}")
         df.columns = map(str.lower  , df.columns)
         # df = pd.read_sql_query(query, conn)
         return df
@@ -127,10 +137,10 @@ def get_inv_df(conn, table):
         query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN, DATE_LAST_RECEIPT, AGE, HEAT_NUMBER, LOT_SERIAL_NUMBER FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
         cur.execute(query)
-        names = [ x[0] for x in cur.description]
-        rows = cur.fetchall()
-        df= pd.DataFrame( rows, columns=names)
-        # df = cur.fetch_pandas_all()
+        # names = [ x[0] for x in cur.description]
+        # rows = cur.fetchall()
+        # df= pd.DataFrame( rows, columns=names)
+        df = cur.fetch_pandas_all()
         df.columns = map(str.lower  , df.columns)
         df = df.fillna("")
         df['od_in'] = df['od_in'].astype('float')

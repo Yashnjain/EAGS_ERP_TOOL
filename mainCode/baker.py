@@ -480,10 +480,10 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         
         def tempbakerDfUpdate():
             
-            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "E_OD2", "E_ID2", "Lot_Serial_Number", "searchLocation"]
+            xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number', "searchLocation"]
             for index in range(len(temp_bakerDf)):
                 for key in specialList.keys():
-                    if key not in xlList:
+                    if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
                         temp_bakerDf[key][index] = specialList[key][0][index][1].get()
                         # print(temp_bakerDf[key][index])
             #update baker main df
@@ -832,6 +832,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
                 # addCost[-1].config(textvariable="NA", state='disabled')
                 leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf))
+                leadTime[-1][0]['validate']='key'
+                leadTime[-1][0]['validatecommand'] = (leadTime[-1][0].register(intFloat),'%P','%d')
                 # temp_bakerDf = leadTime[0][1]
                 # temp_bakerDf = myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,entpady=entpady, bakerDf=temp_bakerDf)[1]
                 # leadTime[-1].config(textvariable="NA", state='disabled')
@@ -886,34 +888,37 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 raise e
         def deleteRow():
             try:
-                global quoteDf
-                quoteDf = []
-                #deleting row from datafrmes as well
-                bakerDf.drop(bakerDf.tail(1).index,inplace=True)
-                temp_bakerDf.drop(temp_bakerDf.tail(1).index,inplace=True)
-                ptBaker.model.df.drop(ptBaker.model.df.tail(1).index,inplace=True)
-                ptBaker.redraw()
-                submitButton.configure(state='disable')
-                xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", "Lot_Serial_Number", "searchLocation"]
-                for key in specialList.keys():
-                    
-                    # specialList[key][0][-1][1].destroy()
-                    if (len(specialList[key][0])==1):
-                        if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
-                            specialList[key][0][0][0].configure(state='normal')
-                            specialList[key][0][0][0].delete(0, tk.END)
-                            entryCanvas.yview_moveto('1.0')
+                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
+                    global quoteDf
+                    quoteDf = []
+                    #deleting row from datafrmes as well
+                    bakerDf.drop(bakerDf.tail(1).index,inplace=True)
+                    temp_bakerDf.drop(temp_bakerDf.tail(1).index,inplace=True)
+                    ptBaker.model.df.drop(ptBaker.model.df.tail(1).index,inplace=True)
+                    ptBaker.redraw()
+                    submitButton.configure(state='disable')
+                    xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number', "searchLocation"]
+                    for key in specialList.keys():
                         
-                        # time.sleep(1)
-                        # addRow()
-                    else:
-                        if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
-                            specialList[key][0][-1][0].destroy()
-                        specialList[key][0].pop()
-                # show bottom of canvas
-                entryCanvas.yview("moveto", 0)
-                root.update()
-                entryCanvas.yview("moveto", 0)
+                        # specialList[key][0][-1][1].destroy()
+                        if (len(specialList[key][0])==1):
+                            if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
+                                specialList[key][0][0][0].configure(state='normal')
+                                specialList[key][0][0][0].delete(0, tk.END)
+                                entryCanvas.yview_moveto('1.0')
+                            
+                            # time.sleep(1)
+                            # addRow()
+                        else:
+                            if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
+                                specialList[key][0][-1][0].destroy()
+                            specialList[key][0].pop()
+                    # show bottom of canvas
+                    entryCanvas.yview("moveto", 0)
+                    root.update()
+                    entryCanvas.yview("moveto", 0)
+                else:
+                    pass
                 #Updating dataframe values in entry boxes after filter or deletion
                 
                 # entryCanvas.yview_moveto('1.0')
@@ -1324,7 +1329,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         sellcostUOMLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
         addCostLabel1 = tk.Label(entryFrame, text="Additional", bg= "#DDEBF7")
         addCostLabel2 = tk.Label(entryFrame, text="Cost/UOM", bg= "#DDEBF7")
-        leadTimeLAbel = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        leadTimeLabel1 = tk.Label(entryFrame, text="Lead Time", bg= "#DDEBF7")
+        leadTimeLabel2 = tk.Label(entryFrame, text="in Days", bg= "#DDEBF7")
         
         finalPriceLabel = tk.Label(entryFrame, text="Final Price/UOM", bg= "#DDEBF7")
 
@@ -1370,7 +1376,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         sellcostUOMLabel2.grid(row=1,column=14, sticky="ew")
         addCostLabel1.grid(row=0,column=15, sticky="ew")
         addCostLabel2.grid(row=1,column=15, sticky="ew")
-        leadTimeLAbel.grid(row=0,column=16, sticky="ew")
+        leadTimeLabel1.grid(row=0,column=16, sticky="ew")
+        leadTimeLabel2.grid(row=1,column=16, sticky="ew")
 
         finalPriceLabel.grid(row=0,column=17,padx=(0,10), sticky="ew")
 

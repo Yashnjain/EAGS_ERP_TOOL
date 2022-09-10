@@ -474,10 +474,10 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     fcostPrice = float(boxList["E_freightIncured"][0][index][0].get())
                                     fsalePrice = float(boxList["E_freightCharged"][0][index][0].get())
                                     if fcostPrice != 0 and fsalePrice != 0:
-                                        margin_freight = round(((fsalePrice - fcostPrice)/fsalePrice) * 100, 2)
-                                    boxList["E_Margin_Freight"][0][index][1].set(margin_freight)
+                                        margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
+                                        boxList["E_Margin_Freight"][0][index][1].set(margin_freight)
                                     
-                                    breakCheck = True
+                                        breakCheck = True
                                 else:
                                     messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes")
                                     return
@@ -817,7 +817,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             elif (key == 'E_ID1' or key == 'E_OD1') and (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM"):
                                 check = False
                                 if key == 'E_ID1':
-                                    if (boxList['E_OD2'][0][index][0] != '' and boxList['E_ID2'][0][index][0] != ''):
+                                    if (isinstance(boxList['E_OD2'][0][index][0], str) and isinstance(boxList['E_ID2'][0][index][0], str))and(boxList['E_OD2'][0][index][0] != '' and boxList['E_ID2'][0][index][0] != ''):
                                     
                                         # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
                                         newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
