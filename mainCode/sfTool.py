@@ -109,8 +109,8 @@ def get_cx_df(conn,table, customer= 'general'):
         else:
             query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
-        init_time = datetime.datetime.now()
-        print(init_time)
+        # init_time = datetime.datetime.now()
+        # print(init_time)
         cur.execute(query)
 
         # names = [ x[0] for x in cur.description]

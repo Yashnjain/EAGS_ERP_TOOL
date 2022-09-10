@@ -626,7 +626,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 rowclicked_single = pt.get_row_clicked(e)
                 print(f"Row clicked is {rowclicked_single+1}")
                 if len(boxList):
-                    if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:        
+                    if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:
+                        if list(pt.model.df.iloc[0]) != [None, None, None, None, None, None, None, None, None]:
                             varname = focused_entry.cget("textvariable")
                             focused_var = focused_entry.getvar(varname)
                             key, index = keyFinder2(boxList,(focused_entry,varname))
@@ -638,6 +639,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 boxList['E_freightCharged'][0][index][1].set(0)
                                 boxList['E_Margin_Freight'][0][index][1].set(0)
                             boxList['E_Additional_Cost'][0][index][1].set(0)
+                        else:
+                            pass
                     else:
                         pass
                 pt.setSelectedRow(rowclicked_single)

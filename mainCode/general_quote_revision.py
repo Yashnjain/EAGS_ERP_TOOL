@@ -113,12 +113,14 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 if len(specialList):
                     key, index = keyFinder(specialList,tupVar) 
                     if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
-                        salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
-                        costPrice = float(specialList["E_COST"][0][index][0].get())
-                        margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
-                        specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
-                        specialList["E_UOM"][0][index][0].focus()
-                        # breakCheck = True
+                        if specialList["E_Selling Cost/LBS"][0][index][0].get() != 'None' and specialList["E_COST"][0][index][0].get() != 'None' and (specialList["E_Selling Cost/LBS"][0][index][0].get()).strip() != 'NA':
+
+                            salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
+                            costPrice = float(specialList["E_COST"][0][index][0].get())
+                            margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
+                            specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
+                            specialList["E_UOM"][0][index][0].focus()
+                            # breakCheck = True
                     else:
                         pass
                 else:
@@ -137,7 +139,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                         fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
                         if fcostPrice != 0 and fsalePrice != 0:
                             margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
-                        specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
+                            specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
                         
                         # breakCheck = True
                     else:
@@ -1467,6 +1469,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 print(f"Row clicked is {rowclicked_single+1}")
                 if len(specialList):
                     if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:
+                        if list(pt.model.df.iloc[0]) != [None, None, None, None, None, None, None, None, None]:
                             varname = focused_entry.cget("textvariable")
                             focused_var = focused_entry.getvar(varname)
                             key, index = keyFinder2(specialList,(focused_entry,varname))
@@ -1478,6 +1481,10 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                             specialList['E_freightCharged'][0][index][1].set(0)
                             specialList['E_Margin_Freight'][0][index][1].set(0)
                             specialList['E_Additional_Cost'][0][index][1].set(0)
+                        else:
+                            pass
+                    else:
+                        pass
                 pt.setSelectedRow(rowclicked_single)
                 pt.redraw()
             except Exception as e:

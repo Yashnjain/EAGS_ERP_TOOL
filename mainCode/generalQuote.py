@@ -1,4 +1,3 @@
-from re import search
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
@@ -9,7 +8,7 @@ import sys
 import pandas as pd
 from pandastable import Table
 from Tools import dfMaker, resource_path, rangeSearch
-from sfTool import get_connection,get_cx_df, get_inv_df
+from sfTool import get_cx_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
 import os, shutil

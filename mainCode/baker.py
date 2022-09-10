@@ -402,8 +402,12 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     return
                 if len(df) == 0:
                     return
-
+                
                 df = pd.read_clipboard(sep=',', on_bad_lines='skip')
+                if len(df.columns)!=8:
+                    messagebox.showwarning("WARNING","All 8 columns not copied please check",
+                                            parent=self.parentframe)
+                    return
                 model = TableModel(df)
                 self.updateModel(model)
                 self.redraw()
