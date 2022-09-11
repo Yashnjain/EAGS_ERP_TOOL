@@ -117,6 +117,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
 
                             salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
                             costPrice = float(specialList["E_COST"][0][index][0].get())
+                            if salePrice == 0.0 or costPrice == 0.0:
+                                messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
+                                return
                             margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
                             specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
                             specialList["E_UOM"][0][index][0].focus()
@@ -137,9 +140,12 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                         #Calculating Freight Margin
                         fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
                         fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
-                        if fcostPrice != 0 and fsalePrice != 0:
-                            margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
-                            specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
+                        if fsalePrice == 0.0 or fcostPrice == 0.0:
+                            messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
+                            return
+                        # if fcostPrice != 0 and fsalePrice != 0:
+                        margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
+                        specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
                         
                         # breakCheck = True
                     else:

@@ -741,12 +741,15 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                     key, index = keyFinder(specialList,tupVar) 
                     if specialList["E_Selling Cost/LBS"][0][index][0].get() != '' and specialList["E_COST"][0][index][0].get() != '' and (specialList["E_Selling Cost/LBS"][0][index][0].get()).strip() != 'NA':
                         if specialList["E_Selling Cost/LBS"][0][index][0].get() != 'None' and specialList["E_COST"][0][index][0].get() != 'None' and (specialList["E_Selling Cost/LBS"][0][index][0].get()).strip() != 'NA':
-                                            salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
-                                            costPrice = float(specialList["E_COST"][0][index][0].get())
-                                            margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
-                                            specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
-                                            specialList["E_UOM"][0][index][0].focus()
-                                            # breakCheck = True
+                            salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
+                            costPrice = float(specialList["E_COST"][0][index][0].get())
+                            if salePrice == 0.0 or costPrice == 0.0:
+                                messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
+                                return
+                            margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
+                            specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
+                            specialList["E_UOM"][0][index][0].focus()
+                            # breakCheck = True
                     else:
                         pass
                 else:

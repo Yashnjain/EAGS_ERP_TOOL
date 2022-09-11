@@ -318,18 +318,23 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                                     boxList[next_key][0][index][1].set(float(boxList[cx_eags[next_key]][0][index][0].get()))
                                         else:
                                             messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
-
-                                            boxList[next_key][0][index][0].focus()
+                                            for keys in cx_eags.keys():
+                                                if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                                    boxList[keys][0][index][1].set('')
+                                            boxList[key][0][index][0].focus()
                                             breakCheck = True
                                             break
                                     else:#removing .get() from customer side 
-                                        if boxList[cx_eags[next_key]][0][index][0] is not None or boxList[cx_eags[next_key]][0][index][0] != '':
+                                        if boxList[cx_eags[next_key]][0][index][0] is not None and boxList[cx_eags[next_key]][0][index][0] != '':
                                             if float(boxList[cx_eags[next_key]][0][index][0]) in list(map(lambda x: float(x),new_list)):
                                                 if next_key != 'E_OD2' and next_key != 'E_ID2':
                                                     boxList[next_key][0][index][1].set(float(boxList[cx_eags[next_key]][0][index][0]))
                                         else:
                                             messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
-                                            boxList[next_key][0][index][0].focus()
+                                            for keys in cx_eags.keys():
+                                                if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                                    boxList[keys][0][index][1].set('')
+                                            boxList[key][0][index][0].focus()
                                             breakCheck = True
                                             break
                                 
@@ -359,9 +364,22 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             
                             elif next_key != 'E_Spec' and not len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0].get()) == '' or str(boxList[cx_eags[next_key]][0][index][0].get()) is None):
                                 messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
-                                boxList[next_key][0][index][0].focus()
-                                breakCheck = True
-                                break
+                                if not(key == 'E_OD2' or key == 'E_ID2'):
+                                    for keys in cx_eags.keys():
+                                        if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                            boxList[keys][0][index][1].set('')
+                                    boxList[key][0][index][0].focus()
+                                    breakCheck = True
+                                    break
+                            elif next_key != 'E_Spec' and len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0]) == '' or str(boxList[cx_eags[next_key]][0][index][0]) is None):
+                                messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
+                                if not(key == 'E_OD2' or key == 'E_ID2'):
+                                    for keys in cx_eags.keys():
+                                        if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                            boxList[keys][0][index][1].set('')
+                                    boxList[key][0][index][0].focus()
+                                    breakCheck = True
+                                    break
                             else:
                                 if next_key != 'E_OD2' and next_key != 'E_ID2' and next_key != 'Lot_Serial_Number':
                                     if next_key=='E_Spec' and not len(bakerDf):
@@ -397,6 +415,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 
                 else:
                     if len(boxList):
+                        cx_eags = {'E_Grade':'C_Grade','E_Yield':'C_Yield','E_OD1':'C_OD','E_ID1':'C_ID','E_OD2':'C_OD','E_ID2':'C_ID'}
                         key, index = keyFinder(boxList,(ent,var))
                         if key=='E_Additional_Cost':
                             if boxList["E_Additional_Cost"][0][index][1].get()!='' and boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
@@ -449,6 +468,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 if boxList["E_Selling Cost/LBS"][0][index][0].get() != '' and boxList["E_COST"][0][index][0].get() != '':
                                     salePrice = float(boxList["E_Selling Cost/LBS"][0][index][0].get())
                                     costPrice = float(boxList["E_COST"][0][index][0].get())
+                                    if salePrice == 0.0 or costPrice == 0.0:
+                                        messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
+                                        return
                                     margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
                                     boxList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
                                     boxList["E_UOM"][0][index][0].focus()
@@ -467,12 +489,15 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 messagebox.showerror(title="Fright Price Blank",message="Please enter value in Freight Charged box.")
                                 boxList["E_freightCharged"][0][index][0].focus()
                                 breakCheck = True
-
+                            
                             else:
                                 if boxList["E_freightIncured"][0][index][0].get() != '' and boxList["E_freightCharged"][0][index][0].get() != '':
                                     #Calculating Freight Margin
                                     fcostPrice = float(boxList["E_freightIncured"][0][index][0].get())
                                     fsalePrice = float(boxList["E_freightCharged"][0][index][0].get())
+                                    if fsalePrice == 0.0 or fcostPrice == 0.0:
+                                        messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
+                                        return
                                     if fcostPrice != 0 and fsalePrice != 0:
                                         margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
                                         boxList["E_Margin_Freight"][0][index][1].set(margin_freight)
@@ -482,7 +507,33 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes")
                                     return
 
-
+                        elif key in cx_eags:
+                            if not len(bakerDf):
+                                if boxList[cx_eags[key]][0][index][0].get() != '':
+                                    if float(boxList[cx_eags[key]][0][index][0].get()) in list(map(lambda x: float(x),new_list)):
+                                        if key != 'E_OD2' and key != 'E_ID2':
+                                            boxList[key][0][index][1].set(float(boxList[cx_eags[key]][0][index][0].get()))
+                                else:
+                                    messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                    for keys in cx_eags.keys():
+                                        if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                            boxList[keys][0][index][1].set('')
+                                    boxList[key][0][index][0].focus()
+                                    breakCheck = True
+                                    # break
+                            else:#removing .get() from customer side 
+                                if boxList[cx_eags[key]][0][index][0] is not None and boxList[cx_eags[key]][0][index][0] != '':
+                                    if float(boxList[cx_eags[key]][0][index][0]) in list(map(lambda x: float(x),new_list)):
+                                        if key != 'E_OD2' and key != 'E_ID2':
+                                            boxList[key][0][index][1].set(float(boxList[cx_eags[key]][0][index][0]))
+                                else:
+                                    messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                    for keys in cx_eags.keys():
+                                        if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                            boxList[keys][0][index][1].set('')
+                                    boxList[key][0][index][0].focus()
+                                    breakCheck = True
+                                    # break
                                 
                             
 
