@@ -508,11 +508,17 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     return
 
                         elif key in cx_eags:
+                            new_list = filterList(boxList,key,index,df)
                             if not len(bakerDf):
                                 if boxList[cx_eags[key]][0][index][0].get() != '':
-                                    if float(boxList[cx_eags[key]][0][index][0].get()) in list(map(lambda x: float(x),new_list)):
-                                        if key != 'E_OD2' and key != 'E_ID2':
-                                            boxList[key][0][index][1].set(float(boxList[cx_eags[key]][0][index][0].get()))
+                                    if key not in ['E_Grade', 'E_Yield']:
+                                        if float(boxList[cx_eags[key]][0][index][0].get()) in list(map(lambda x: float(x),new_list)):
+                                            if key != 'E_OD2' and key != 'E_ID2':
+                                                boxList[key][0][index][1].set(float(boxList[cx_eags[key]][0][index][0].get()))
+                                    else:
+                                        if boxList[cx_eags[key]][0][index][0].get() in new_list:
+                                            if key != 'E_OD2' and key != 'E_ID2':
+                                                boxList[key][0][index][1].set(boxList[cx_eags[key]][0][index][0].get())
                                 else:
                                     messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
                                     for keys in cx_eags.keys():
@@ -522,17 +528,23 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     breakCheck = True
                                     # break
                             else:#removing .get() from customer side 
-                                if boxList[cx_eags[key]][0][index][0] is not None and boxList[cx_eags[key]][0][index][0] != '':
+                                if boxList[cx_eags[key]][0][index][0] is not None and boxList[cx_eags[key]][0][index][0] != '' and key not  in ['E_Grade', 'E_Yield']:
+                                    # if key not in ['E_Grade', 'E_Yield']:
                                     if float(boxList[cx_eags[key]][0][index][0]) in list(map(lambda x: float(x),new_list)):
                                         if key != 'E_OD2' and key != 'E_ID2':
                                             boxList[key][0][index][1].set(float(boxList[cx_eags[key]][0][index][0]))
+                                    # else:
+                                    #     if boxList[cx_eags[key]][0][index][0].get() in new_list:
+                                    #         if key != 'E_OD2' and key != 'E_ID2':
+                                    #             boxList[key][0][index][1].set(boxList[cx_eags[key]][0][index][0].get())
                                 else:
-                                    messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
-                                    for keys in cx_eags.keys():
-                                        if not(keys == 'E_OD2' or keys == 'E_ID2'):
-                                            boxList[keys][0][index][1].set('')
-                                    boxList[key][0][index][0].focus()
-                                    breakCheck = True
+                                     if key not in ['E_Grade', 'E_Yield']:
+                                        messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                        for keys in cx_eags.keys():
+                                            if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                                boxList[keys][0][index][1].set('')
+                                        boxList[key][0][index][0].focus()
+                                        breakCheck = True
                                     # break
                                 
                             
@@ -663,11 +675,14 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
 
         def get_selection(e):
             try:
-                value = lbframe.list.get(lbframe.list.curselection())
-                var.set(value)
-                list_hide(e)
-                ent.focus()
-                ent.icursor(tk.END)
+                if len(lbframe.list.curselection()):
+                    value = lbframe.list.get(lbframe.list.curselection())
+                    var.set(value)
+                    list_hide(e)
+                    ent.focus()
+                    ent.icursor(tk.END)
+                else:
+                    pass
             except Exception as ex:
                 raise ex
         
@@ -893,6 +908,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                             breakCheck = True
                                     else:
                                         messagebox.showerror(title="Wrong Value",message="Please enter value in E_OD2 and I_ED2")
+                                        boxList['E_OD1'][0][index][1].set('')
+                                        boxList['E_ID1'][0][index][1].set('')
                             
                             else:
                                 if key != "E_UOM":
@@ -924,7 +941,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 if str(item).upper().startswith(str(string).upper()):
                                     lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
                                     # lbframe.list.grid(row=1,column=1,sticky=tk.NSEW)
-                                elif not lbframe.list.get(0):
+                                elif not lbframe.list.get(0) and lbframe.list.get(0) != 0.0:
                                     errMessage = True
                                     lbframe.place_forget()
                                     
@@ -944,7 +961,10 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 messagebox.showerror(title="Wrong Value",message="Please enter value from list only!222")
                                 ent.focus()
             except Exception as e:
-                raise e
+                if ent.winfo_exists()==0:
+                    messagebox.showerror(title="Error",message="Current sub window closed, please reopen it")
+                else:
+                    raise e
                         
                     # lst.grid_remove()
 

@@ -894,6 +894,7 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
                 # toproot.destroy()
                 check=True
         submitButton = tk.Button(submitFrame,text="Submit", command=exitTrue)
+        submitButton.bind("<Return>", exitTrue)
         # submitButton.place(relx=.5, rely=.5, anchor="center")
         submitButton.grid(row=0,column=1,pady=40)
         toproot.focus()
