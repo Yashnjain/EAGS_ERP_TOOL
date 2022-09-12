@@ -363,14 +363,15 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 break
                             
                             elif next_key != 'E_Spec' and not len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0].get()) == '' or str(boxList[cx_eags[next_key]][0][index][0].get()) is None):
-                                messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
-                                if not(key == 'E_OD2' or key == 'E_ID2'):
-                                    for keys in cx_eags.keys():
-                                        if not(keys == 'E_OD2' or keys == 'E_ID2'):
-                                            boxList[keys][0][index][1].set('')
-                                    boxList[key][0][index][0].focus()
-                                    breakCheck = True
-                                    break
+                                if next_key != 'E_Yield':
+                                    messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
+                                    if not(key == 'E_OD2' or key == 'E_ID2'):
+                                        for keys in cx_eags.keys():
+                                            if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                                boxList[keys][0][index][1].set('')
+                                        boxList[key][0][index][0].focus()
+                                        breakCheck = True
+                                        break
                             elif next_key != 'E_Spec' and len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0]) == '' or str(boxList[cx_eags[next_key]][0][index][0]) is None):
                                 messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
                                 if not(key == 'E_OD2' or key == 'E_ID2'):
@@ -520,13 +521,14 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                             if key != 'E_OD2' and key != 'E_ID2':
                                                 boxList[key][0][index][1].set(boxList[cx_eags[key]][0][index][0].get())
                                 else:
-                                    messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
-                                    for keys in cx_eags.keys():
-                                        if not(keys == 'E_OD2' or keys == 'E_ID2'):
-                                            boxList[keys][0][index][1].set('')
-                                    boxList[key][0][index][0].focus()
-                                    breakCheck = True
-                                    # break
+                                    if key != 'E_Yield':
+                                        messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                        for keys in cx_eags.keys():
+                                            if not(keys == 'E_OD2' or keys == 'E_ID2'):
+                                                boxList[keys][0][index][1].set('')
+                                        boxList[key][0][index][0].focus()
+                                        breakCheck = True
+                                        # break
                             else:#removing .get() from customer side 
                                 if boxList[cx_eags[key]][0][index][0] is not None and boxList[cx_eags[key]][0][index][0] != '' and key not  in ['E_Grade', 'E_Yield']:
                                     # if key not in ['E_Grade', 'E_Yield']:
