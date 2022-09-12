@@ -433,32 +433,33 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 
                 global bakerDf
                 previousDf = bakerDf.copy()
-                bakerDf = df.copy()
-                bakerDf["C_Quote Yes/No"], bakerDf["E_Location"], bakerDf["E_Type"],bakerDf["E_Spec"], bakerDf["E_Grade"], bakerDf["E_Yield"], bakerDf["E_OD1"], bakerDf["E_ID1"] = [None, None, None, None, None, None, None, None]
-                bakerDf["E_OD2"], bakerDf["E_ID2"] = [None, None]
-                bakerDf["E_Length"], bakerDf["E_Qty"], bakerDf["E_COST"] , bakerDf["E_MarginLBS"],bakerDf["E_Selling Cost/LBS"], bakerDf["E_UOM"] = [None, None, None, None, None, None]
-                bakerDf["E_Selling Cost/UOM"], bakerDf["E_Additional_Cost"], bakerDf["E_LeadTime"], bakerDf["E_Final Price"] = [None, None, None, None]
-                bakerDf["E_freightIncured"], bakerDf["E_freightCharged"], bakerDf["E_Margin_Freight"], bakerDf["Lot_Serial_Number"] = [None, None, None, None]
+                
                 # bakerDf['Quote_Yes_No'], bakerDf['Location'], bakerDf['Type'],bakerDf['Spec'], bakerDf['Grade'], bakerDf['Yield'], bakerDf['OD'], bakerDf['ID'] = [None, None, None, None, None, None, None, None]
                 # bakerDf['Length'], bakerDf['Qty'], bakerDf['E_SELLING_COST/LBS'], bakerDf['UOM'], bakerDf["E_SELLING_COST/UOM"], bakerDf['ADDITIONAL_COST'] = [None, None, None, None, None, None]
                 # bakerDf['LEAD_TIME'], bakerDf['FINAL_PRICE'] = [None, None]
 
-                #declaring temporary baker df
-                global temp_bakerDf
-                temp_bakerDf = bakerDf.copy()
+                
                 rowNum=0
                 while len(previousDf)!=rowNum:
                     deleteRow()
                     rowNum+=1
 
 
+                
+                bakerDf = df.copy()
+                bakerDf["C_Quote Yes/No"], bakerDf["E_Location"], bakerDf["E_Type"],bakerDf["E_Spec"], bakerDf["E_Grade"], bakerDf["E_Yield"], bakerDf["E_OD1"], bakerDf["E_ID1"] = [None, None, None, None, None, None, None, None]
+                bakerDf["E_OD2"], bakerDf["E_ID2"] = [None, None]
+                bakerDf["E_Length"], bakerDf["E_Qty"], bakerDf["E_COST"] , bakerDf["E_MarginLBS"],bakerDf["E_Selling Cost/LBS"], bakerDf["E_UOM"] = [None, None, None, None, None, None]
+                bakerDf["E_Selling Cost/UOM"], bakerDf["E_Additional_Cost"], bakerDf["E_LeadTime"], bakerDf["E_Final Price"] = [None, None, None, None]
+                bakerDf["E_freightIncured"], bakerDf["E_freightCharged"], bakerDf["E_Margin_Freight"], bakerDf["Lot_Serial_Number"] = [None, None, None, None]
+                #declaring temporary baker df
+                global temp_bakerDf
+                temp_bakerDf = bakerDf.copy()
+                ##Adding entry box columns in df
                 i = 1
                 while i<len(df):
                     addRow()
                     i+=1
-
-                ##Adding entry box columns in df
-                
                 # df["Quote_Yes_No"] = None
                 # df['Location'] = None
                 model = TableModel(df)
@@ -614,69 +615,72 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 if index_num == -1:
                     index_num = row_number
                 global temp_bakerDf
-                #updating entry box values from baker dataframe for handling condition after clearing filter
-                quoteYesNo[row_number][0].configure(state='normal')
-                quoteYesNo[row_number][1].set(temp_bakerDf["C_Quote Yes/No"][index_num] if temp_bakerDf["C_Quote Yes/No"][index_num]!= None else "")
-                root.update()
-                e_location[row_number][0].configure(state='normal')
-                e_location[row_number][1].set(temp_bakerDf["E_Location"][index_num] if temp_bakerDf["E_Location"][index_num]!=None else "")
-                root.update()
-                e_type[row_number][0].configure(state='normal')
-                e_type[row_number][1].set(temp_bakerDf["E_Type"][index_num] if temp_bakerDf["E_Type"][index_num]!=None else "")
-                root.update()
-                e_spec[row_number][0].configure(state='normal')
-                e_spec[row_number][1].set(temp_bakerDf["E_Spec"][index_num] if temp_bakerDf["E_Spec"][index_num] !=None else "")
-                root.update()
-                e_grade[row_number][0].configure(state='normal')
-                e_grade[row_number][1].set(temp_bakerDf["E_Grade"][index_num] if temp_bakerDf["E_Grade"][index_num] !=None else "")
-                root.update()
-                e_yield[row_number][0].configure(state='normal')
-                e_yield[row_number][1].set(temp_bakerDf["E_Yield"][index_num] if temp_bakerDf["E_Yield"][index_num] !=None else "")
-                root.update()
-                e_od1[row_number][0].configure(state='normal')
-                e_od1[row_number][1].set(temp_bakerDf["E_OD1"][index_num] if temp_bakerDf["E_OD1"][index_num]!=None else "")
-                root.update()
-                e_id1[row_number][0].configure(state='normal')
-                e_id1[row_number][1].set(temp_bakerDf["E_ID1"][index_num] if temp_bakerDf["E_ID1"][index_num]!=None else "")
-                root.update()
-                # e_od2[row_num][1].set(temp_bakerDf["E_OD2"][row_num] if temp_bakerDf["E_OD2"][row_num]!=None else "")
-                # e_id2[row_num][1].set(temp_bakerDf["E_ID2"][row_num] if temp_bakerDf["E_ID2"][row_num]!=None else "")
-                e_len[row_number][0].configure(state='normal')
-                e_len[row_number][1].set(temp_bakerDf["E_Length"][index_num] if temp_bakerDf["E_Length"][index_num]!=None else "")
-                root.update()
-                e_qty[row_number][0].configure(state='normal')
-                e_qty[row_number][1].set(temp_bakerDf["E_Qty"][index_num] if temp_bakerDf["E_Qty"][index_num]!=None else "")
-                root.update()
-                e_cost[row_number][0].configure(state='normal')
-                e_cost[row_number][1].set(temp_bakerDf["E_COST"][index_num] if temp_bakerDf["E_COST"][index_num]!=None else "")
-                root.update()
-                sellCostLBS[row_number][0].configure(state='normal')
-                sellCostLBS[row_number][1].set(temp_bakerDf["E_Selling Cost/LBS"][index_num] if temp_bakerDf["E_Selling Cost/LBS"][index_num]!=None else "")
-                root.update()
-                marginlbs[row_number][0].configure(state='normal')
-                marginlbs[row_number][1].set(temp_bakerDf["E_MarginLBS"][index_num] if temp_bakerDf["E_MarginLBS"][index_num]!=None else "")
-                root.update()
-                e_uom[row_number][0].configure(state='normal')
-                e_uom[row_number][1].set(temp_bakerDf["E_UOM"][index_num] if temp_bakerDf["E_UOM"][index_num]!=None else "")
-                root.update()
-                addCost[row_number][0].configure(state='normal')
-                addCost[row_number][1].set(temp_bakerDf["E_Additional_Cost"][index_num] if temp_bakerDf["E_Additional_Cost"][index_num]!=None else "")
-                root.update()
-                leadTime[row_number][0].configure(state='normal')
-                leadTime[row_number][1].set(temp_bakerDf["E_LeadTime"][index_num] if temp_bakerDf["E_LeadTime"][index_num]!=None else "")
-                root.update()
-                finalCost[row_number][0].configure(state='normal')
-                finalCost[row_number][1].set(temp_bakerDf["E_Final Price"][index_num] if temp_bakerDf["E_Final Price"][index_num]!=None else "")
-                root.update()
-                # freightIncured[row_number][0].configure(state='normal')
-                # freightIncured[row_number][1].set(temp_bakerDf["E_freightIncured"][index_num] if temp_bakerDf["E_freightIncured"][index_num]!=None else "")
-                # root.update()
-                # freightCharged[row_number][0].configure(state='normal')
-                # freightCharged[row_number][1].set(temp_bakerDf["E_freightCharged"][index_num] if temp_bakerDf["E_freightCharged"][index_num]!=None else "")
-                # root.update()
-                # marginFreight[row_number][0].configure(state='normal')
-                # marginFreight[row_number][1].set(temp_bakerDf["E_Margin_Freight"][index_num] if temp_bakerDf["E_Margin_Freight"][index_num]!=None else "")
-                # root.update()
+                if len(temp_bakerDf):
+                    #updating entry box values from baker dataframe for handling condition after clearing filter
+                    quoteYesNo[row_number][0].configure(state='normal')
+                    quoteYesNo[row_number][1].set(temp_bakerDf["C_Quote Yes/No"][index_num] if temp_bakerDf["C_Quote Yes/No"][index_num]!= None else "")
+                    root.update()
+                    e_location[row_number][0].configure(state='normal')
+                    e_location[row_number][1].set(temp_bakerDf["E_Location"][index_num] if temp_bakerDf["E_Location"][index_num]!=None else "")
+                    root.update()
+                    e_type[row_number][0].configure(state='normal')
+                    e_type[row_number][1].set(temp_bakerDf["E_Type"][index_num] if temp_bakerDf["E_Type"][index_num]!=None else "")
+                    root.update()
+                    e_spec[row_number][0].configure(state='normal')
+                    e_spec[row_number][1].set(temp_bakerDf["E_Spec"][index_num] if temp_bakerDf["E_Spec"][index_num] !=None else "")
+                    root.update()
+                    e_grade[row_number][0].configure(state='normal')
+                    e_grade[row_number][1].set(temp_bakerDf["E_Grade"][index_num] if temp_bakerDf["E_Grade"][index_num] !=None else "")
+                    root.update()
+                    e_yield[row_number][0].configure(state='normal')
+                    e_yield[row_number][1].set(temp_bakerDf["E_Yield"][index_num] if temp_bakerDf["E_Yield"][index_num] !=None else "")
+                    root.update()
+                    e_od1[row_number][0].configure(state='normal')
+                    e_od1[row_number][1].set(temp_bakerDf["E_OD1"][index_num] if temp_bakerDf["E_OD1"][index_num]!=None else "")
+                    root.update()
+                    e_id1[row_number][0].configure(state='normal')
+                    e_id1[row_number][1].set(temp_bakerDf["E_ID1"][index_num] if temp_bakerDf["E_ID1"][index_num]!=None else "")
+                    root.update()
+                    # e_od2[row_num][1].set(temp_bakerDf["E_OD2"][row_num] if temp_bakerDf["E_OD2"][row_num]!=None else "")
+                    # e_id2[row_num][1].set(temp_bakerDf["E_ID2"][row_num] if temp_bakerDf["E_ID2"][row_num]!=None else "")
+                    e_len[row_number][0].configure(state='normal')
+                    e_len[row_number][1].set(temp_bakerDf["E_Length"][index_num] if temp_bakerDf["E_Length"][index_num]!=None else "")
+                    root.update()
+                    e_qty[row_number][0].configure(state='normal')
+                    e_qty[row_number][1].set(temp_bakerDf["E_Qty"][index_num] if temp_bakerDf["E_Qty"][index_num]!=None else "")
+                    root.update()
+                    e_cost[row_number][0].configure(state='normal')
+                    e_cost[row_number][1].set(temp_bakerDf["E_COST"][index_num] if temp_bakerDf["E_COST"][index_num]!=None else "")
+                    root.update()
+                    sellCostLBS[row_number][0].configure(state='normal')
+                    sellCostLBS[row_number][1].set(temp_bakerDf["E_Selling Cost/LBS"][index_num] if temp_bakerDf["E_Selling Cost/LBS"][index_num]!=None else "")
+                    root.update()
+                    marginlbs[row_number][0].configure(state='normal')
+                    marginlbs[row_number][1].set(temp_bakerDf["E_MarginLBS"][index_num] if temp_bakerDf["E_MarginLBS"][index_num]!=None else "")
+                    root.update()
+                    e_uom[row_number][0].configure(state='normal')
+                    e_uom[row_number][1].set(temp_bakerDf["E_UOM"][index_num] if temp_bakerDf["E_UOM"][index_num]!=None else "")
+                    root.update()
+                    addCost[row_number][0].configure(state='normal')
+                    addCost[row_number][1].set(temp_bakerDf["E_Additional_Cost"][index_num] if temp_bakerDf["E_Additional_Cost"][index_num]!=None else "")
+                    root.update()
+                    leadTime[row_number][0].configure(state='normal')
+                    leadTime[row_number][1].set(temp_bakerDf["E_LeadTime"][index_num] if temp_bakerDf["E_LeadTime"][index_num]!=None else "")
+                    root.update()
+                    finalCost[row_number][0].configure(state='normal')
+                    finalCost[row_number][1].set(temp_bakerDf["E_Final Price"][index_num] if temp_bakerDf["E_Final Price"][index_num]!=None else "")
+                    root.update()
+                    # freightIncured[row_number][0].configure(state='normal')
+                    # freightIncured[row_number][1].set(temp_bakerDf["E_freightIncured"][index_num] if temp_bakerDf["E_freightIncured"][index_num]!=None else "")
+                    # root.update()
+                    # freightCharged[row_number][0].configure(state='normal')
+                    # freightCharged[row_number][1].set(temp_bakerDf["E_freightCharged"][index_num] if temp_bakerDf["E_freightCharged"][index_num]!=None else "")
+                    # root.update()
+                    # marginFreight[row_number][0].configure(state='normal')
+                    # marginFreight[row_number][1].set(temp_bakerDf["E_Margin_Freight"][index_num] if temp_bakerDf["E_Margin_Freight"][index_num]!=None else "")
+                    # root.update()
+                else:
+                    pass
             except Exception as e:
                 raise e
 

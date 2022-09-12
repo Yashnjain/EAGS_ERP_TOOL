@@ -337,7 +337,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                     # zoom_scale.set(10)
                     screen_width = (pdfRoot.winfo_screenwidth())//6
                     screen_height = (pdfRoot.winfo_screenheight())//6
-                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=120 ,zoomDPI=100)
+                    pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=140 ,zoomDPI=120)
                     pdfframe.pack(expand=True, fill='both')
                     pdfRoot.state('zoomed')
                     submitButton.configure(state='normal')
