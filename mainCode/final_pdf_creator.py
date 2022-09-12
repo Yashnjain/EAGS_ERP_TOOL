@@ -145,7 +145,7 @@ def pdf_generator(df):
                     ws2.range(f"A1:{last_column_letter}{last_row}").copy(ws1.range(f"A{page_count*page_diff+1}"))    
                     ws1.activate()
                   
-        wb.api.ActiveSheet.PageSetup.Zoom=70
+        wb.api.ActiveSheet.PageSetup.Zoom=65
         # current_work_dir = os.getcwd()
         tempDir = os.path.join(os.environ["HOMEPATH"], "Temp")
         tempDir = os.path.join('C:', tempDir)

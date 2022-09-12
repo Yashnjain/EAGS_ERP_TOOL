@@ -372,7 +372,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         boxList[key][0][index][0].focus()
                                         breakCheck = True
                                         break
-                            elif next_key != 'E_Spec' and len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0]) == '' or str(boxList[cx_eags[next_key]][0][index][0]) is None):
+                            elif next_key != 'E_Type' and next_key != 'E_Spec' and len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0]) == '' or str(boxList[cx_eags[next_key]][0][index][0]) is None):
                                 messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
                                 if not(key == 'E_OD2' or key == 'E_ID2'):
                                     for keys in cx_eags.keys():

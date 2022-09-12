@@ -408,15 +408,31 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     messagebox.showwarning("WARNING","All 8 columns not copied please check",
                                             parent=self.parentframe)
                     return
-                model = TableModel(df)
-                self.updateModel(model)
-                self.redraw()
-                ptBaker.autoResizeColumns()
+                try:
+                    df['RM']
+                except:
+                    messagebox.showwarning("WARNING","RM Column not present in pasted table",
+                                            parent=self.parentframe)
+                    return
+                try:
+                    df['Qty']
+                except:
+                    messagebox.showwarning("WARNING","Qty Column not present in pasted table",
+                                            parent=self.parentframe)
+                    return
+                try:
+                    df['Saw Cut']
+                except:
+                    messagebox.showwarning("WARNING","Saw Cut Column not present in pasted table",
+                                            parent=self.parentframe)
+                    return
+                
                 # self.autoResizeColumns()
 
                 #EntryBox row adder
                 
                 global bakerDf
+                previousDf = bakerDf.copy()
                 bakerDf = df.copy()
                 bakerDf["C_Quote Yes/No"], bakerDf["E_Location"], bakerDf["E_Type"],bakerDf["E_Spec"], bakerDf["E_Grade"], bakerDf["E_Yield"], bakerDf["E_OD1"], bakerDf["E_ID1"] = [None, None, None, None, None, None, None, None]
                 bakerDf["E_OD2"], bakerDf["E_ID2"] = [None, None]
@@ -430,7 +446,11 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 #declaring temporary baker df
                 global temp_bakerDf
                 temp_bakerDf = bakerDf.copy()
-                
+                rowNum=0
+                while len(previousDf)!=rowNum:
+                    deleteRow()
+                    rowNum+=1
+
 
                 i = 1
                 while i<len(df):
@@ -441,6 +461,10 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 
                 # df["Quote_Yes_No"] = None
                 # df['Location'] = None
+                model = TableModel(df)
+                self.updateModel(model)
+                self.redraw()
+                ptBaker.autoResizeColumns()
                 return
         
             def queryBar(self, evt=None):
@@ -890,39 +914,46 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 # row_num+=1
             except Exception as e:
                 raise e
-        def deleteRow():
+        def deleteRowConfirm():
             try:
                 if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
-                    global quoteDf
-                    quoteDf = []
-                    #deleting row from datafrmes as well
-                    bakerDf.drop(bakerDf.tail(1).index,inplace=True)
-                    temp_bakerDf.drop(temp_bakerDf.tail(1).index,inplace=True)
-                    ptBaker.model.df.drop(ptBaker.model.df.tail(1).index,inplace=True)
-                    ptBaker.redraw()
-                    submitButton.configure(state='disable')
-                    xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number', "searchLocation"]
-                    for key in specialList.keys():
-                        
-                        # specialList[key][0][-1][1].destroy()
-                        if (len(specialList[key][0])==1):
-                            if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
-                                specialList[key][0][0][0].configure(state='normal')
-                                specialList[key][0][0][0].delete(0, tk.END)
-                                entryCanvas.yview_moveto('1.0')
-                            
-                            # time.sleep(1)
-                            # addRow()
-                        else:
-                            if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
-                                specialList[key][0][-1][0].destroy()
-                            specialList[key][0].pop()
-                    # show bottom of canvas
-                    entryCanvas.yview("moveto", 0)
-                    root.update()
-                    entryCanvas.yview("moveto", 0)
+                    deleteRow()
                 else:
                     pass
+            except Exception as e:
+                raise e
+        def deleteRow():
+            try:
+                
+                global quoteDf
+                quoteDf = []
+                #deleting row from datafrmes as well
+                bakerDf.drop(bakerDf.tail(1).index,inplace=True)
+                temp_bakerDf.drop(temp_bakerDf.tail(1).index,inplace=True)
+                ptBaker.model.df.drop(ptBaker.model.df.tail(1).index,inplace=True)
+                ptBaker.redraw()
+                submitButton.configure(state='disable')
+                xlList = ["C_Specification","C_Type","C_Grade","C_Yield", "C_OD", "C_ID", "C_QRD", "C_Length", "C_Qty", 'E_freightIncured', 'E_freightCharged','E_Margin_Freight', 'Lot_Serial_Number', "searchLocation"]
+                for key in specialList.keys():
+                    
+                    # specialList[key][0][-1][1].destroy()
+                    if (len(specialList[key][0])==1):
+                        if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
+                            specialList[key][0][0][0].configure(state='normal')
+                            specialList[key][0][0][0].delete(0, tk.END)
+                            entryCanvas.yview_moveto('1.0')
+                        
+                        # time.sleep(1)
+                        # addRow()
+                    else:
+                        if key!='E_OD2' and key != 'E_ID2' and key not in xlList:
+                            specialList[key][0][-1][0].destroy()
+                        specialList[key][0].pop()
+                # show bottom of canvas
+                entryCanvas.yview("moveto", 0)
+                root.update()
+                entryCanvas.yview("moveto", 0)
+                
                 #Updating dataframe values in entry boxes after filter or deletion
                 
                 # entryCanvas.yview_moveto('1.0')
@@ -1567,7 +1598,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         addRowbut.bind("<Enter>", on_enter)
         addRowbut.bind("<Leave>", on_leave)
 
-        deleteRowbut = tk.Button(controlFrame, image=delete_img, text="Delete Row",command=deleteRow,borderwidth=0, background=controlFrame["bg"])
+        deleteRowbut = tk.Button(controlFrame, image=delete_img, text="Delete Row",command=deleteRowConfirm,borderwidth=0, background=controlFrame["bg"])
         deleteRowbut.image = delete_img
         deleteRowbut.grid(row=1,column=1)
         button_dict[deleteRowbut] = [delete_img, delete_img2]
