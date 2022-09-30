@@ -333,3 +333,22 @@ def getfullquote(conn,quote_number):
         raise e
     finally:
         pass
+
+
+def get_master_df(conn, table):
+    try:
+        # init_time = datetime.datetime.now()
+        # print(init_time)
+        query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
+        cur = conn.cursor()
+        cur.execute(query)
+        names = [ x[0] for x in cur.description]
+        rows = cur.fetchall()
+        df= pd.DataFrame( rows, columns=names)
+        # df = cur.fetch_pandas_all()
+        # df.columns = map(str.lower  , df.columns)
+        df = df.fillna("")
+       
+        return df
+    except Exception as e:
+        raise e

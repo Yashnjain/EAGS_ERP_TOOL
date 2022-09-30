@@ -499,7 +499,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     if fsalePrice == 0.0 or fcostPrice == 0.0:
                                         messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
                                         return
-                                    if fcostPrice != 0 and fsalePrice != 0:
+                                    if fcostPrice != 0.0 and fsalePrice != 0.0:
                                         margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
                                         boxList["E_Margin_Freight"][0][index][1].set(margin_freight)
                                     

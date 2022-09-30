@@ -13,16 +13,22 @@ import tkcap, os
 from mail import send_mail
 from Tools import resource_path
 from quote_revision_final import quoteRevision
+from appUpdaterV2 import appUpdater
 import ctypes
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-import tempfile
+from eagsReport import reportGenerator
 
 today = datetime.strftime(date.today(), format = "%d%m%Y")
 
 S_TABLE = "EAGS_SALESPERSON"
 INV_TABLE = "EAGS_INVENTORY"
 
-
+VERSION = "0.0.0.3" 
+#Version format:
+#Major revision (new UI, lots of new features, conceptual change, etc.)
+#Minor revision (maybe a change to a search box, 1 feature added, collection of bug fixes)
+#Bug fix release
+#Build number
 
 
 
@@ -72,6 +78,7 @@ class App():
         def resize_image(event):
             new_width = event.width
             new_height = event.height
+        print(os.path.abspath(os.path.dirname(sys.argv[0])))
         entry1_path = resource_path("Entry1.png")
         w_scale_factor = screen_width/1920
         h_scale_factor = screen_height/1080
@@ -131,7 +138,21 @@ class App():
         center_img = center_img.resize((285,285), Image.Resampling.LANCZOS)
         cent_photo = ImageTk.PhotoImage(center_img)
 
+        #########Adding report generator button#################
+        report_img_path1 = resource_path("reportGenerator1.png")
+        report_img1 = tk.PhotoImage(master=mFrame, file=report_img_path1)
 
+        report_img_path2 = resource_path("reportGenerator2.png")
+        report_img2 = tk.PhotoImage(master=mFrame, file=report_img_path2)
+
+        reportbut = tk.Button(mFrame, image=report_img1, command=lambda:reportGenerator(root, conn),borderwidth=0, background=root["bg"],activebackground=root["bg"])
+        reportbut.image = report_img1
+        reportbut.place(x=620, y=20)
+
+        button_dict[reportbut] = [report_img1, report_img2]
+        reportbut.bind("<Enter>", on_enter)
+        reportbut.bind("<Leave>", on_leave)
+        ###############################################################
 
         cent_Lable = tk.Label(mFrame,image=cent_photo,borderwidth=0,bg=root["bg"])
         cent_Lable.place(x=270, y=240)#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
@@ -266,11 +287,16 @@ class App():
                         if user:
                                 global inv_df
                                 loginButton_text.set("Logging In...")
-                                root.update()
+                                root.update()  
                                 inv_df = get_inv_df(conn,table = INV_TABLE)
                                 root.deiconify() #Unhides the root window
                                 root.state('zoomed')
                                 top.destroy()
+                                filePath = os.path.abspath(__file__)
+                                fileDirectory = os.path.dirname(__file__) # relative directory path
+                                fileName = os.path.basename(__file__) # the file name only
+                                messagebox.showinfo("Current App Location", f"Current file path is {filePath} Version changed to {VERSION}")
+                                #sys.exit()
                                 # top.wait_window()
                                 
                                 
@@ -283,7 +309,7 @@ class App():
                         raise e
 
                 top_frame = ttk.Frame(top)
-                        
+                       
                 top_frame.grid(row=0, column=1,pady=(24,0),columnspan=3, padx=(10,0))#Book Antiqua
                 user_label = ttk.Label(top_frame, text="Username:", font=("Segoe UI bold", 12), foreground='black', background="white")#"#ff8c00"
                 user_label.grid(row=0, column=0)
@@ -312,8 +338,24 @@ class App():
             except Exception as e:
                 raise e
         
-        
+        def oldExeDeleter(fileDirectory):
+            try:
+                
+                if os.path.exists(fileDirectory+"\\EAGS_Quote_Generator_Old.exe"):
+                    os.remove(fileDirectory+"\\EAGS_Quote_Generator_Old.exe")
+            except Exception as e:
+                raise e
         # root = root
+        
+        filePath = os.path.abspath(__file__)
+        fileDirectory = os.path.dirname(__file__)
+        fileName = os.path.basename(__file__) # the file name only
+        print(filePath)
+        oldExeDeleter(fileDirectory)
+        if appUpdater(root,photo, curr_version=VERSION, curr_location=filePath, curr_directory=fileDirectory, currFilename=fileName):
+            sys.exit()
+        else:
+            pass
         user = login(root,top)
         Tk.report_callback_exception = report_callback_exception
 
