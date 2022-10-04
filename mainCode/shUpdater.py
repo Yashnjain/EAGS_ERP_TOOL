@@ -1,47 +1,90 @@
+import sharepy
 import glob
 import os, shutil, traceback
 from mail import send_mail
-import numpy as np
-from azure.storage.blob import BlobServiceClient
 import tkinter as tk
-from tkinter import ttk, messagebox
+import numpy as np
+from office365.runtime.auth.client_credential import ClientCredential
+from office365.runtime.client_request_exception import ClientRequestException
+from office365.sharepoint.client_context import ClientContext
+from office365.runtime.auth.authentication_context import AuthenticationContext
+from office365.sharepoint.files.file import File
+import io
+import datetime
+import pandas as pd
+import os
 
 
 
 
-# UPDATE_LOC = r'C:\Users\imam.khan\Documents\EAGS_AppUpdate'
-# UPDATE_LOC = r'C:\Users\imam.khan\OneDrive - BioUrja Trading LLC\Documents\EAGS\FinalCodePreRequisites\FinalCodePrep\dist\EAGS_Quote_Generator'
 
-CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=biourjadayzerstorage01;AccountKey=7IjVelm0PNjGrPiiaTSoC8f3XZMmCQE4Xth+r5STLcHgRoBnAmCCANmkRIL6z5XpBDuRMopiBrEwPDciJI+GPQ==;EndpointSuffix=core.windows.net'
 
-BLOB_CONTAINER = "eags-temp"
+# sp_path1 = "/it/_api/web/GetFolderByServerRelativeUrl"
+# sp_path2 = "Shared%20Documents/EAGS%20Quote%20Generator/Updater/"
 
 
 
+baseurl = 'https://ealloys.sharepoint.com'
+
+basesite = '/it' # every share point has a home.
+
+siteurl = baseurl + basesite
+
+# filename= localpath.split("\\")[-1]
 
 
-"""
-    Logic
-    Delete files and files folders with _Old in their name
+# localpath = r'C:\temp\Almez_000001.pdf'
 
-    Connect to Blob service client string using connection_string and sas_key(connect_str = connection_string + sas_key)
-    
-    Check if current version file exixts in azure blobstorage or not (Check EAGS_App_version.exe version and compare with code file)
+relative_url = "Shared%20Documents/EAGS%20Quote%20Generator/Updater/" # existing folder path under sharepoint site.
 
-    if file not exists: (If version not matches then:)
-        Get list of all files available
+username="priyanshi.jhawar@ealloys.com"
 
-        Get List of files and folder files available in blob storage
+password="PJWelcome1$"
 
-        rename those files and folder files as _Old
-
-        Download all data from Blob storage
-
-        Restart new EAGS_App.exe and delete all files and folder files with _Old
-
-    """
+sp_path1 = "/it/_api/web/GetFolderByServerRelativeUrl"
+sp_path2 = "Shared%20Documents/EAGS%20Quote%20Generator/Updater/"
 
 
+def printAllContents(ctx, relativeUrl,f_list):
+
+    try:
+        
+        libraryRoot = ctx.web.get_folder_by_server_relative_url(relativeUrl)
+        ctx.load(libraryRoot)
+        ctx.execute_query()
+
+        folders = libraryRoot.folders
+        ctx.load(folders)
+        ctx.execute_query()
+
+        for myfolder in folders:
+            print("Folder name: {0}".format(myfolder.properties["ServerRelativeUrl"]))
+            f_list=printAllContents(ctx, relativeUrl + '/' + myfolder.properties["Name"],f_list)
+            
+        files = libraryRoot.files
+        ctx.load(files)
+        ctx.execute_query()
+
+        for myfile in files:
+            #print("File name: {0}".format(myfile.properties["Name"]))
+            print("File name: {0}".format(myfile.properties["ServerRelativeUrl"]))
+            f_list.append(myfile.properties["ServerRelativeUrl"])
+        return f_list
+    except Exception as e: 
+        raise e
+
+
+
+# def get_f_list_from_sp(s):
+#   # Get list of all files and folders in library
+#   r = s.get(baseurl + f"""{sp_path1}('"""+sp_path2+"""')/Files""")
+#   files = r.json()['d']['results']
+#   f_lst = []
+#   for file in files:
+#     print(file["Name"])
+#     f_lst.append(file["Name"])
+#   print("done")
+#   return f_lst
 
 
 
@@ -67,15 +110,26 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
             Check EAGS_App_version.exe version and compare with code file"""
 
 
-        # Initialize the connection to Azure storage account
-        blob_service_client =  BlobServiceClient.from_connection_string(CONNECTION_STRING)
-        my_container = blob_service_client.get_container_client(BLOB_CONTAINER)
-        currFilename = os.path.splitext(currFilename)[0]
-        
-        #Check if current version is same or not
-        if my_container.get_blob_client(f"{currFilename}_{curr_version}.exe").exists():
-            return False
+        # Initialize the connection to Sharepoint account
+        # s = sharepy.connect(baseurl, username, password)
+        # f_lst = get_f_list_from_sp(s)
+        ctx_auth = AuthenticationContext(baseurl)
 
+        ctx_auth.acquire_token_for_user(username, password)
+
+        ctx = ClientContext(siteurl, ctx_auth) # make sure you auth to the siteurl.
+
+        currFilename = os.path.splitext(currFilename)[0]
+
+        #Get all files and directories present in sharepoint location
+        f_list = []
+        
+        f_list = printAllContents(ctx, relative_url,f_list)
+        #Check if current version is same or not
+        if f"{currFilename}_{curr_version}.exe" in " ".join(f_list):
+            return False
+        elif len(f_list)==0:
+            return False
         else:
             top = tk.Toplevel(root)
             top.title('EAGS Quote Generator App Update')
@@ -101,35 +155,44 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
             
             """Get List of files and folder files available in blob storage"""
             #Renaming files as _Old in current directory and in subfolders
-            f_list=[]
-            my_blobs = my_container.list_blobs()
-            for blob in my_blobs:
-                print(blob.name)
-                if ("EAGS_Quote_Generator" in blob.name) and (".exe" in blob.name):
-                    updatedFilename = blob.name
-                    #renaming curr exe
-                    os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
-                f_list.append(blob.name)
-
+            
             #Renaming current files as _Old and then downloading new ones
-            for file in f_list:
-                if file != '':
+            for file_url in f_list:
+                if file_url != '':
+                    file = file_url.split('Updater/')[-1]
+                    if ("EAGS_Quote_Generator" in file) and (".exe" in file):
+                        updatedFilename = file
+                        #renaming curr exe
+                        os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                    
                     filename, fileExtesion = os.path.splitext(curr_directory+"\\"+file)
                     print(filename)
                     print(fileExtesion)
                     if os.path.exists(curr_directory+"\\"+file):
                         os.rename(curr_directory+"\\"+file, filename+"_Old"+fileExtesion)
                      
-                    """Download all data from Blob storage"""
-                    file_content = my_container.get_blob_client(blob).download_blob().readall()
+                    """Download all data from Sharepoint"""
+                    
                     # Get full path to the file
                     download_file_path = os.path.join(curr_directory, file)
                 
                     # for nested blobs, create local path as well!
                     os.makedirs(os.path.dirname(download_file_path), exist_ok=True)
                 
-                    with open(download_file_path, "wb") as file:
-                        file.write(file_content)
+                    #Downloading file
+                    with open(download_file_path, "wb") as local_file:
+                        file = ctx.web.get_file_by_server_relative_url(file_url)  
+                        file.download(local_file)
+                        ctx.execute_query()
+                    # path1 = "/itdev/_api/web/GetFolderByServerRelativeUrl"
+                    # path2 = "('Shared Documents{0}')/Files('{1}')/$value"
+
+                    # sp_path1 = "/it/_api/web/GetFolderByServerRelativeUrl"
+                    # sp_path2 = "Shared%20Documents/EAGS%20Quote%20GeneratorUpdater/"
+
+                    
+                    # r = s.getfile(site + sp_path1+sp_path2+"Files('{1}')/$value".format(
+                    #                                 file), filename=download_file_path)
                     
             
 
@@ -166,5 +229,35 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
         mail_body=f"<strong>User: {curr_directory} Error ID: {error_id}</strong>{nl}{msg}")
         
         return False
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+# site = 'https://ealloys.sharepoint.com'
+
+# # username = "svc_tableauonline@biourja.com"
+# username = "priyanshi.jhawar@ealloys.com"
+# # password = "L!,'W%^9#@}rzf6NGyZKwz"
+# password = "PJWelcome1$"
+
+
+
+
+
+

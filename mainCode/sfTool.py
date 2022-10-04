@@ -38,7 +38,8 @@ def get_connection():
                 warehouse=WAREHOUSE,
                 database  = DATABASE,
                 schema=SCHEMA,
-                role =ROLE
+                role =ROLE,
+                client_session_keep_alive=True
             ) 
         
         return conn

@@ -13,7 +13,7 @@ import tkcap, os
 from mail import send_mail
 from Tools import resource_path
 from quote_revision_final import quoteRevision
-from appUpdaterV2 import appUpdater
+from shUpdater import appUpdater
 import ctypes
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 from eagsReport import reportGenerator
@@ -23,7 +23,7 @@ today = datetime.strftime(date.today(), format = "%d%m%Y")
 S_TABLE = "EAGS_SALESPERSON"
 INV_TABLE = "EAGS_INVENTORY"
 
-VERSION = "0.0.0.3" 
+VERSION = "0.0.0.2" 
 #Version format:
 #Major revision (new UI, lots of new features, conceptual change, etc.)
 #Minor revision (maybe a change to a search box, 1 feature added, collection of bug fixes)
@@ -37,14 +37,8 @@ VERSION = "0.0.0.3"
 class App():
 
     def __init__(self,root):
-        
-        # super().__init__()
-        #Get Snowflake Connection
-        conn = get_connection()
         root.withdraw()
-        global user
-        
-        # self = Tk()
+
         root.title('EAGS Quote Generator')
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
@@ -57,11 +51,33 @@ class App():
         root.geometry('%dx%d+%d+%d' % (width, height, x, y))
         # root.geometry('648x696')
         biourjaLogo = resource_path('biourjaLogo.png')
-        photo = tk.PhotoImage(file = biourjaLogo)
-        root.iconphoto(False, photo)
+        
         root["bg"]= "white"
         mFrame = tk.Frame(width=width, height=height, background=root["bg"])
         mFrame.place(in_=root, anchor="c", relx=.5, rely=.5)
+        photo = tk.PhotoImage(file = biourjaLogo)
+        root.iconphoto(False, photo)
+
+
+        ####################Updater Logic#########################
+        filePath = os.path.abspath(__file__)
+        fileDirectory = os.path.dirname(__file__)
+        fileName = os.path.basename(__file__) # the file name only
+        print(filePath)
+        # oldExeDeleter(fileDirectory)
+        # top.withdraw()
+        if appUpdater(root,photo, curr_version=VERSION, curr_location=filePath, curr_directory=fileDirectory, currFilename=fileName):
+            sys.exit()
+        else:
+            pass
+        #############################################################
+        #Get Snowflake Connection
+        conn = get_connection()
+        
+        global user
+        
+        # self = Tk()
+        
         ################Main Window########################
         def on_enter(e):
             try:
@@ -152,7 +168,7 @@ class App():
         button_dict[reportbut] = [report_img1, report_img2]
         reportbut.bind("<Enter>", on_enter)
         reportbut.bind("<Leave>", on_leave)
-        ###############################################################
+        ##############################################################
 
         cent_Lable = tk.Label(mFrame,image=cent_photo,borderwidth=0,bg=root["bg"])
         cent_Lable.place(x=270, y=240)#, relx=(1-w_scale_factor)/10, rely=(1-h_scale_factor)/10)
@@ -253,6 +269,7 @@ class App():
             try:
                 if messagebox.askokcancel("Quit", "Do you want to quit?"):
                     top.destroy()
+                    conn.close()
                     root.destroy()
                     sys.exit()
             except Exception as e:
@@ -338,24 +355,17 @@ class App():
             except Exception as e:
                 raise e
         
-        def oldExeDeleter(fileDirectory):
-            try:
+        # def oldExeDeleter(fileDirectory):
+        #     try:
                 
-                if os.path.exists(fileDirectory+"\\EAGS_Quote_Generator_Old.exe"):
-                    os.remove(fileDirectory+"\\EAGS_Quote_Generator_Old.exe")
-            except Exception as e:
-                raise e
+        #         if os.path.exists(fileDirectory+"\\EAGS_Quote_Generator_Old.exe"):
+        #             os.remove(fileDirectory+"\\EAGS_Quote_Generator_Old.exe")
+        #     except Exception as e:
+        #         raise e
         # root = root
         
-        filePath = os.path.abspath(__file__)
-        fileDirectory = os.path.dirname(__file__)
-        fileName = os.path.basename(__file__) # the file name only
-        print(filePath)
-        oldExeDeleter(fileDirectory)
-        if appUpdater(root,photo, curr_version=VERSION, curr_location=filePath, curr_directory=fileDirectory, currFilename=fileName):
-            sys.exit()
-        else:
-            pass
+        
+        # top.deiconify()
         user = login(root,top)
         Tk.report_callback_exception = report_callback_exception
 
