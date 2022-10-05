@@ -43,9 +43,9 @@ def pdf_generator(df):
         retry=0
         while retry < 10:
             try:
-                app = xw.App(visible=False)
+                app = xw.App(visible=True)
                 wb = app.books.open(input_sheet) 
-                wb.app.visible = False
+                wb.app.visible = True
                 break
             except Exception as e:
                 time.sleep(5)
@@ -83,14 +83,19 @@ def pdf_generator(df):
                     if chunk_df['E_FREIGHT_CHARGED'][i]:
                         if chunk_df['E_FREIGHT_CHARGED'][i] != 'NA':
                             if float(chunk_df['E_FREIGHT_CHARGED'][i]) != float(0.0):
-                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value=f"Freight Charges: {chunk_df['E_FREIGHT_CHARGED'].sum()}"
-                            
+                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value=f"Freight Charges: {chunk_df.E_FREIGHT_CHARGED.str.replace('NA','0').astype(float).sum()}"
+                            else:
+                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value = None
                             if chunk_df['CURRENCY'][i] == "$":
                                 ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
                             elif chunk_df['CURRENCY'][i] == "£":
                                 ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
                             else:
                                 pass
+                        else:
+                            ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value = None
+                    else:
+                        ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value = None
                     
                     
                     
@@ -125,11 +130,11 @@ def pdf_generator(df):
                         ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_LOCATION'][i]}"#delivery term
                         ws1.range(f'G{10+(diff*i+page_count*page_diff)}').value=chunk_df['LEAD_TIME'][i]#lead time                    
                     
-                    if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='yes':
+                    if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='yes' or (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='other':
                         # chunk_df = chunk_df.astype({'E_OD1':'float','E_ID1':'float', 'E_FINAL_PRICE':'float', 'E_QTY':'float'})
                         eagl_offer=f'{round(float(chunk_df["E_OD1"][i]),3)}"OD - {round(float(chunk_df["E_ID1"][i]),3)}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {float(chunk_df["E_QTY"][i])}@{float(chunk_df["E_LENGTH"][i])}"'
                         ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value= eagl_offer
-                    if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='no' or (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='other':
+                    if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='no':
                         eagl_offer='NA'#f'{chunk_df["E_OD1"][i]}"OD - {chunk_df["E_ID1"][i]}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["E_SPEC"][i]} - {chunk_df["E_QTY"][i]}@{chunk_df["E_LENGTH"][i]}"'
                         ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value= eagl_offer
                     if i!=(len(chunk_df))-1:

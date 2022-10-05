@@ -162,8 +162,7 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
                     file = file_url.split('Updater/')[-1]
                     if ("EAGS_Quote_Generator" in file) and (".exe" in file):
                         updatedFilename = file
-                        #renaming curr exe
-                        os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                        
                     
                     filename, fileExtesion = os.path.splitext(curr_directory+"\\"+file)
                     print(filename)
@@ -195,14 +194,17 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
                     #                                 file), filename=download_file_path)
                     
             
-
-           
-            #rename exe version updatedFilename to EAGS_Quote_Generator.exe
-            os.rename(curr_directory+"\\"+updatedFilename, curr_directory+"\\EAGS_Quote_Generator.exe")
-            #trigger to open new EAGS_Quote_generator.exe
-            os.startfile(curr_directory+"\\EAGS_Quote_Generator.exe")
-            #sys.exit() current exe
-            return True
+            if updatedFilename:
+                #renaming curr exe
+                os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                #rename exe version updatedFilename to EAGS_Quote_Generator.exe
+                os.rename(curr_directory+"\\"+updatedFilename, curr_directory+"\\EAGS_Quote_Generator.exe")
+                #trigger to open new EAGS_Quote_generator.exe
+                os.startfile(curr_directory+"\\EAGS_Quote_Generator.exe")
+                #sys.exit() current exe
+                return True
+            else:
+                return False
 
             
 

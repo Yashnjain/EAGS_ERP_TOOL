@@ -23,7 +23,7 @@ today = datetime.strftime(date.today(), format = "%d%m%Y")
 S_TABLE = "EAGS_SALESPERSON"
 INV_TABLE = "EAGS_INVENTORY"
 
-VERSION = "0.0.0.2" 
+VERSION = "0.0.0.3" 
 #Version format:
 #Major revision (new UI, lots of new features, conceptual change, etc.)
 #Minor revision (maybe a change to a search box, 1 feature added, collection of bug fixes)
@@ -268,8 +268,8 @@ class App():
         def on_closing():
             try:
                 if messagebox.askokcancel("Quit", "Do you want to quit?"):
-                    top.destroy()
                     conn.close()
+                    top.destroy()
                     root.destroy()
                     sys.exit()
             except Exception as e:
@@ -312,7 +312,8 @@ class App():
                                 filePath = os.path.abspath(__file__)
                                 fileDirectory = os.path.dirname(__file__) # relative directory path
                                 fileName = os.path.basename(__file__) # the file name only
-                                messagebox.showinfo("Current App Location", f"Current file path is {filePath} Version changed to {VERSION}")
+                                # messagebox.showinfo("Current App Location", f"Current file path is {filePath} Version changed to {VERSION}")
+                                messagebox.showinfo("Current App Location", f"Version changed to {VERSION}")
                                 #sys.exit()
                                 # top.wait_window()
                                 

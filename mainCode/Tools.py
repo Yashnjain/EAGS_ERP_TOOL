@@ -562,8 +562,14 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
                         else:
                             rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
                             if specialList[col][0][i][0].get() == "" and (col.upper() != "C_YIELD" and col.upper() != "E_YIELD" and col.upper() != "C_SPECIFICATION" and col.upper() != "C_GRADE"):
-                                messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
-                                return []
+                                if col in ['E_freightIncured', 'E_freightCharged', 'E_Margin_Freight']:
+                                    if not(specialList['E_freightIncured'][0][i][0].get() == specialList['E_freightCharged'][0][i][0].get() == specialList['E_Margin_Freight'][0][i][0].get()):
+                                        messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                                        return []
+                                else:
+                                    messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                                    return []
+                                
                 rowList.extend(otherList)#insert validity and additional comments
                 row.append(rowList)#Append current ith row to row List
                 #Empty rowList for fetching next row
@@ -879,20 +885,29 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
         # id2 = ttk.Entry(entryFrame2, textvariable=id2Var, background = 'white',width = 15)
         # id2.grid(row=1,column=1)
         def exitTrue():
-            boxList["E_OD2"][0][index] = (boxList["E_OD2"][0][index][0].get(),boxList["E_OD2"][0][index][0].get())
-            boxList["E_ID2"][0][index] = (boxList["E_ID2"][0][index][0].get(),boxList["E_ID2"][0][index][0].get())
-            od1=od1Var.get()
-            id1 = id1Var.get()
-            # if (boxList["E_OD2"][0][index] is not None) and (boxList["E_ID2"][0][index] is not None) and od1 is not None and id1 is not None:
-            if (boxList["E_OD2"][0][index] == ('', '')) or (boxList["E_ID2"][0][index] == ('', '')) or od1 == '' or id1 == '':
-                messagebox.showerror(title="Value Error",message="Please fill all values first")
-                return
-            else:
-                toproot.destroy()
-                boxList['E_OD1'][0][index][1].set(float(od1))
-                boxList['E_ID1'][0][index][1].set(float(id1))
-                # toproot.destroy()
-                check=True
+            try:
+                # if (boxList["E_OD2"][0][index] == ('', '')) or (boxList["E_ID2"][0][index] == ('', '')):
+                #     messagebox.showerror(title="Value Error",message="Please fill all values first")
+                #     return
+                # boxList["E_OD2"][0][index] = (boxList["E_OD2"][0][index][0].get(),boxList["E_OD2"][0][index][0].get())
+                # boxList["E_ID2"][0][index] = (boxList["E_ID2"][0][index][0].get(),boxList["E_ID2"][0][index][0].get())
+                od1=od1Var.get()
+                id1 = id1Var.get()
+                # if (boxList["E_OD2"][0][index] is not None) and (boxList["E_ID2"][0][index] is not None) and od1 is not None and id1 is not None:
+                # if (boxList["E_OD2"][0][index] == ('', '')) or (boxList["E_ID2"][0][index] == ('', '')) or od1 == '' or id1 == '':
+                if (boxList["E_OD2"][0][index][1].get() == '') or (boxList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == '':
+                    messagebox.showerror(title="Value Error",message="Please fill all values first")
+                    return
+                else:
+                    
+                    boxList['E_OD1'][0][index][1].set(float(od1))
+                    boxList['E_ID1'][0][index][1].set(float(id1))
+                    boxList["E_OD2"][0][index] = (boxList["E_OD2"][0][index][0].get(),boxList["E_OD2"][0][index][0].get())
+                    boxList["E_ID2"][0][index] = (boxList["E_ID2"][0][index][0].get(),boxList["E_ID2"][0][index][0].get())
+                    toproot.destroy()
+                    check=True
+            except Exception as e:
+                raise e
         submitButton = tk.Button(submitFrame,text="Submit", command=exitTrue)
         submitButton.bind("<Return>", exitTrue)
         # submitButton.place(relx=.5, rely=.5, anchor="center")

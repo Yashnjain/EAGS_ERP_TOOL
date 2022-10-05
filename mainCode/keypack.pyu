@@ -1,0 +1,12 @@
+{
+  "client": {
+    "offline_public": "LNhtHMLLPYvElCAbdUUXAdqrot/Lx5vslDo+U93zBT4"
+  },
+  "repo": {
+    "app_private": "3F1QrApSVRrn0jQ3MPXRXPIKrU5aXfsW4H53IuIRvYw"
+  },
+  "upload": {
+    "app_public": "cNFrDcoWn+Ln7vF00pbXPxDbWNzBbjOQMjAhn1kkNmM",
+    "signature": "jdoifoy0jnQrL2mnqQUULL7VOMomyK7J9P33tDi2y9O6umOFBAKhA2MCwTqfT7Acd3gtVDo9XWGONMbB0aeSCQ"
+  }
+}

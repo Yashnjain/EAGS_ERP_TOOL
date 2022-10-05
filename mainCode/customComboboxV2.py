@@ -10,26 +10,30 @@ def formulaCalc(boxList, index):
     try:
         if boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM":
             if boxList["E_OD2"][0][index][1]!='' and boxList["E_ID2"][0][index][1]!='':
-                e_od = float(boxList["E_OD2"][0][index][1])
-                e_id = float(boxList["E_ID2"][0][index][1])
+                if boxList["E_OD2"][0][index][1]!='None' and boxList["E_ID2"][0][index][1]!='None':
+                    e_od = float(boxList["E_OD2"][0][index][1])
+                    e_id = float(boxList["E_ID2"][0][index][1])
             else:
                 messagebox.showerror(title="Wrong Value",message="Please enter value To be Calculated OD and ID")
                 return
         else:
             if boxList["E_OD1"][0][index][1].get() != '' and boxList["E_ID1"][0][index][1].get() != '':
-                e_od = float(boxList["E_OD1"][0][index][1].get())
-                e_id = float(boxList["E_ID1"][0][index][1].get())
+                if boxList["E_OD1"][0][index][1].get() != 'None' and boxList["E_ID1"][0][index][1].get() != 'None':
+                    e_od = float(boxList["E_OD1"][0][index][1].get())
+                    e_id = float(boxList["E_ID1"][0][index][1].get())
             else:
                 messagebox.showerror(title="Wrong Value",message="Please enter value in OD and ID")
                 return
         uom = boxList["E_UOM"][0][index][1].get()
         if boxList["E_Length"][0][index][1].get() != '':
-            e_length = float(boxList["E_Length"][0][index][1].get())#int(boxList["E_Length"][0][index][1].get())
+            if boxList["E_Length"][0][index][1].get() != 'None':
+                e_length = float(boxList["E_Length"][0][index][1].get())#int(boxList["E_Length"][0][index][1].get())
         else:
             messagebox.showerror(title="Wrong Value",message="Please enter value in Length Entry Box")
             return
         if boxList["E_Selling Cost/LBS"][0][index][1].get() != '':
-            sellCostLBS = float(boxList["E_Selling Cost/LBS"][0][index][1].get())
+            if boxList["E_Selling Cost/LBS"][0][index][1].get() != 'None':
+                sellCostLBS = float(boxList["E_Selling Cost/LBS"][0][index][1].get())
         else:
             messagebox.showerror(title="Wrong Value",message="Please enter value in sellCost/LBS")
         wt = (e_od - e_id)/2
@@ -161,11 +165,13 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
         def addCostCalc(boxList,index):
             try:
                 if boxList["E_Additional_Cost"][0][index][1].get() != '':
-                    addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
+                    if boxList["E_Additional_Cost"][0][index][1].get() != 'None':
+                        addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
                 else:
                     messagebox.showerror(title="Wrong Value",message="Please enter value in Additional Cost")
                 if boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
-                    sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
+                    if boxList["E_Selling Cost/UOM"][0][index][1].get() != 'None':
+                        sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
                 else:
                     messagebox.showerror(title="Wrong Value",message="Please enter value in Selling Cost/UOM")
                 finalPrice = round((addCost+sellCost),2)
@@ -218,11 +224,13 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         # addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
                         # sellCost = float*(boxList["E_Selling Cost/UOM"][0][index][1].get())
                         if boxList["E_Additional_Cost"][0][index][1].get() != '':
-                            addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
+                            if boxList["E_Additional_Cost"][0][index][1].get() != 'None':
+                                addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
                         else:
                             messagebox.showerror(title="Wrong Value",message="Please enter value in Additional Cost")
                         if boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
-                            sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
+                            if boxList["E_Selling Cost/UOM"][0][index][1].get() != 'None':
+                                sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
                         else:
                             messagebox.showerror(title="Wrong Value",message="Please enter value in Selling Cost/UOM")
                         finalPrice = round((addCost+sellCost),2)
@@ -242,7 +250,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 break
                             next_key = nextKey(current_key, index)
                             if next_key == "E_Length":
-                                if boxList['E_ID1'][0][index][0].get() != '' and boxList['E_OD1'][0][index][0].get() != '':
+                                if boxList['E_ID1'][0][index][0].get() != '' and boxList['E_OD1'][0][index][0].get() != '' and boxList['E_ID1'][0][index][0].get() != 'None' and boxList['E_OD1'][0][index][0].get() != 'None':
                                     #Adding Baker Type Handler
                                     if boxList['E_Type'][0][index][0].get() == "HT":
                                         e_type_var = "THF"
@@ -252,16 +260,18 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         e_type_var = boxList['E_Type'][0][index][0].get()
                                     if (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM") and (boxList['E_ID2'][0][index][0].get() != '' and boxList['E_OD2'][0][index][0].get() != ''):
                                         # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
-                                        newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
-                                                & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
-                                                & (df["od_in"]==float(boxList['E_OD2'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0].get()))]
+                                        if boxList['E_ID2'][0][index][0].get() != 'None' and boxList['E_OD2'][0][index][0].get() != 'None':
+                                            newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
+                                                    & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
+                                                    & (df["od_in"]==float(boxList['E_OD2'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0].get()))]
                                         
                                     else:
                                         if boxList['E_OD1'][0][index][0].get() != '' and boxList['E_ID1'][0][index][0].get() != '':
-                                        # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
-                                            newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
-                                                    & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
-                                                    & (df["od_in"]==float(boxList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID1'][0][index][0].get()))]
+                                            if boxList['E_OD1'][0][index][0].get() != 'None' and boxList['E_ID1'][0][index][0].get() != 'None':
+                                            # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
+                                                newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
+                                                        & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
+                                                        & (df["od_in"]==float(boxList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID1'][0][index][0].get()))]
                                         else:
                                             messagebox.showerror(title="Wrong Value",message="Please enter value in OD and ID")
                                             break
@@ -313,9 +323,10 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 elif boxList['E_ID1'][0][index][0].get() == '' or boxList['E_OD1'][0][index][0].get() == '':
                                     if not len(bakerDf):
                                         if boxList[cx_eags[next_key]][0][index][0].get() != '':
-                                            if float(boxList[cx_eags[next_key]][0][index][0].get()) in list(map(lambda x: float(x),new_list)):
-                                                if next_key != 'E_OD2' and next_key != 'E_ID2':
-                                                    boxList[next_key][0][index][1].set(float(boxList[cx_eags[next_key]][0][index][0].get()))
+                                            if boxList[cx_eags[next_key]][0][index][0].get() != 'None':
+                                                if float(boxList[cx_eags[next_key]][0][index][0].get()) in list(map(lambda x: float(x),new_list)):
+                                                    if next_key != 'E_OD2' and next_key != 'E_ID2':
+                                                        boxList[next_key][0][index][1].set(float(boxList[cx_eags[next_key]][0][index][0].get()))
                                         else:
                                             messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
                                             for keys in cx_eags.keys():
@@ -325,7 +336,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                             breakCheck = True
                                             break
                                     else:#removing .get() from customer side 
-                                        if boxList[cx_eags[next_key]][0][index][0] is not None and boxList[cx_eags[next_key]][0][index][0] != '':
+                                        if boxList[cx_eags[next_key]][0][index][0] is not None and boxList[cx_eags[next_key]][0][index][0] != '' and boxList[cx_eags[next_key]][0][index][0] != 'None':
                                             if float(boxList[cx_eags[next_key]][0][index][0]) in list(map(lambda x: float(x),new_list)):
                                                 if next_key != 'E_OD2' and next_key != 'E_ID2':
                                                     boxList[next_key][0][index][1].set(float(boxList[cx_eags[next_key]][0][index][0]))
@@ -420,15 +431,16 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         key, index = keyFinder(boxList,(ent,var))
                         if key=='E_Additional_Cost':
                             if boxList["E_Additional_Cost"][0][index][1].get()!='' and boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
-                                addCostCalc(boxList,index)
-                                # addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
-                                # sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
-                                # finalPrice = addCost+sellCost
-                                # boxList["E_Final Price"][0][index][1].set(finalPrice)
+                                if boxList["E_Additional_Cost"][0][index][1].get()!='None' and boxList["E_Selling Cost/UOM"][0][index][1].get() != 'None':
+                                    addCostCalc(boxList,index)
+                                    # addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
+                                    # sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
+                                    # finalPrice = addCost+sellCost
+                                    # boxList["E_Final Price"][0][index][1].set(finalPrice)
 
                         elif key=='E_Selling Cost/UOM':
                             if boxList["E_Additional_Cost"][0][index][0].get() == '0':
-                                if boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
+                                if boxList["E_Selling Cost/UOM"][0][index][1].get() != '' and boxList["E_Selling Cost/UOM"][0][index][1].get() != 'None':
                                     boxList["E_Final Price"][0][index][1].set(float(boxList["E_Selling Cost/UOM"][0][index][1].get()))
                                     boxList["E_Additional_Cost"][0][index][0].focus()
                                     breakCheck = True
@@ -467,15 +479,16 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             else:
                                 #Calculating Margin forper LBS value of Raw Material
                                 if boxList["E_Selling Cost/LBS"][0][index][0].get() != '' and boxList["E_COST"][0][index][0].get() != '':
-                                    salePrice = float(boxList["E_Selling Cost/LBS"][0][index][0].get())
-                                    costPrice = float(boxList["E_COST"][0][index][0].get())
-                                    if salePrice == 0.0 or costPrice == 0.0:
-                                        messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
-                                        return
-                                    margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
-                                    boxList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
-                                    boxList["E_UOM"][0][index][0].focus()
-                                    breakCheck = True
+                                    if boxList["E_Selling Cost/LBS"][0][index][0].get() != 'None' and boxList["E_COST"][0][index][0].get() != 'None':
+                                        salePrice = float(boxList["E_Selling Cost/LBS"][0][index][0].get())
+                                        costPrice = float(boxList["E_COST"][0][index][0].get())
+                                        if salePrice == 0.0 or costPrice == 0.0:
+                                            messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
+                                            return
+                                        margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
+                                        boxList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
+                                        boxList["E_UOM"][0][index][0].focus()
+                                        breakCheck = True
                                 else:
                                     messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
                                     return
@@ -493,17 +506,18 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             
                             else:
                                 if boxList["E_freightIncured"][0][index][0].get() != '' and boxList["E_freightCharged"][0][index][0].get() != '':
-                                    #Calculating Freight Margin
-                                    fcostPrice = float(boxList["E_freightIncured"][0][index][0].get())
-                                    fsalePrice = float(boxList["E_freightCharged"][0][index][0].get())
-                                    if fsalePrice == 0.0 or fcostPrice == 0.0:
-                                        messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
-                                        return
-                                    if fcostPrice != 0.0 and fsalePrice != 0.0:
-                                        margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
-                                        boxList["E_Margin_Freight"][0][index][1].set(margin_freight)
-                                    
-                                        breakCheck = True
+                                    if boxList["E_freightIncured"][0][index][0].get() != 'None' and boxList["E_freightCharged"][0][index][0].get() != 'None':
+                                        #Calculating Freight Margin
+                                        fcostPrice = float(boxList["E_freightIncured"][0][index][0].get())
+                                        fsalePrice = float(boxList["E_freightCharged"][0][index][0].get())
+                                        if fsalePrice == 0.0 or fcostPrice == 0.0:
+                                            messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
+                                            return
+                                        if fcostPrice != 0.0 and fsalePrice != 0.0:
+                                            margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
+                                            boxList["E_Margin_Freight"][0][index][1].set(margin_freight)
+                                        
+                                            breakCheck = True
                                 else:
                                     messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes")
                                     return
@@ -511,7 +525,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         elif key in cx_eags:
                             new_list = filterList(boxList,key,index,df)
                             if not len(bakerDf):
-                                if boxList[cx_eags[key]][0][index][0].get() != '':
+                                if boxList[cx_eags[key]][0][index][0].get() != '' and boxList[cx_eags[key]][0][index][0].get() != 'None':
                                     if key not in ['E_Grade', 'E_Yield']:
                                         if float(boxList[cx_eags[key]][0][index][0].get()) in list(map(lambda x: float(x),new_list)):
                                             if key != 'E_OD2' and key != 'E_ID2':
@@ -530,7 +544,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         breakCheck = True
                                         # break
                             else:#removing .get() from customer side 
-                                if boxList[cx_eags[key]][0][index][0] is not None and boxList[cx_eags[key]][0][index][0] != '' and key not  in ['E_Grade', 'E_Yield']:
+                                if boxList[cx_eags[key]][0][index][0] is not None and boxList[cx_eags[key]][0][index][0] != ''  and boxList[cx_eags[key]][0][index][0] != 'None' and key not  in ['E_Grade', 'E_Yield']:
                                     # if key not in ['E_Grade', 'E_Yield']:
                                     if float(boxList[cx_eags[key]][0][index][0]) in list(map(lambda x: float(x),new_list)):
                                         if key != 'E_OD2' and key != 'E_ID2':
@@ -693,20 +707,23 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
             try:
                 rowclicked_single = pt.get_row_clicked(e)
                 print(f"Row clicked is {rowclicked_single+1}")
-                if len(boxList):
+                if len(boxList) and rowclicked_single < len(pt.model.df):
                     if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:
                         if list(pt.model.df.iloc[0]) != [None, None, None, None, None, None, None, None, None]:
                             varname = focused_entry.cget("textvariable")
                             focused_var = focused_entry.getvar(varname)
                             key, index = keyFinder2(boxList,(focused_entry,varname))
-                            print(key, index)
-                            boxList['Lot_Serial_Number'][0][index] = (pt.model.df['lot_serial_number'][rowclicked_single], None)
-                            boxList['E_COST'][0][index][1].set(float(pt.model.df['onhand_dollars_per_pounds'][rowclicked_single]))
-                            if not len(bakerDf):
-                                boxList['E_freightIncured'][0][index][1].set(0)
-                                boxList['E_freightCharged'][0][index][1].set(0)
-                                boxList['E_Margin_Freight'][0][index][1].set(0)
-                            boxList['E_Additional_Cost'][0][index][1].set(0)
+                            if key ==  None and index == None:
+                                pass
+                            else:
+                                print(key, index)
+                                boxList['Lot_Serial_Number'][0][index] = (pt.model.df['lot_serial_number'][rowclicked_single], None)
+                                boxList['E_COST'][0][index][1].set(float(pt.model.df['onhand_dollars_per_pounds'][rowclicked_single]))
+                                if not len(bakerDf):
+                                    boxList['E_freightIncured'][0][index][1].set(0)
+                                    boxList['E_freightCharged'][0][index][1].set(0)
+                                    boxList['E_Margin_Freight'][0][index][1].set(0)
+                                boxList['E_Additional_Cost'][0][index][1].set(0)
                         else:
                             pass
                     else:
@@ -767,6 +784,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         
                         if value[0][index][0] == tupleValue[0] and value[0][index][1]._name == tupleValue[1]:
                             return key,index
+                else:
+                    return None,None
             except Exception as e:
                 raise e
         def filterList(boxList,key,index,df):
@@ -785,7 +804,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     if key == 'searchLocation':
                         newList = list(df["site"].unique())
                     if boxList['C_Quote Yes/No'][0][index][0].get() != '':
-                        newList = list(df["site"].unique())
+                        if boxList['C_Quote Yes/No'][0][index][0].get() != 'None':
+                            newList = list(df["site"].unique())
                 elif key == 'E_Type':
                     if len(bakerDf) and key == 'E_Type':
                         newList = ["HT","HB", "HM"]
@@ -878,22 +898,22 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         # boxList["quoteYesNo"]
                         key, index = keyFinder(boxList,(ent,var))   
                         # print(key, index)
-                        if key != "C_Quote Yes/No" and (boxList['E_Location'][0][index][0].get()!='' or key in ['searchLocation']) and key != "cus_long_name":# and key != "E_UOM":#and key != 'E_Location' 
+                        if key != "C_Quote Yes/No" and (boxList['E_Location'][0][index][0].get()!='' or key in ['searchLocation']) and key != "cus_long_name" and (boxList['E_Location'][0][index][0].get()!='None' or key in ['searchLocation']):# and key != "E_UOM":#and key != 'E_Location' 
                             # if key in ['searchLocation', 'searchYield']:
                             #     newList = filterList(boxList,key,index,df)
                             if not str(boxList["C_Quote Yes/No"][0][index][0].get().upper()).startswith("Y") and key != 'searchLocation':
                                 check = False
-                                if key == "E_Additional_Cost" and boxList["E_Additional_Cost"][0][index][1].get()!='':
+                                if key == "E_Additional_Cost" and boxList["E_Additional_Cost"][0][index][1].get()!='' and boxList["E_Additional_Cost"][0][index][1].get()!='None':
                                     addCostCalc(boxList, index)
                             elif (key == 'E_ID1' or key == 'E_OD1') and (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM"):
                                 check = False
                                 if key == 'E_ID1':
-                                    if (isinstance(boxList['E_OD2'][0][index][0], str) and isinstance(boxList['E_ID2'][0][index][0], str))and(boxList['E_OD2'][0][index][0] != '' and boxList['E_ID2'][0][index][0] != ''):
+                                    if (isinstance(boxList['E_OD2'][0][index][0].get(), str) and isinstance(boxList['E_ID2'][0][index][0].get(), str))and(boxList['E_OD2'][0][index][0].get() != '' and boxList['E_ID2'][0][index][0].get() != '') and (boxList['E_OD2'][0][index][0].get() != 'None' and boxList['E_ID2'][0][index][0].get() != 'None'):
                                     
                                         # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==boxList['E_Type'][0][index][0].get())
                                         newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
                                                     & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
-                                                    & (df["od_in"]==float(boxList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0]))]
+                                                    & (df["od_in"]==float(boxList['E_OD2'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID2'][0][index][0].get()))]
                                         # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
                                         newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
                                         newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
@@ -959,7 +979,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
 
                         else:
                             lbframe.place_forget()
-                            if string!='' and check:
+                            if string!='' and check and string!='None':
                                 messagebox.showerror(title="Wrong Value",message="Please enter value from list only!222")
                                 ent.focus()
             except Exception as e:
