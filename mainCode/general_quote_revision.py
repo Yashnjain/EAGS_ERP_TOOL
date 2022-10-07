@@ -137,17 +137,18 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 if len(specialList):
                     key, index = keyFinder(specialList,tupVar) 
                     if specialList["E_freightIncured"][0][index][0].get() != '' and specialList["E_freightCharged"][0][index][0].get() != '' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
-                        #Calculating Freight Margin
-                        fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
-                        fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
-                        if fsalePrice == 0.0 or fcostPrice == 0.0:
-                            messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
-                            return
-                        # if fcostPrice != 0 and fsalePrice != 0:
-                        margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
-                        specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
-                        
-                        # breakCheck = True
+                        if specialList["E_freightIncured"][0][index][0].get() != 'None' and specialList["E_freightCharged"][0][index][0].get() != 'None':
+                            #Calculating Freight Margin
+                            fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
+                            fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
+                            if fsalePrice == 0.0 or fcostPrice == 0.0:
+                                messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
+                                return
+                            # if fcostPrice != 0 and fsalePrice != 0:
+                            margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
+                            specialList["E_Margin_Freight"][0][index][1].set(margin_freight)
+                            
+                            # breakCheck = True
                     else:
                         pass
                 else:
@@ -1473,22 +1474,23 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
             try:
                 rowclicked_single = pt.get_row_clicked(e)
                 print(f"Row clicked is {rowclicked_single+1}")
-                if len(specialList):
-                    if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:
-                        if list(pt.model.df.iloc[0]) != [None, None, None, None, None, None, None, None, None]:
-                            varname = focused_entry.cget("textvariable")
-                            focused_var = focused_entry.getvar(varname)
-                            key, index = keyFinder2(specialList,(focused_entry,varname))
-                            print(key, index)
-                            specialList['Lot_Serial_Number'][0][index] = (pt.model.df['lot_serial_number'][rowclicked_single], None)
-                            specialList['E_COST'][0][index][1].set(float(pt.model.df['onhand_dollars_per_pounds'][rowclicked_single]))
+                if len(specialList) and rowclicked_single < len(pt.model.df):
+                    if len(specialList):
+                        if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:
+                            if list(pt.model.df.iloc[0]) != [None, None, None, None, None, None, None, None, None]:
+                                varname = focused_entry.cget("textvariable")
+                                focused_var = focused_entry.getvar(varname)
+                                key, index = keyFinder2(specialList,(focused_entry,varname))
+                                print(key, index)
+                                specialList['Lot_Serial_Number'][0][index] = (pt.model.df['lot_serial_number'][rowclicked_single], None)
+                                specialList['E_COST'][0][index][1].set(float(pt.model.df['onhand_dollars_per_pounds'][rowclicked_single]))
 
-                            specialList['E_freightIncured'][0][index][1].set(0)
-                            specialList['E_freightCharged'][0][index][1].set(0)
-                            specialList['E_Margin_Freight'][0][index][1].set(0)
-                            specialList['E_Additional_Cost'][0][index][1].set(0)
-                        else:
-                            pass
+                                specialList['E_freightIncured'][0][index][1].set(0)
+                                specialList['E_freightCharged'][0][index][1].set(0)
+                                specialList['E_Margin_Freight'][0][index][1].set(0)
+                                specialList['E_Additional_Cost'][0][index][1].set(0)
+                            else:
+                                pass
                     else:
                         pass
                 pt.setSelectedRow(rowclicked_single)

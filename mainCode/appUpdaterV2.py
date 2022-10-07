@@ -108,7 +108,8 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
                 if ("EAGS_Quote_Generator" in blob.name) and (".exe" in blob.name):
                     updatedFilename = blob.name
                     #renaming curr exe
-                    os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                    # os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                    os.rename(curr_location, curr_directory+"\\EAGS_Quote_Generator_Old.exe")
                 f_list.append(blob.name)
 
             #Renaming current files as _Old and then downloading new ones

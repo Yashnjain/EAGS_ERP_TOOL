@@ -381,7 +381,7 @@ def reportGenerator(root, conn):
                             (datetime.strptime(fDate, "%m.%d.%Y").date()<= filtered_df['DATE'])  & (filtered_df['DATE'] <= datetime.strptime(tDate, "%m.%d.%Y").date())
                             ]
                 else:
-                    messagebox.showerror("Error", f"Please check Date search query and try again")
+                    messagebox.showerror("Error", f"Data might not be available for this range, Please check Date search query and try again")
                     return
 
 

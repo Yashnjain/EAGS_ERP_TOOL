@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -36,6 +35,7 @@ def formulaCalc(boxList, index):
                 sellCostLBS = float(boxList["E_Selling Cost/LBS"][0][index][1].get())
         else:
             messagebox.showerror(title="Wrong Value",message="Please enter value in sellCost/LBS")
+            return
         wt = (e_od - e_id)/2
         # THF
         if boxList["E_Type"][0][index][1].get() == "THF" or boxList["E_Type"][0][index][1].get() == "TUI" or boxList["E_Type"][0][index][1].get() == "HT":
@@ -250,7 +250,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 break
                             next_key = nextKey(current_key, index)
                             if next_key == "E_Length":
-                                if boxList['E_ID1'][0][index][0].get() != '' and boxList['E_OD1'][0][index][0].get() != '' and boxList['E_ID1'][0][index][0].get() != 'None' and boxList['E_OD1'][0][index][0].get() != 'None':
+                                if boxList['E_ID1'][0][index][0].get() != '' and boxList['E_OD1'][0][index][0].get() != '' \
+                                    and boxList['E_ID1'][0][index][0].get() != 'None' and boxList['E_OD1'][0][index][0].get() != 'None':
                                     #Adding Baker Type Handler
                                     if boxList['E_Type'][0][index][0].get() == "HT":
                                         e_type_var = "THF"
@@ -258,7 +259,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         e_type_var = "BR"
                                     else:
                                         e_type_var = boxList['E_Type'][0][index][0].get()
-                                    if (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM") and (boxList['E_ID2'][0][index][0].get() != '' and boxList['E_OD2'][0][index][0].get() != ''):
+                                    if (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" \
+                                         or boxList['E_Type'][0][index][0].get()=="HM") and (boxList['E_ID2'][0][index][0].get() != '' \
+                                             and boxList['E_OD2'][0][index][0].get() != ''):
                                         # newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())& (df["material_type"]==e_type_var)
                                         if boxList['E_ID2'][0][index][0].get() != 'None' and boxList['E_OD2'][0][index][0].get() != 'None':
                                             newDf = df[(df["site"] == boxList['E_Location'][0][index][0].get())
@@ -406,13 +409,18 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         for i in range(keyIndex,len(list(boxList.keys()))):
                             newKey = list(boxList.keys())[i]
                             if value == "Yes" or value == "Other":
-                                if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'Lot_Serial_Number'and newKey != 'searchLocation':
-                                    if newKey=='E_Spec' and not len(bakerDf):
-                                        pass
-                                    else:
-                                        if newKey != 'E_freightIncured' and newKey != 'E_freightCharged' and newKey != 'E_Margin_Freight':
-                                            boxList[newKey][0][index][1].set("")
-                                            boxList[newKey][0][index][0].configure(state='normal')
+                                # if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'Lot_Serial_Number'and newKey != 'searchLocation':
+                                if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'E_Spec' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and not len(bakerDf):
+                                    # if newKey=='E_Spec' and not len(bakerDf):
+                                    #     pass
+                                    # else:
+                                    #     if newKey != 'E_freightIncured' and newKey != 'E_freightCharged' and newKey != 'E_Margin_Freight':
+                                    boxList[newKey][0][index][1].set("")
+                                    boxList[newKey][0][index][0].configure(state='normal')
+                                elif newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and len(bakerDf):
+                                    if newKey != 'E_freightIncured' and newKey != 'E_freightCharged' and newKey != 'E_Margin_Freight':
+                                        boxList[newKey][0][index][1].set("")
+                                        boxList[newKey][0][index][0].configure(state='normal')
                             else:
                                 if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'E_Spec' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and not len(bakerDf):
                                     boxList[newKey][0][index][1].set("NA")
