@@ -4,7 +4,7 @@ from mail import send_mail
 import numpy as np
 from azure.storage.blob import BlobServiceClient
 import tkinter as tk
-from tkinter import ttk, messagebox
+
 
 
 

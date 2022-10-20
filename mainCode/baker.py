@@ -397,34 +397,39 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 try:
                     df = pd.read_clipboard(sep=',',on_bad_lines='skip')
                 except Exception as e:
-                    messagebox.showwarning("Could not read data", e,
-                                            parent=self.parentframe)
+                    root.attributes('-topmost', True)
+                    messagebox.showwarning("Could not read data", e, parent=root)
+                    root.attributes('-topmost', False)
                     return
                 if len(df) == 0:
                     return
                 
                 df = pd.read_clipboard(sep=',', on_bad_lines='skip')
                 if len(df.columns)!=8:
-                    messagebox.showwarning("WARNING","All 8 columns not copied please check",
-                                            parent=self.parentframe)
+                    root.attributes('-topmost', True)
+                    messagebox.showwarning("WARNING","All 8 columns not copied please check",parent=root)
+                    root.attributes('-topmost', False)
                     return
                 try:
                     df['RM']
                 except:
-                    messagebox.showwarning("WARNING","RM Column not present in pasted table",
-                                            parent=self.parentframe)
+                    root.attributes('-topmost', True)
+                    messagebox.showwarning("WARNING","RM Column not present in pasted table",parent=root)
+                    root.attributes('-topmost', False)
                     return
                 try:
                     df['Qty']
                 except:
-                    messagebox.showwarning("WARNING","Qty Column not present in pasted table",
-                                            parent=self.parentframe)
+                    root.attributes('-topmost', True)
+                    messagebox.showwarning("WARNING","Qty Column not present in pasted table",parent=root)
+                    root.attributes('-topmost', False)
                     return
                 try:
                     df['Saw Cut']
                 except:
-                    messagebox.showwarning("WARNING","Saw Cut Column not present in pasted table",
-                                            parent=self.parentframe)
+                    root.attributes('-topmost', True)
+                    messagebox.showwarning("WARNING","Saw Cut Column not present in pasted table",parent=root)
+                    root.attributes('-topmost', False)
                     return
                 
                 # self.autoResizeColumns()
@@ -570,7 +575,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=entryFrame)
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -582,7 +589,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 if inStr == '' or inStr == "NA":
                     return True
                 if not inStr.isdigit():
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=entryFrame)
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -920,10 +929,13 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 raise e
         def deleteRowConfirm():
             try:
-                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?",parent=root):
+                    root.attributes('-topmost', False)
                     deleteRow()
                 else:
                     pass
+                root.attributes('-topmost', False)
             except Exception as e:
                 raise e
         def deleteRow():
@@ -972,7 +984,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 if len(bakerDf):
                     pass
                 #Creating dataframes for uploading into database as well as saving quote xl in current directory
-                dfList = bakerMaker(specialList,cxListCalc(),otherListCalc(),ptBaker,conn)
+                dfList = bakerMaker(specialList,cxListCalc(),otherListCalc(),ptBaker,conn,root)
                 try:
                     quoteDf = dfList[0]
                     bakerxlDf = dfList[1]
@@ -999,7 +1011,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 #     pdf_path = pdf_generator(quoteDf)
                     submitButton.configure(state='normal')
                 else:
-                    messagebox.showerror("Error", "Empty dataframe was given in input")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", "Empty dataframe was given in input",parent=root)
+                    root.attributes('-topmost', False)
             except Exception as e:
                 raise e
 
@@ -1007,11 +1021,15 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
             try:
                 # pt.model.df = quoteDf
                 # pt.redraw()
-                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?",parent=root):
+                    root.attributes('-topmost', False)
                     submitButton.configure(state='disable')
                     eagsQuotationuploader(conn, quoteDf, latest_revised_quote=None, baker=True)
                     
-                    messagebox.showinfo("Info", "Data uploaded Successfully!")
+                    root.attributes('-topmost', True)
+                    messagebox.showinfo("Info", "Data uploaded Successfully!",parent=root)
+                    root.attributes('-topmost', False)
 
                     # current_work_dir = os.getcwd()#To be Shared Drive
                     # current_work_dir = r'I:\EAGS\Quotes'
@@ -1036,6 +1054,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                     # os.remove(pdf_path)
                     pass
                     submitButton.configure(state='disable')
+                root.attributes('-topmost', False)                
             except Exception as e:
                 raise e
 
@@ -1724,14 +1743,17 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         #Moving horizontal scroll bar to initial position
         entryCanvas.xview("moveto", 0)
 
-        def on_closing():
-            if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        def on_closing(window):
+            window.attributes('-topmost', True)
+            if messagebox.askokcancel("Quit", "Do you want to quit?",parent=window):
+                window.attributes('-topmost', False)
                 # mainRoot.destroy()
                 conn.close()
                 root.destroy()
                 sys.exit()
-        mainRoot.protocol("WM_DELETE_WINDOW", on_closing)
-        root.protocol("WM_DELETE_WINDOW", on_closing)       
+            window.attributes('-topmost', False)
+        mainRoot.protocol("WM_DELETE_WINDOW", lambda: on_closing(mainRoot))
+        root.protocol("WM_DELETE_WINDOW", lambda: on_closing(root)) 
     except Exception as e:
         raise e
     

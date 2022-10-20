@@ -92,12 +92,16 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     key, index = keyFinder(specialList,tupVar) 
                     if key=='E_Qty' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
                             if specialList["E_COST"][0][index][0].get()=='':
-                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below",parent=root)
+                                root.attributes('-topmost', False)
                                 specialList["E_Qty"][0][index][0].focus()
 
                     elif key=='E_Selling Cost/LBS' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
                             if specialList["E_COST"][0][index][0].get() == '':
-                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below",parent=root)
+                                root.attributes('-topmost', False)
                                 specialList["E_COST"][0][index][0].focus()
                     else:
                         specialList["E_Selling Cost/LBS"][0][index][0].focus()
@@ -118,7 +122,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                             salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
                             costPrice = float(specialList["E_COST"][0][index][0].get())
                             if salePrice == 0.0 or costPrice == 0.0:
-                                messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry",parent=root)
+                                root.attributes('-topmost', False)
                                 return
                             margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
                             specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
@@ -127,7 +133,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     else:
                         pass
                 else:
-                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes",parent=root)
+                    root.attributes('-topmost', False)
                     return
             except Exception as ex:
                 raise ex
@@ -142,7 +150,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                             fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
                             fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
                             if fsalePrice == 0.0 or fcostPrice == 0.0:
-                                messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry",parent=root)
+                                root.attributes('-topmost', False)
                                 return
                             # if fcostPrice != 0 and fsalePrice != 0:
                             margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
@@ -152,7 +162,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     else:
                         pass
                 else:
-                    messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes",parent=root)
+                    root.attributes('-topmost', False)
                     return 
             except Exception as ex:
                 raise ex          
@@ -290,7 +302,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=entryFrame)
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -302,7 +316,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 if inStr == '' or inStr == "NA":
                     return True
                 if not inStr.isdigit():
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=entryFrame)
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -753,7 +769,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 raise e
         def deleteRow():
             try:
-                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?",parent=root):
+                    root.attributes('-topmost', False)
                     global quoteDf
                     quoteDf = []
                     submitButton.configure(state='disable')
@@ -776,13 +794,14 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     entryCanvas.yview_moveto('1.0')
                 else:
                     pass
+                root.attributes('-topmost', False)
             except Exception as e:
                 raise e
         
         def create_pdf():
             try:
                 global quoteDf,latest_revised_quote
-                quoteDf,latest_revised_quote = dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn,quote_number)
+                quoteDf,latest_revised_quote = dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn,quote_number,root)
                 if len(quoteDf):
                     pt.model.df = quoteDf
                     pt.redraw()
@@ -802,7 +821,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     pdfRoot.state('zoomed')
                     submitButton.configure(state='normal')
                 else:
-                    messagebox.showerror("Error", "Empty dataframe was given in input")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", "Empty dataframe was given in input",parent=root)
+                    root.attributes('-topmost', False)
                 return latest_revised_quote    
             except Exception as e:
                 raise e
@@ -811,10 +832,14 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
             try:
                 # pt.model.df = quoteDf
                 # pt.redraw()
-                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?",parent=root):
+                    root.attributes('-topmost', False)
                     eagsQuotationuploader(conn, quoteDf,latest_revised_quote)
-                    
-                    messagebox.showinfo("Info", "Data uploaded Successfully!")
+
+                    root.attributes('-topmost', True)
+                    messagebox.showinfo("Info", "Data uploaded Successfully!",parent=root)
+                    root.attributes('-topmost', False)
 
                     current_work_dir = os.getcwd()
                     # current_work_dir = r'I:\EAGS\Quotes'
@@ -834,9 +859,10 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                     send_mail(receiver_email = user[-1], mail_subject=f"ALERT Revision generated by {user[0]} for {quoteDf['QUOTENO'][0]}", 
                     mail_body= f"{user[0]} has generated revision for quote number {quoteDf['QUOTENO'][0]}, initial quote was {quote_number}  on {str(date.today())}",
                     attachment_locations=[desktopDir+"\\"+filename])
-                    
+                  
                 else:
                     os.remove(pdf_path)
+                root.attributes('-topmost', False)
                 submitButton.configure(state='disable')
             except Exception as e:
                 raise e
@@ -1601,14 +1627,17 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
         #Moving horizontal scroll bar to initial position
         entryCanvas.xview("moveto", 0)
         # df = get_inv_df(conn,table = INV_TABLE)
-        def on_closing():
-            if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        def on_closing(window):
+            window.attributes('-topmost', True)
+            if messagebox.askokcancel("Quit", "Do you want to quit?",parent=window):
+                window.attributes('-topmost', False)
                 # mainRoot.destroy()
                 conn.close()
-                root.destroy()
+                window.destroy()
                 sys.exit()
-        mainRoot.protocol("WM_DELETE_WINDOW", on_closing)
-        root.protocol("WM_DELETE_WINDOW", on_closing)
+            window.attributes('-topmost', False)
+        mainRoot.protocol("WM_DELETE_WINDOW", lambda: on_closing(mainRoot))
+        root.protocol("WM_DELETE_WINDOW", lambda: on_closing(root))
     except Exception as e:
         raise e
     

@@ -400,8 +400,10 @@ class MyTable(Table):
         try:
             df = pd.read_clipboard(sep=',',on_bad_lines='skip')
         except Exception as e:
+            self.root.attributes('-topmost', True)
             messagebox.showwarning("Could not read data", e,
-                                    parent=self.parentframe)
+                                    parent=self.root)
+            self.root.attributes('-topmost', False)
             return
         if len(df) == 0:
             return
@@ -490,7 +492,7 @@ def resource_path(relative_path):
 
 
 
-def dfMaker(specialList,cxList,otherList,pt,conn):
+def dfMaker(specialList,cxList,otherList,pt,conn,root):
     try:
         # colList = list(inpDict.keys())
         # for col in colList:
@@ -502,11 +504,15 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
         # Number:00xxxx
         for i in range(len(cxList)):
             if i == "" or i == None:
-                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview",parent=root)
+                root.attributes('-topmost', False)
                 return []
         for i in range(len(otherList)):
             if i == "" or i == None:
-                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview",parent=root)
+                root.attributes('-topmost', False)
                 return []
         if specialList['E_Location'][0][-1][0].get() != '' and cxList[2] != '':
             locDict = {"DUBAI":"DUB", "SINGAPORE":"SGP", "USA":"USA","UK":"UK"}
@@ -553,7 +559,9 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
                     elif (col == 'E_OD2' or col == 'E_ID2' or col == 'C_Type' or col == 'E_Spec'):
                         rowList.append(specialList[col][0][i][0])
                         if specialList[col][0][i][0] == "":
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                            root.attributes('-topmost', False)
                             return []
                     else:
 
@@ -564,10 +572,14 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
                             if specialList[col][0][i][0].get() == "" and (col.upper() != "C_YIELD" and col.upper() != "E_YIELD" and col.upper() != "C_SPECIFICATION" and col.upper() != "C_GRADE"):
                                 if col in ['E_freightIncured', 'E_freightCharged', 'E_Margin_Freight']:
                                     if not(specialList['E_freightIncured'][0][i][0].get() == specialList['E_freightCharged'][0][i][0].get() == specialList['E_Margin_Freight'][0][i][0].get()):
-                                        messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                                        root.attributes('-topmost', True)
+                                        messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                                        root.attributes('-topmost', False)
                                         return []
                                 else:
-                                    messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                                    root.attributes('-topmost', False)
                                     return []
                                 
                 rowList.extend(otherList)#insert validity and additional comments
@@ -593,7 +605,7 @@ def dfMaker(specialList,cxList,otherList,pt,conn):
         raise e
 
 
-def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
+def bakerMaker(specialList,cxList,otherList,ptBaker,conn,root):
     try:
         # colList = list(inpDict.keys())
         # for col in colList:
@@ -605,11 +617,15 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
         # Number:00xxxx
         for i in range(len(cxList)):
             if i == "" or i == None:
-                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview",parent=root)
+                root.attributes('-topmost', False)
                 return []
         for i in range(len(otherList)):
             if i == "" or i == None:
-                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview",parent=root)
+                root.attributes('-topmost', False)
                 return []
         if specialList['E_Location'][0][0][0].get() != '' and cxList[2] != '':
             locDict = {"DUBAI":"DUB", "SINGAPORE":"SGP", "USA":"USA","UK":"UK"}
@@ -680,12 +696,16 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                         print(specialList[col][0][i][0])
                         rowList.append(specialList[col][0][i][0])
                         if specialList[col][0][i][0] == "":
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                            root.attributes('-topmost', False)
                             return []
                     else:
                         
                         if specialList[col][0][i][0].get() == "" and col!="E_Yield":
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                            root.attributes('-topmost', False)
                             return []
                         
                         if col == 'E_Spec':
@@ -725,7 +745,9 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
             return [sfDf, bakerxlDf]
         else:
             if  cxList[2] == '':
-                messagebox.showerror("Error", "Empty Customer dataframe was given in input")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", "Empty Customer dataframe was given in input",parent=root)
+                root.attributes('-topmost', False)
             return []
     except Exception as e:
         raise e
@@ -758,7 +780,9 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
+                    toproot.attributes('-topmost', True)
                     messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -770,7 +794,9 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
                 if inStr == '' or inStr == "NA":
                     return True
                 if not inStr.isdigit():
+                    toproot.attributes('-topmost', True)
                     messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -896,7 +922,9 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
                 # if (boxList["E_OD2"][0][index] is not None) and (boxList["E_ID2"][0][index] is not None) and od1 is not None and id1 is not None:
                 # if (boxList["E_OD2"][0][index] == ('', '')) or (boxList["E_ID2"][0][index] == ('', '')) or od1 == '' or id1 == '':
                 if (boxList["E_OD2"][0][index][1].get() == '') or (boxList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == '':
-                    messagebox.showerror(title="Value Error",message="Please fill all values first")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror(title="Value Error",message="Please fill all values first",parent=root)
+                    root.attributes('-topmost', False)
                     return
                 else:
                     
@@ -1115,7 +1143,9 @@ def starSearch(root, df):
                     ptBakerxl.show()
             
                 else:
-                    messagebox.showerror("Error", f"Please check search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return 
             except Exception as e:
                 raise e
@@ -1149,7 +1179,9 @@ def rangeSearch(root, df, boxList, index):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
+                    toproot.attributes('-topmost', True)
                     messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -1328,7 +1360,9 @@ def rangeSearch(root, df, boxList, index):
                             (float(from_od_value) <= filtered_df['od_in'])  & (filtered_df['od_in'] <= float(to_od_value))
                             ]
                 else:
-                    messagebox.showerror("Error", f"Please check OD search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check OD search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return
 
 
@@ -1340,7 +1374,9 @@ def rangeSearch(root, df, boxList, index):
                             (float(from_id_value) <= filtered_df['od_in_2'])  & (filtered_df['od_in_2'] <= float(to_id_value))
                             ]
                 else:
-                    messagebox.showerror("Error", f"Please check ID search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check ID search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return
 
 
@@ -1398,7 +1434,9 @@ def rangeSearch(root, df, boxList, index):
                     ptBakerxl.show()
             
                 else:
-                    messagebox.showerror("Error", f"Please check search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return
             except Exception as e:
                 raise e

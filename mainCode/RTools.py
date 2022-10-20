@@ -26,7 +26,7 @@ def resource_path(relative_path):
 
 
 
-def dfMaker(specialList,cxList,otherList,pt,conn,quote_number):
+def dfMaker(specialList,cxList,otherList,pt,conn,quote_number, root):
     try:
         # colList = list(inpDict.keys())
         # for col in colList:
@@ -79,7 +79,9 @@ def dfMaker(specialList,cxList,otherList,pt,conn,quote_number):
                     elif (col == 'E_OD2' or col == 'E_ID2' or col == 'C_Type' or col == 'E_Spec'):
                         rowList.append(specialList[col][0][i][0])
                         if specialList[col][0][i][0] == "":
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                            root.attributes('-topmost', False)
                             return []
                     else:
                         if col == 'Lot_Serial_Number':
@@ -87,7 +89,9 @@ def dfMaker(specialList,cxList,otherList,pt,conn,quote_number):
                         else:
                             rowList.append(specialList[col][0][i][0].get()) #Insert jth column with ith index in rowList
                             if specialList[col][0][i][0].get() == "" and (col.upper() != "C_YIELD" and col.upper() != "E_YIELD" and col.upper() != "C_SPECIFICATION" and col.upper() != "C_GRADE"):
-                                messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                                root.attributes('-topmost', False)
                                 return []
                 rowList.extend(otherList)#insert validity and additional comments
                 row.append(rowList)#Append current ith row to row List
@@ -126,7 +130,7 @@ def dfMaker(specialList,cxList,otherList,pt,conn,quote_number):
 # 'quoteno, preparedby, date, cus_name, payment_term, cus_address, cus_phone, cus_email, cus_city_zip, c_specification, c_grade, c_yield, c_od, c_id, c_length, c_qty, c_quote yes/no, e_location, e_type, e_grade, e_yield, e_od, e_id, e_length, e_qty, e_selling cost/lbs, e_uom, e_selling cost / uom, e_additional cost, e_final price'
 # 'QUOTENO, PREPAREDBY, DATE, CUS_NAME, PAYMENT_TERM, CUS_ADDRESS, CUS_PHONE, CUS_EMAIL, CUS_CITY_ZIP, C_SPECIFICATION, C_GRADE, C_YIELD, C_OD, C_ID, C_LENGTH, C_QTY, C_QUOTE YES/NO, E_LOCATION, E_TYPE, E_GRADE, E_YIELD, E_OD, E_ID, E_LENGTH, E_QTY, E_SELLING COST/LBS, E_UOM, E_SELLING COST / UOM, E_ADDITIONAL COST, E_FINAL PRICE, VALIDITY, ADD_COMMENTS'
 
-def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
+def bakerMaker(specialList,cxList,otherList,ptBaker,conn, root):
     try:
         # colList = list(inpDict.keys())
         # for col in colList:
@@ -138,11 +142,15 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
         # Number:00xxxx
         for i in range(len(cxList)):
             if i == "" or i == None:
-                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview",parent=root)
+                root.attributes('-topmost', False)
                 return []
         for i in range(len(otherList)):
             if i == "" or i == None:
-                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", f"Currency or Validity or Additional Comment is not filled, please fill and then click preview",parent=root)
+                root.attributes('-topmost', False)
                 return []
         if specialList['E_Location'][0][0][0].get() != '' and cxList[2] != '':
             locDict = {"DUBAI":"DUB", "SINGAPORE":"SGP", "USA":"USA","UK":"UK"}
@@ -217,12 +225,16 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
                         print(specialList[col][0][i][0])
                         rowList.append(specialList[col][0][i][0])
                         if specialList[col][0][i][0] == "":
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                            root.attributes('-topmost', False)
                             return []
                     else:
                         # print(specialList[col][0][i][0].get())
                         if specialList[col][0][i][0].get() == "" and col!="E_Yield":
-                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror("Error", f"Empty Entry box {col} found in {i} row, please fill and then click preview",parent=root)
+                            root.attributes('-topmost', False)
                             return []
                         if col == 'E_Spec':
                             rowList.append(specialList[col][0][i][0].get().upper())
@@ -261,7 +273,9 @@ def bakerMaker(specialList,cxList,otherList,ptBaker,conn):
             return [sfDf, bakerxlDf]
         else:
             if  cxList[2] == '':
-                messagebox.showerror("Error", "Empty Customer dataframe was given in input")
+                root.attributes('-topmost', True)
+                messagebox.showerror("Error", "Empty Customer dataframe was given in input",parent=root)
+                root.attributes('-topmost', False)
             return []
     except Exception as e:
         raise e
@@ -294,7 +308,9 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
+                    toproot.attributes('-topmost', True)
                     messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -306,7 +322,9 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
                 if inStr == '' or inStr == "NA":
                     return True
                 if not inStr.isdigit():
+                    toproot.attributes('-topmost', True)
                     messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -441,7 +459,9 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
             od1=od1Var.get()
             id1 = id1Var.get()
             if (specialList["E_OD2"][0][index][1].get() == '') or (specialList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == '':
-                messagebox.showerror(title="Value Error",message="Please fill all values first")
+                root.attributes('-topmost', True)
+                messagebox.showerror(title="Value Error",message="Please fill all values first",parent=root)
+                root.attributes('-topmost', False)
                 return
             else:
                 specialList["E_OD2"][0][index] = (e_od2.get(),e_od2.get())

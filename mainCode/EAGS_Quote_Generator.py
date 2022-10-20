@@ -267,11 +267,14 @@ class App():
             root.update()
         def on_closing():
             try:
-                if messagebox.askokcancel("Quit", "Do you want to quit?"):
+                root.attributes('-topmost', True)
+                if messagebox.askokcancel("Quit", "Do you want to quit?",parent=root):
+                    root.attributes('-topmost', False)
                     conn.close()
                     top.destroy()
                     root.destroy()
                     sys.exit()
+                root.attributes('-topmost', False)
             except Exception as e:
                 raise e
         

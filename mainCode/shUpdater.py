@@ -196,7 +196,8 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
             
             if updatedFilename:
                 #renaming curr exe
-                os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                # os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                os.rename(curr_location, curr_directory+"\\EAGS_Quote_Generator_Old.exe")
                 #rename exe version updatedFilename to EAGS_Quote_Generator.exe
                 os.rename(curr_directory+"\\"+updatedFilename, curr_directory+"\\EAGS_Quote_Generator.exe")
                 #trigger to open new EAGS_Quote_generator.exe

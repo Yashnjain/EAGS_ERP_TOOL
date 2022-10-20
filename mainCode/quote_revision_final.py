@@ -67,13 +67,13 @@ def quoteRevision(root,user,conn,inv_df):
                 else:
                     customtkinter.set_appearance_mode("system") 
 
-        def on_closing():
-            try:
-                if messagebox.askokcancel("Quit", "Do you want to quit?"):
-                    mFrame.destroy()
-                    sys.exit()
-            except Exception as e:
-                raise e
+        # def on_closing():
+        #     try:
+        #         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        #             mFrame.destroy()
+        #             sys.exit()
+        #     except Exception as e:
+        #         raise e
 
         def deleter(e):
             if var.get()=="Enter quote number:":
@@ -86,24 +86,33 @@ def quoteRevision(root,user,conn,inv_df):
                 # entry.config(text_font='Arial')
 
         def hh(e=None):
+            text="PROCESSING ALL QUOTES FOR" + " "+ entry.get()
+            mylabel=customtkinter.CTkLabel(mFrame,text=text,text_font='Calibri')
+            mylabel.grid(row=3,column=0, columnspan=2)#,sticky='ew')yash
+            quoteSearcher.update()
             if var.get()!="Enter quote number:":
                 if var.get() == "":
-                    messagebox.showerror(title="ENTRY ERROR",message="Please enter a QUOTE NUMBER first")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror(title="ENTRY ERROR",message="Please enter a QUOTE NUMBER first",parent=root)
+                    root.attributes('-topmost', False)
                     mylabel.config(text = "")
+                    quoteSearcher.update()
                     mFrame.focus()
                     entry.focus()
                     return
-                text="PROCESSING ALL QUOTES FOR" + " "+ entry.get()
-                mylabel=customtkinter.CTkLabel(mFrame,text=text,text_font='Calibri')
-                mylabel.grid(row=3,column=0, columnspan=2)#,sticky='ew')yash
+                
+                
                 quote_number= entry.get()
                 quote_numbers=getallquotes(conn,quote_number)
                 print(user)
                 if len(quote_numbers):
                     if (user[0].upper() == (quote_numbers['PREPAREDBY'].astype(str)).unique()[0].upper()) or user[1].upper()=="ADMIN":    
                         if len(quote_numbers)==0:
-                            messagebox.showerror(title="Incorrect QUOTE NUMBER",message="Please enter correct QUOTE NUMBER")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror(title="Incorrect QUOTE NUMBER",message="Please enter correct QUOTE NUMBER",parent=root)
+                            root.attributes('-topmost', False)
                             mylabel.config(text = "")
+                            quoteSearcher.update()
                             mFrame.focus()
                             entry.focus()
                             return
@@ -147,21 +156,28 @@ def quoteRevision(root,user,conn,inv_df):
                         quoteList.grid_columnconfigure(0, weight=1)   
                         quoteList.mainloop()
                     else:
-                        messagebox.showinfo("ERROR", "You are not authorised to access this QUOTE.\nPlease contact your Admin")
+                        root.attributes('-topmost', True)
+                        messagebox.showinfo("ERROR", "You are not authorised to access this QUOTE.\nPlease contact your Admin",parent=root)
+                        root.attributes('-topmost', False)
                         mylabel.config(text = "")
                         mFrame.focus()
                         entry.focus()
 
                         return
                 else:
-                    messagebox.showinfo("ERROR", "Quote number doesn't exist")
+                    root.attributes('-topmost', True)
+                    messagebox.showinfo("ERROR", "Quote number doesn't exist",parent=root)
+                    root.attributes('-topmost', False)
                     mylabel.config(text = "")
+                    quoteSearcher.update()
                     mFrame.focus_set()
                     entry.focus_set()
                     
 
             else:
-                messagebox.showerror(title="ENTRY ERROR",message="Please enter a QUOTE NUMBER first")
+                root.attributes('-topmost', True)
+                messagebox.showerror(title="ENTRY ERROR",message="Please enter a QUOTE NUMBER first",parent=root)
+                root.attributes('-topmost', False)
                 mylabel.config(text = "")
                 mFrame.focus()
                 entry.focus()
@@ -169,7 +185,7 @@ def quoteRevision(root,user,conn,inv_df):
                 return      
         quoteSearcher = customtkinter.CTkToplevel(root)
         quoteSearcher.iconbitmap()
-        width2 = 420
+        width2 = 450
         height2 = 190
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()

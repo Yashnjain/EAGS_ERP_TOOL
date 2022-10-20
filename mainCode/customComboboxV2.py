@@ -5,7 +5,7 @@ from tkinter.tix import ButtonBox
 import Tools
 import pandas as pd
 
-def formulaCalc(boxList, index):
+def formulaCalc(boxList, index, root):
     try:
         if boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM":
             if boxList["E_OD2"][0][index][1]!='' and boxList["E_ID2"][0][index][1]!='':
@@ -13,7 +13,9 @@ def formulaCalc(boxList, index):
                     e_od = float(boxList["E_OD2"][0][index][1])
                     e_id = float(boxList["E_ID2"][0][index][1])
             else:
-                messagebox.showerror(title="Wrong Value",message="Please enter value To be Calculated OD and ID")
+                root.attributes('-topmost', True)   
+                messagebox.showerror(title="Wrong Value",message="Please enter value To be Calculated OD and ID",parent=root)
+                root.attributes('-topmost', False)
                 return
         else:
             if boxList["E_OD1"][0][index][1].get() != '' and boxList["E_ID1"][0][index][1].get() != '':
@@ -21,20 +23,26 @@ def formulaCalc(boxList, index):
                     e_od = float(boxList["E_OD1"][0][index][1].get())
                     e_id = float(boxList["E_ID1"][0][index][1].get())
             else:
-                messagebox.showerror(title="Wrong Value",message="Please enter value in OD and ID")
+                root.attributes('-topmost', True)
+                messagebox.showerror(title="Wrong Value",message="Please enter value in OD and ID",parent=root)
+                root.attributes('-topmost', False)
                 return
         uom = boxList["E_UOM"][0][index][1].get()
         if boxList["E_Length"][0][index][1].get() != '':
             if boxList["E_Length"][0][index][1].get() != 'None':
                 e_length = float(boxList["E_Length"][0][index][1].get())#int(boxList["E_Length"][0][index][1].get())
         else:
-            messagebox.showerror(title="Wrong Value",message="Please enter value in Length Entry Box")
+            root.attributes('-topmost', True)   
+            messagebox.showerror(title="Wrong Value",message="Please enter value in Length Entry Box", parent=root)
+            root.attributes('-topmost', False)
             return
         if boxList["E_Selling Cost/LBS"][0][index][1].get() != '':
             if boxList["E_Selling Cost/LBS"][0][index][1].get() != 'None':
                 sellCostLBS = float(boxList["E_Selling Cost/LBS"][0][index][1].get())
         else:
-            messagebox.showerror(title="Wrong Value",message="Please enter value in sellCost/LBS")
+            root.attributes('-topmost', True)    
+            messagebox.showerror(title="Wrong Value",message="Please enter value in sellCost/LBS", parent=root)
+            root.attributes('-topmost', False)
             return
         wt = (e_od - e_id)/2
         # THF
@@ -168,12 +176,16 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     if boxList["E_Additional_Cost"][0][index][1].get() != 'None':
                         addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
                 else:
-                    messagebox.showerror(title="Wrong Value",message="Please enter value in Additional Cost")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror(title="Wrong Value",message="Please enter value in Additional Cost",parent=root)
+                    root.attributes('-topmost', False)
                 if boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
                     if boxList["E_Selling Cost/UOM"][0][index][1].get() != 'None':
                         sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
                 else:
-                    messagebox.showerror(title="Wrong Value",message="Please enter value in Selling Cost/UOM")
+                    root.attributes('-topmost', True)   
+                    messagebox.showerror(title="Wrong Value",message="Please enter value in Selling Cost/UOM",parent=root)
+                    root.attributes('-topmost', False)
                 finalPrice = round((addCost+sellCost),2)
                 boxList["E_Final Price"][0][index][1].set(finalPrice)
             except Exception as ex:
@@ -217,7 +229,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         breakCheck = True
 
                     elif key=='E_UOM' and boxList['C_Quote Yes/No'][0][index][0].get() != "Other":
-                        sellCostUOM = formulaCalc(boxList, index)
+                        sellCostUOM = formulaCalc(boxList, index, root)
                         boxList["E_Selling Cost/UOM"][0][index][1].set(sellCostUOM)
                         boxList["E_Additional_Cost"][0][index][0].focus()
                     elif key == "E_Additional_Cost":
@@ -227,12 +239,16 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             if boxList["E_Additional_Cost"][0][index][1].get() != 'None':
                                 addCost = float(boxList["E_Additional_Cost"][0][index][1].get())
                         else:
-                            messagebox.showerror(title="Wrong Value",message="Please enter value in Additional Cost")
+                            root.attributes('-topmost', True)
+                            messagebox.showerror(title="Wrong Value",message="Please enter value in Additional Cost",parent=root)
+                            root.attributes('-topmost', False)
                         if boxList["E_Selling Cost/UOM"][0][index][1].get() != '':
                             if boxList["E_Selling Cost/UOM"][0][index][1].get() != 'None':
                                 sellCost = float(boxList["E_Selling Cost/UOM"][0][index][1].get())
                         else:
+                            root.attributes('-topmost', True)
                             messagebox.showerror(title="Wrong Value",message="Please enter value in Selling Cost/UOM")
+                            root.attributes('-topmost', False)
                         finalPrice = round((addCost+sellCost),2)
                     
                         boxList["E_Final Price"][0][index][0].set(finalPrice)
@@ -276,7 +292,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                                         & (df["global_grade"]==boxList['E_Grade'][0][index][0].get())& (df["heat_condition"]==boxList['E_Yield'][0][index][0].get())
                                                         & (df["od_in"]==float(boxList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(boxList['E_ID1'][0][index][0].get()))]
                                         else:
-                                            messagebox.showerror(title="Wrong Value",message="Please enter value in OD and ID")
+                                            root.attributes('-topmost', True)
+                                            messagebox.showerror(title="Wrong Value",message="Please enter value in OD and ID",parent=root)
+                                            root.attributes('-topmost', False)
                                             break
                                     # newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds','reserved_pieces', 'reserved_length_in', 'available_pieces', 'available_length_in']]
                                     newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
@@ -331,7 +349,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                                     if next_key != 'E_OD2' and next_key != 'E_ID2':
                                                         boxList[next_key][0][index][1].set(float(boxList[cx_eags[next_key]][0][index][0].get()))
                                         else:
-                                            messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                            root.attributes('-topmost', True)
+                                            messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first",parent=root)
+                                            root.attributes('-topmost', False)
                                             for keys in cx_eags.keys():
                                                 if not(keys == 'E_OD2' or keys == 'E_ID2'):
                                                     boxList[keys][0][index][1].set('')
@@ -344,7 +364,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                                 if next_key != 'E_OD2' and next_key != 'E_ID2':
                                                     boxList[next_key][0][index][1].set(float(boxList[cx_eags[next_key]][0][index][0]))
                                         else:
-                                            messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                            root.attributes('-topmost', True)
+                                            messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first",parent=root)
+                                            root.attributes('-topmost', False)
                                             for keys in cx_eags.keys():
                                                 if not(keys == 'E_OD2' or keys == 'E_ID2'):
                                                     boxList[keys][0][index][1].set('')
@@ -378,7 +400,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             
                             elif next_key != 'E_Spec' and not len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0].get()) == '' or str(boxList[cx_eags[next_key]][0][index][0].get()) is None):
                                 if next_key != 'E_Yield':
-                                    messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first",parent=root)
+                                    root.attributes('-topmost', False)
                                     if not(key == 'E_OD2' or key == 'E_ID2'):
                                         for keys in cx_eags.keys():
                                             if not(keys == 'E_OD2' or keys == 'E_ID2'):
@@ -387,7 +411,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         breakCheck = True
                                         break
                             elif next_key != 'E_Type' and next_key != 'E_Spec' and len(bakerDf) and (str(boxList[cx_eags[next_key]][0][index][0]) == '' or str(boxList[cx_eags[next_key]][0][index][0]) is None):
-                                messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Customer Requiremnet not Filled",message=f"Please fill customer {next_key} requirements first",parent=root)
+                                root.attributes('-topmost', False)
                                 if not(key == 'E_OD2' or key == 'E_ID2'):
                                     for keys in cx_eags.keys():
                                         if not(keys == 'E_OD2' or keys == 'E_ID2'):
@@ -453,7 +479,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     boxList["E_Additional_Cost"][0][index][0].focus()
                                     breakCheck = True
                                 else:
-                                    messagebox.showerror(title="Wrong Value",message="Please enter value in Selling Cost/UOM")
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror(title="Wrong Value",message="Please enter value in Selling Cost/UOM",parent=root)
+                                    root.attributes('-topmost', False)
                                     return
                         
                         elif key=='E_LeadTime' and not len(bakerDf):
@@ -464,7 +492,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         #Adding condition for margin
                         elif key=='E_Qty':
                             if boxList["E_COST"][0][index][0].get()=='':
-                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below",parent=root)
+                                root.attributes('-topmost', False)
                                 boxList["E_Qty"][0][index][0].focus()
                                 breakCheck = True
                                 
@@ -476,12 +506,16 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         #Adding condition for margin
                         elif key=='E_Selling Cost/LBS':
                             if boxList["E_Selling Cost/LBS"][0][index][0].get() == '':
-                                messagebox.showerror(title="Sale Price Blank",message="Please enter value in Selling Cost/LBS box.")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Sale Price Blank",message="Please enter value in Selling Cost/LBS box.",parent=root)
+                                root.attributes('-topmost', False)
                                 boxList["E_Selling Cost/LBS"][0][index][0].focus()
                                 breakCheck = True
 
                             elif boxList["E_COST"][0][index][0].get() == '':
-                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below",parent=root)
+                                root.attributes('-topmost', False)
                                 boxList["E_COST"][0][index][0].focus()
                                 breakCheck = True
                             else:
@@ -491,24 +525,32 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         salePrice = float(boxList["E_Selling Cost/LBS"][0][index][0].get())
                                         costPrice = float(boxList["E_COST"][0][index][0].get())
                                         if salePrice == 0.0 or costPrice == 0.0:
+                                            root.attributes('-topmost', True)
                                             messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
+                                            root.attributes('-topmost', False)
                                             return
                                         margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
                                         boxList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
                                         boxList["E_UOM"][0][index][0].focus()
                                         breakCheck = True
                                 else:
-                                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes",parent=root)
+                                    root.attributes('-topmost', False)
                                     return
                         #Adding Condition for Freight Calculation
                         elif key=='E_freightCharged':
                             if boxList["E_freightIncured"][0][index][0].get() == '':
-                                messagebox.showerror(title="Fright Price Blank",message="Please enter value in Freight Incured box.")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Fright Price Blank",message="Please enter value in Freight Incured box.",parent=root)
+                                root.attributes('-topmost', False)
                                 boxList["E_freightIncured"][0][index][0].focus()
                                 breakCheck = True
 
                             elif boxList["E_freightCharged"][0][index][0].get() == '':
-                                messagebox.showerror(title="Fright Price Blank",message="Please enter value in Freight Charged box.")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Fright Price Blank",message="Please enter value in Freight Charged box.",parent=root)
+                                root.attributes('-topmost', False)
                                 boxList["E_freightCharged"][0][index][0].focus()
                                 breakCheck = True
                             
@@ -519,7 +561,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         fcostPrice = float(boxList["E_freightIncured"][0][index][0].get())
                                         fsalePrice = float(boxList["E_freightCharged"][0][index][0].get())
                                         if fsalePrice == 0.0 or fcostPrice == 0.0:
-                                            messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry")
+                                            root.attributes('-topmost', True)
+                                            messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry",parent=root)
+                                            root.attributes('-topmost', False)
                                             return
                                         if fcostPrice != 0.0 and fsalePrice != 0.0:
                                             margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
@@ -527,7 +571,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         
                                             breakCheck = True
                                 else:
-                                    messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes")
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror(title="Wrong Value",message="FreightIncured or FreightCharged is blank, please fill their respective boxes",parent=root)
+                                    root.attributes('-topmost', False)
                                     return
 
                         elif key in cx_eags:
@@ -544,7 +590,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                                 boxList[key][0][index][1].set(boxList[cx_eags[key]][0][index][0].get())
                                 else:
                                     if key != 'E_Yield':
-                                        messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                        root.attributes('-topmost', True)
+                                        messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first",parent=root)
+                                        root.attributes('-topmost', False)
                                         for keys in cx_eags.keys():
                                             if not(keys == 'E_OD2' or keys == 'E_ID2'):
                                                 boxList[keys][0][index][1].set('')
@@ -563,7 +611,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     #             boxList[key][0][index][1].set(boxList[cx_eags[key]][0][index][0].get())
                                 else:
                                      if key not in ['E_Grade', 'E_Yield']:
+                                        root.attributes('-topmost', True)
                                         messagebox.showerror(title="CX Requiremnet not Filled",message="Please fill customer requirements first")
+                                        root.attributes('-topmost', False)
                                         for keys in cx_eags.keys():
                                             if not(keys == 'E_OD2' or keys == 'E_ID2'):
                                                 boxList[keys][0][index][1].set('')
@@ -614,7 +664,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
             except Exception as ex:
                 if len(bakerDf):
                     if bakerDf.iloc[0,0] is None:
-                        messagebox.showerror(title="Wrong Value",message="Please paste Baker input data first")
+                        root.attributes('-topmost', True)
+                        messagebox.showerror(title="Wrong Value",message="Please paste Baker input data first",parent=root)
+                        root.attributes('-topmost', False)
                     else:
                         raise ex
                 else:
@@ -937,7 +989,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                             pt.rowheader.bind('<Button-1>',handle_left_click)
                                             breakCheck = True
                                     else:
-                                        messagebox.showerror(title="Wrong Value",message="Please enter value in E_OD2 and I_ED2")
+                                        root.attributes('-topmost', True)
+                                        messagebox.showerror(title="Wrong Value",message="Please enter value in E_OD2 and I_ED2",parent=root)
+                                        root.attributes('-topmost', False)
                                         boxList['E_OD1'][0][index][1].set('')
                                         boxList['E_ID1'][0][index][1].set('')
                             
@@ -977,22 +1031,30 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     
                             if errMessage:
                                 if not len(cxDict) and not str(boxList["C_Quote Yes/No"][0][index][0].get()).upper().startswith("N"):
-                                    messagebox.showerror(title="Wrong Value",message="Please enter value from list only!")
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror(title="Wrong Value",message="Please enter value from list only!",parent=root)
+                                    root.attributes('-topmost', False)
                                     ent.delete(0, tk.END)
                                     ent.focus()
                                 elif len(cxDict):
-                                    messagebox.showerror(title="Wrong Value",message="Please enter value from list only!")
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror(title="Wrong Value",message="Please enter value from list only!",parent=root)
+                                    root.attributes('-topmost', False)
                                     ent.delete(0, tk.END)
                                     ent.focus()
 
                         else:
                             lbframe.place_forget()
                             if string!='' and check and string!='None':
-                                messagebox.showerror(title="Wrong Value",message="Please enter value from list only!222")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Wrong Value",message="Please enter value from list only!222",parent=root)
+                                root.attributes('-topmost', False)
                                 ent.focus()
             except Exception as e:
                 if ent.winfo_exists()==0:
-                    messagebox.showerror(title="Error",message="Current sub window closed, please reopen it")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror(title="Error",message="Current sub window closed, please reopen it",parent=root)
+                    root.attributes('-topmost', False)
                 else:
                     raise e
                         

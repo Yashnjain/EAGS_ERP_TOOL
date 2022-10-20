@@ -101,7 +101,9 @@ def reportGenerator(root, conn):
                 float(inStr)
                 # print('value:', inStr)
             except ValueError:
+                toproot.attributes('-topmost', True)
                 messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=toproot)
+                toproot.attributes('-topmost', False)
                 return False
             return True
         except Exception as e:
@@ -358,7 +360,9 @@ def reportGenerator(root, conn):
                             (float(from_od_value) <= filtered_df['E_OD1'])  & (filtered_df['E_OD1'] <= float(to_od_value))
                             ]
                 else:
-                    messagebox.showerror("Error", f"Please check OD search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check OD search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return
 
 
@@ -370,7 +374,9 @@ def reportGenerator(root, conn):
                             (float(from_id_value) <= filtered_df['E_ID1'])  & (filtered_df['E_ID1'] <= float(to_id_value))
                             ]
                 else:
-                    messagebox.showerror("Error", f"Please check ID search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check ID search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return
 
                 # #Filtering based on date
@@ -381,7 +387,9 @@ def reportGenerator(root, conn):
                             (datetime.strptime(fDate, "%m.%d.%Y").date()<= filtered_df['DATE'])  & (filtered_df['DATE'] <= datetime.strptime(tDate, "%m.%d.%Y").date())
                             ]
                 else:
-                    messagebox.showerror("Error", f"Data might not be available for this range, Please check Date search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Data might not be available for this range, Please check Date search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return
 
 
@@ -395,7 +403,9 @@ def reportGenerator(root, conn):
                 elif quoteYesNo==4:#All
                     pass
                 else:
-                    messagebox.showerror("Error", f"Please check Quote Yes or No Checkboxes")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check Quote Yes or No Checkboxes",parent=root)
+                    root.attributes('-topmost', False)
                     return
                 
                 if len(filtered_df):
@@ -420,9 +430,13 @@ def reportGenerator(root, conn):
                     reportName = f'Report_{datetime.strftime(datetime.today(), "%m%d%Y_%H%M%S")}.xlsx'
                     reportPath = desktopDir+ "\\" +reportName
                     filtered_df.to_excel(reportPath, index=False)
-                    messagebox.showinfo("Successfull", f"{reportName} has been generated and parked in your Desktop EAGS_Reports Folder")
+                    root.attributes('-topmost', True)
+                    messagebox.showinfo("Successfull", f"{reportName} has been generated and parked in your Desktop EAGS_Reports Folder",parent=root)
+                    root.attributes('-topmost', False)
                 else:
-                    messagebox.showerror("Error", f"Please check search query and try again")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check search query and try again",parent=root)
+                    root.attributes('-topmost', False)
                     return
             except Exception as e:
                 raise e

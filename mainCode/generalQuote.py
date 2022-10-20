@@ -104,7 +104,9 @@ def quoteGenerator(mainRoot,user,conn, df):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=entryFrame)
+                    root.attributes('-topmost', False)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -116,7 +118,9 @@ def quoteGenerator(mainRoot,user,conn, df):
                 if inStr == '' or inStr == "NA":
                     return True
                 if not inStr.isdigit():
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=entryFrame)
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -173,33 +177,33 @@ def quoteGenerator(mainRoot,user,conn, df):
                 cx_id.append((ttk.Entry(entryFrame, width=5, validate = "key"),None))
                 cx_id[-1][0].grid(row=2+row_num,column=4)
                 cx_id[-1][0]['validatecommand'] = (cx_id[-1][0].register(intFloat),'%P','%d')
-                # myCombobox(df,tab1,cx_list,frame=entryFrame,row=1,column=5,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+                # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=5,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
                 cx_len.append((ttk.Entry(entryFrame, width=5, validate = "key"),None))
                 cx_len[-1][0].grid(row=2+row_num,column=5)
                 cx_len[-1][0]['validatecommand'] = (cx_len[-1][0].register(intFloat),'%P','%d')
-                # myCombobox(df,tab1,cx_list,frame=entryFrame,row=1,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
+                # myCombobox(df,root,cx_list,frame=entryFrame,row=1,column=6,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew")
                 cx_qty.append((ttk.Entry(entryFrame, width=5, validate = "key"), None))
                 cx_qty[-1][0].grid(row=2+row_num,column=6)
                 cx_qty[-1][0]['validatecommand'] = (cx_qty[-1][0].register(intChecker),'%P','%d')
-                quoteYesNo.append(myCombobox(df,tab1,item_list=["Yes","No","Other"],frame=entryFrame,row=2+row_num,column=7,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                quoteYesNo.append(myCombobox(df,root,item_list=["Yes","No","Other"],frame=entryFrame,row=2+row_num,column=7,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 # quoteYesNo[-1]['validate']='focusout'
                 # quoteYesNo[-1]['validatecommand'] = (quoteYesNo[-1].register(yesNo),'%P','%W')
-                e_location.append(myCombobox(df,tab1,item_list=["Dubai","Singapore","USA","UK"],frame=entryFrame,row=2+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                e_location.append(myCombobox(df,root,item_list=["Dubai","Singapore","USA","UK"],frame=entryFrame,row=2+row_num,column=8,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 # e_location[-1].config(textvariable="NA", state='disabled')
-                e_type.append(myCombobox(df,tab1,item_list=["THF","BR", "TUI", "HR"],frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                e_type.append(myCombobox(df,root,item_list=["THF","BR", "TUI", "HR"],frame=entryFrame,row=2+row_num,column=9,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
 
                 e_spec.append((None, None))
                 # e_type[-1].config(textvariable="NA", state='disabled')
-                e_grade.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=10,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                e_grade.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=10,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 # e_grade[-1].config(textvariable="NA", state='disabled')
-                e_yield.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                e_yield.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=11,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 # e_yield[-1].config(textvariable="NA", state='disabled')
-                e_od1.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=12,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                e_od1.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=12,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 # e_od[-1].config(textvariable="NA", state='disabled')
                 e_od1[-1][0]['validate']='key'
                 e_od1[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
                 
-                e_id1.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=13,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
+                e_id1.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=13,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList,pt=pt))
                 e_id1[-1][0]['validate']='key'
                 e_id1[-1][0]['validatecommand'] = (e_od1[-1][0].register(intFloat),'%P','%d')
 
@@ -209,57 +213,57 @@ def quoteGenerator(mainRoot,user,conn, df):
                 searchLocation.append((None, None))
 
                 # e_id[-1].config(textvariable="NA", state='disabled')
-                e_len.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_len.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=14,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 e_len[-1][0]['validate']='key'
                 e_len[-1][0]['validatecommand'] = (e_len[-1][0].register(intFloat),'%P','%d')
                 # e_len[-1].config(textvariable="NA", state='disabled')
-                e_qty.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_qty.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=15,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 e_qty[-1][0]['validate']='key'
                 e_qty[-1][0]['validatecommand'] = (e_qty[-1][0].register(intChecker),'%P','%d')
                 # e_qty[-1].config(textvariable="NA", state='disabled')
 
-                e_cost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_cost.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=16,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 e_cost[-1][0]['validate']='key'
                 e_cost[-1][0]['validatecommand'] = (e_cost[-1][0].register(intFloat),'%P','%d')
 
-                sellCostLBS.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                sellCostLBS.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=17,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 sellCostLBS[-1][0]['validate']='key'
                 sellCostLBS[-1][0]['validatecommand'] = (sellCostLBS[-1][0].register(intFloat),'%P','%d')
 
-                marginlbs.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                marginlbs.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # sellCostLBS[-1].config(textvariable="NA", state='disabled')
-                e_uom.append(myCombobox(df,tab1,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_uom.append(myCombobox(df,root,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # e_uom[-1].config(textvariable="NA", state='disabled')
-                sellCostUOM.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                sellCostUOM.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 sellCostUOM[-1][0]['validate']='key'
                 sellCostUOM[-1][0]['validatecommand'] = (sellCostUOM[-1][0].register(intFloat),'%P','%d')
                 # sellCostUOM[-1].config(textvariable="NA", state='disabled')
-                addCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=21,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                addCost.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=21,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 addCost[-1][0]['validate']='key'
                 addCost[-1][0]['validatecommand'] = (addCost[-1][0].register(intFloat),'%P','%d')
                 # addCost[-1].config(textvariable="NA", state='disabled')
-                leadTime.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=22,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                leadTime.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=22,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 leadTime[-1][0]['validate']='key'
                 leadTime[-1][0]['validatecommand'] = (leadTime[-1][0].register(intFloat),'%P','%d')
                 # leadTime[-1].config(textvariable="NA", state='disabled')
 
-                finalCost.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=23,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                finalCost.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=23,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 finalCost[-1][0]['validate']='key'
                 finalCost[-1][0]['validatecommand'] = (finalCost[-1][0].register(intFloat),'%P','%d')
                 
 
-                freightIncured.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=24,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                freightIncured.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=24,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 freightIncured[-1][0]['validate']='key'
                 freightIncured[-1][0]['validatecommand'] = (freightIncured[-1][0].register(intFloat),'%P','%d')
                 
-                freightCharged.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=25,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                freightCharged.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=25,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 freightCharged[-1][0]['validate']='key'
                 freightCharged[-1][0]['validatecommand'] = (freightCharged[-1][0].register(intFloat),'%P','%d')
 
 
                 
 
-                marginFreight.append(myCombobox(df,tab1,item_list=item_list,frame=entryFrame,row=2+row_num,column=26,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                marginFreight.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=26,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
 
                 lot_serial_number.append((None, None))
 
@@ -283,7 +287,9 @@ def quoteGenerator(mainRoot,user,conn, df):
                 raise e
         def deleteRow():
             try:
-                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?",parent=root):
+                    root.attributes('-topmost', False)
                     global quoteDf
                     quoteDf = []
                     submitButton.configure(state='disable')
@@ -307,7 +313,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                     entryCanvas.yview("moveto", 0)
                 else:
                     pass
-
+                root.attributes('-topmost', False)
                 
                 # entryCanvas.yview_moveto('1.0')
             except Exception as e:
@@ -316,7 +322,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         def create_pdf():
             try:
                 global quoteDf
-                quoteDf = dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn)
+                quoteDf = dfMaker(specialList,cxListCalc(),otherListCalc(),pt,conn,root)
                 if len(quoteDf):
                     pt.model.df = quoteDf
                     pt.redraw()
@@ -342,7 +348,9 @@ def quoteGenerator(mainRoot,user,conn, df):
                     pdfRoot.state('zoomed')
                     submitButton.configure(state='normal')
                 else:
-                    messagebox.showerror("Error", "Empty dataframe was given in input")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", "Empty dataframe was given in input",parent=root)
+                    root.attributes('-topmost', False)
             except Exception as e:
                 raise e
 
@@ -351,10 +359,13 @@ def quoteGenerator(mainRoot,user,conn, df):
                 # pt.model.df = quoteDf
                 # pt.redraw()
                 submitButton.configure(state='disable')
-                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?",parent=root):
+                    root.attributes('-topmost', False)
                     eagsQuotationuploader(conn, quoteDf, latest_revised_quote=None)
-                    
-                    messagebox.showinfo("Info", "Data uploaded Successfully!")
+                    root.attributes('-topmost', True)
+                    messagebox.showinfo("Info", "Data uploaded Successfully!",parent=root)
+                    root.attributes('-topmost', False)
 
                     # current_work_dir = os.getcwd() #Should be Shared Drive
                     current_work_dir = r'I:\EAGS\Quotes'
@@ -388,6 +399,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                     
                 else:
                     os.remove(pdf_path)
+                root.attributes('-topmost', False)
                 
             except Exception as e:
                 raise e
@@ -609,7 +621,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
 
         #Customer Name Entry Box
-        cxNameVar.append(myCombobox(cx_df,tab1,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=25,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
+        cxNameVar.append(myCombobox(cx_df,root,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=25,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
@@ -1050,14 +1062,18 @@ def quoteGenerator(mainRoot,user,conn, df):
         root.update()
         entryCanvas.xview("moveto", 0)
 
-        def on_closing():
-            if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        def on_closing(window):
+            window.attributes('-topmost', True)
+            if messagebox.askokcancel("Quit", "Do you want to quit?",parent=window):
+                window.attributes('-topmost', False)
                 # mainRoot.destroy()
                 conn.close()
                 root.destroy()
                 sys.exit()
-        mainRoot.protocol("WM_DELETE_WINDOW", on_closing)
-        root.protocol("WM_DELETE_WINDOW", on_closing)
+            window.attributes('-topmost', False)
+                
+        mainRoot.protocol("WM_DELETE_WINDOW", lambda: on_closing(mainRoot))
+        root.protocol("WM_DELETE_WINDOW",lambda: on_closing(root))
     except Exception as e:
         raise e
     

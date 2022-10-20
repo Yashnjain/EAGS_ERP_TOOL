@@ -470,7 +470,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
         #         messagebox.showerror(title="Wrong Value",message="Please enter value from list only!")
         #         return
         #     # elif specialList[key][0][index][0].get()!="":
-        #     #     messagebox.showerror(title="Wrong Value",message="Please enter value from list only!")
+        #     #     f.showerror(title="Wrong Value",message="Please enter value from list only!")
         #     #     return
 
 
@@ -639,7 +639,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=entryFrame)
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -651,7 +653,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                 if inStr == '' or inStr == "NA":
                     return True
                 if not inStr.isdigit():
-                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=entryFrame)
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer format only",parent=root)
+                    root.attributes('-topmost', False)
                     return False
                 return True
             except Exception as e:
@@ -744,7 +748,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                             salePrice = float(specialList["E_Selling Cost/LBS"][0][index][0].get())
                             costPrice = float(specialList["E_COST"][0][index][0].get())
                             if salePrice == 0.0 or costPrice == 0.0:
-                                messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry")
+                                root.attributes('-topmost', True)
+                                messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is 0, please check and retry",parent=root)
+                                root.attributes('-topmost', False)
                                 return
                             margin_per_lbs = round(((salePrice - costPrice)/salePrice) * 100, 2)
                             specialList["E_MarginLBS"][0][index][1].set(margin_per_lbs)
@@ -753,7 +759,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                     else:
                         pass
                 else:
-                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror(title="Wrong Value",message="Selling Cost/LBS or COST is blank, please fill their respective boxes",parent=root)
+                    root.attributes('-topmost', False)
                     return
             except Exception as ex:
                 raise ex
@@ -764,14 +772,18 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                 if len(specialList):
                     key, index = keyFinder(specialList,tupVar) 
                     if key=='E_Qty' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
-                            if specialList["E_COST"][0][index][0].get()=='':
-                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
-                                specialList["E_Qty"][0][index][0].focus()
+                        if specialList["E_COST"][0][index][0].get()=='':
+                            root.attributes('-topmost', True)
+                            messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below",parent=root)
+                            root.attributes('-topmost', False)
+                            specialList["E_Qty"][0][index][0].focus()
 
                     elif key=='E_Selling Cost/LBS' and (specialList["C_Quote Yes/No"][0][index][0].get()).strip() != 'No':
-                            if specialList["E_COST"][0][index][0].get() == '':
-                                messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below")
-                                specialList["E_COST"][0][index][0].focus()
+                        if specialList["E_COST"][0][index][0].get() == '':
+                            root.attributes('-topmost', True)
+                            messagebox.showerror(title="COST not Selected",message="Please select cost price(on_dollars_per_pound) row from table present below",parent=root)
+                            root.attributes('-topmost', False)
+                            specialList["E_COST"][0][index][0].focus()
                     else:
                         specialList["E_Selling Cost/LBS"][0][index][0].focus()
                                                   
@@ -1149,7 +1161,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                 raise e
         def deleteRow():
             try:
-                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Warning", "Are sure that you want to delete last row?",parent=root):
+                    root.attributes('-topmost', False)
                     global quoteDf
                     quoteDf = []
                     #deleting row from datafrmes as well
@@ -1180,6 +1194,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                     entryCanvas.yview_moveto('1.0')
                 else:
                     pass
+                root.attributes('-topmost', False)
                 #Updating dataframe values in entry boxes after filter or deletion
                 
                 # entryCanvas.yview_moveto('1.0')
@@ -1212,7 +1227,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                     cx_yield.append((None, None))
 
                 #Creating dataframes for uploading into database as well as saving quote xl in current directory
-                dfList = bakerMaker(specialList,cxListCalc(),otherListCalc(),ptBaker,conn)
+                dfList = bakerMaker(specialList,cxListCalc(),otherListCalc(),ptBaker,conn,root)
                 quoteDf = dfList[0]
                 bakerxlDf = dfList[1]
                 if len(quoteDf) and len(bakerxlDf):
@@ -1234,7 +1249,9 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                 #     pdf_path = pdf_generator(quoteDf)
                     submitButton.configure(state='normal')
                 else:
-                    messagebox.showerror("Error", "Empty dataframe was given in input")
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", "Empty dataframe was given in input",parent=root)
+                    root.attributes('-topmost', False)
             except Exception as e:
                 raise e
 
@@ -1242,10 +1259,14 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
             try:
                 # pt.model.df = quoteDf
                 # pt.redraw()
-                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?"):
+                root.attributes('-topmost', True)
+                if messagebox.askyesno("Upload to Database", "Are sure that you want to generate quote and upload Data?",parent=root):
+                    root.attributes('-topmost', False)
                     eagsQuotationuploader(conn, quoteDf, latest_revised_quote=None, baker=True)
                     
-                    messagebox.showinfo("Info", "Data uploaded Successfully!")
+                    root.attributes('-topmost', True)
+                    messagebox.showinfo("Info", "Data uploaded Successfully!",parent=root)
+                    root.attributes('-topmost', False)
 
                     # current_work_dir = os.getcwd()#To be Shared Drive
                     # current_work_dir = r'I:\EAGS\Quotes'
@@ -1270,6 +1291,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
                 else:
                     # os.remove(pdf_path)
                     pass
+                root.attributes('-topmost', False)
                 submitButton.configure(state='disable')
             except Exception as e:
                 raise e
@@ -2007,14 +2029,17 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
             addRow(quotedf,i,check=True)
             i+=1
 
-        def on_closing():
-            if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        def on_closing(window):
+            window.attributes('-topmost', True)
+            if messagebox.askokcancel("Quit", "Do you want to quit?",parent=window):
+                window.attributes('-topmost', False)
                 # mainRoot.destroy()
                 conn.close()
                 root.destroy()
                 sys.exit()
-        root.protocol("WM_DELETE_WINDOW", on_closing)
-        root.protocol("WM_DELETE_WINDOW", on_closing)
+            window.attributes('-topmost', False)
+        root.protocol("WM_DELETE_WINDOW", lambda: on_closing(root))
+        mainRoot.protocol("WM_DELETE_WINDOW", lambda: on_closing(mainRoot))
         # df = get_inv_df(conn,table = INV_TABLE)       
     except Exception as e:
         raise e
