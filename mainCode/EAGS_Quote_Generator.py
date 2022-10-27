@@ -254,7 +254,9 @@ class App():
             
             # dsp_msg = f"Error: {error_id}\nPlease send a screenshot of this error message along with the app window to devsupport@biourja.com"
             dsp_msg = f"A Report for this issue has been sent to IT India Team with Error ID: {error_id}, it will be resolved soon\nPlease capture this error id for future reference"
-            showerror(f"Error", message=dsp_msg)
+            root.attributes('-topmost', True)
+            showerror(f"Error", message=dsp_msg, parent=root)
+            root.attributes('-topmost', False)
             imageV2path = os.path.join(tempDir,f'{error_id}V2.png')
             cap = tkcap.CAP(root)     # master is an instance of tkinter.Tk
             cap.capture(imageV2path)       # Capture and Save the screenshot of the tkiner window

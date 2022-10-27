@@ -554,7 +554,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
             key, index = keyFinder(specialList,tupVar)
             if key == 'E_ID1' and specialList['E_Length'][0][index][0].get() != 'NA':
                 newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
-                            & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
+                            & (df["grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
                             & (df["od_in"]==float(specialList['E_OD1'][0][index][0].get())) & (df["od_in_2"]==float(specialList['E_ID1'][0][index][0].get()))]
                 newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age']]
                 newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
@@ -1455,7 +1455,7 @@ def bakerQuoteGenerator(mainRoot,user,conn,quotedf,quote_number, df):
 
         #Adding Search button in cxFrame 2
         # starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
-        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
+        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0, pt), activebackground="#20bebb", highlightbackground="#20bebd")
 
 
 

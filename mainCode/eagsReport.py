@@ -6,6 +6,7 @@ from datetime import date
 from sfTool import get_connection, get_inv_df, get_master_df
 from datetime import datetime
 import os
+import pandas as pd
 # import ChecklistCombobox
 
 MASTER_TABLE = "EAGS_MASTER"
@@ -326,6 +327,24 @@ def reportGenerator(root, conn):
                     filtered_df = filtered_df.loc[df["PREPAREDBY"].str.startswith((user.replace('*','')))]
                 else:
                     filtered_df = df[(df['PREPAREDBY']==user)]
+
+                noCheck= False
+                allCheck = False
+                # #Filtering Based on Quote Yes, No and Other
+                if quoteYesNo==1:#Yes
+                    filtered_df = filtered_df[(filtered_df["C_QUOTE_YES/NO"]=="Yes")]
+                elif quoteYesNo==2:#No
+                    filtered_df = filtered_df[(filtered_df["C_QUOTE_YES/NO"]=="No")]
+                    noCheck = True
+                elif quoteYesNo==3:#Other
+                    filtered_df = filtered_df[(filtered_df["C_QUOTE_YES/NO"]=="Other")]
+                elif quoteYesNo==4:#All
+                    allCheck = True
+                else:
+                    root.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check Quote Yes or No Checkboxes",parent=root)
+                    root.attributes('-topmost', False)
+                    return
                 
                 #Filtering based on Location
                 if locationValue == '' or locationValue == '*':
@@ -336,82 +355,72 @@ def reportGenerator(root, conn):
                     filtered_df = df[(df['E_LOCATION']==locationValue)]
 
 
-                #Filtering based on Grade
-                if grade == "*":
+                na_df = []
+
+
+                #Filtering NA Values if required for No and All case
+                if noCheck or allCheck:
+                    na_df = filtered_df[
+                            ("NA" == filtered_df['E_OD1'])  & (filtered_df['E_OD1'] == "NA")
+                            ]
+                    if allCheck:
+                        filtered_df = filtered_df[
+                            ("NA" != filtered_df['E_OD1'])  & (filtered_df['E_OD1'] != "NA")
+                            ]
+                if not noCheck:
+                    #Filtering based on Grade
+                    if grade == "*":
+                            pass
+                    elif "*" in grade:
+                        filtered_df = filtered_df.loc[df["E_GRADE"].str.startswith(grade.replace('*',''))]
+                    else: # yieldValue != "*":
+                        filtered_df  = filtered_df[ (filtered_df["E_GRADE"]==grade)]
+
+                    #Filtering based on Yield
+                    if yieldValue == "*":
+                            pass
+                    elif "*" not in yieldValue:
+                        filtered_df = filtered_df.loc[df["E_YIELD"].str.startswith(yieldValue.replace('*',''))]
+                    else: # yieldValue != "*":
+                        filtered_df  = filtered_df[ (filtered_df["E_YIELD"]==yieldValue)]
+
+                    #Filtering OD
+                    if from_od_value == "" and to_od_value == "":
                         pass
-                elif "*" in grade:
-                    filtered_df = filtered_df.loc[df["E_GRADE"].str.startswith(grade.replace('*',''))]
-                else: # yieldValue != "*":
-                    filtered_df  = filtered_df[ (filtered_df["E_GRADE"]==grade)]
+                    elif from_od_value != "" and to_od_value != "":
+                        filtered_df = filtered_df[
+                                (float(from_od_value) <= filtered_df['E_OD1'].astype(float))  & (filtered_df['E_OD1'].astype(float) <= float(to_od_value))
+                                ]
+                    else:
+                        root.attributes('-topmost', True)
+                        messagebox.showerror("Error", f"Please check OD search query and try again",parent=root)
+                        root.attributes('-topmost', False)
+                        return
 
-                #Filtering based on Yield
-                if yieldValue == "*":
+
+                    #Filtering ID
+                    if from_id_value == "" and to_id_value == "":
                         pass
-                elif "*" not in yieldValue:
-                    filtered_df = filtered_df.loc[df["E_YIELD"].str.startswith(yieldValue.replace('*',''))]
-                else: # yieldValue != "*":
-                    filtered_df  = filtered_df[ (filtered_df["E_YIELD"]==yieldValue)]
+                    elif from_id_value != "" and to_id_value != "":
+                        filtered_df = filtered_df[
+                                (float(from_id_value) <= filtered_df['E_ID1'].astype(float))  & (filtered_df['E_ID1'].astype(float) <= float(to_id_value))
+                                ]
+                    else:
+                        root.attributes('-topmost', True)
+                        messagebox.showerror("Error", f"Please check ID search query and try again",parent=root)
+                        root.attributes('-topmost', False)
+                        return
 
-                #Filtering OD
-                if from_od_value == "" and to_od_value == "":
-                    pass
-                elif from_od_value != "" and to_od_value != "":
-                    filtered_df = filtered_df[
-                            (float(from_od_value) <= filtered_df['E_OD1'])  & (filtered_df['E_OD1'] <= float(to_od_value))
-                            ]
-                else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check OD search query and try again",parent=root)
-                    root.attributes('-topmost', False)
-                    return
+                if len(na_df):
+                    filtered_df = pd.concat([filtered_df,na_df],ignore_index=True)
 
 
-                #Filtering ID
-                if from_id_value == "" and to_id_value == "":
-                    pass
-                elif from_id_value != "" and to_id_value != "":
-                    filtered_df = filtered_df[
-                            (float(from_id_value) <= filtered_df['E_ID1'])  & (filtered_df['E_ID1'] <= float(to_id_value))
-                            ]
-                else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check ID search query and try again",parent=root)
-                    root.attributes('-topmost', False)
-                    return
-
-                # #Filtering based on date
-                if fDate == "" and tDate == "":
-                    pass
-                elif fDate != "" and tDate != "":
-                    filtered_df = filtered_df[
-                            (datetime.strptime(fDate, "%m.%d.%Y").date()<= filtered_df['DATE'])  & (filtered_df['DATE'] <= datetime.strptime(tDate, "%m.%d.%Y").date())
-                            ]
-                else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Data might not be available for this range, Please check Date search query and try again",parent=root)
-                    root.attributes('-topmost', False)
-                    return
-
-
-                # #Filtering Based on Quote Yes, No and Other
-                if quoteYesNo==1:#Yes
-                    filtered_df = filtered_df[(filtered_df["C_QUOTE_YES/NO"]=="Yes")]
-                elif quoteYesNo==2:#No
-                    filtered_df = filtered_df[(filtered_df["C_QUOTE_YES/NO"]=="No")]
-                elif quoteYesNo==3:#Other
-                    filtered_df = filtered_df[(filtered_df["C_QUOTE_YES/NO"]=="Other")]
-                elif quoteYesNo==4:#All
-                    pass
-                else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check Quote Yes or No Checkboxes",parent=root)
-                    root.attributes('-topmost', False)
-                    return
+                
                 
                 if len(filtered_df):
                     
-                    # filtered_df = filtered_df[["site", "global_grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in', 'heat_number', 'lot_serial_number']]
-                    # filtered_df = filtered_df.sort_values(["site","global_grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, True, False])
+                    # filtered_df = filtered_df[["site", "grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in', 'heat_number', 'lot_serial_number']]
+                    # filtered_df = filtered_df.sort_values(["site","grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, True, False])
                     
 
                     colList = ['QUOTE NO', 'PREPARED BY', 'DATE', 'CUSTOMER_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUSTOMER_ADDRESS', 'CUSTOMER_PHONE', 'CUSTOMER_EMAIL', 'CUSTOMER_CITY_ZIP', 'WORK_ORDER', 'DELIVERY_DATE',

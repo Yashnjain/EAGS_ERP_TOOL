@@ -1,6 +1,6 @@
 import sharepy
 import glob
-import os, shutil, traceback
+import os, shutil, traceback, time
 from mail import send_mail
 import tkinter as tk
 import numpy as np
@@ -12,7 +12,7 @@ from office365.sharepoint.files.file import File
 import io
 import datetime
 import pandas as pd
-import os
+
 
 
 
@@ -113,11 +113,20 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
         # Initialize the connection to Sharepoint account
         # s = sharepy.connect(baseurl, username, password)
         # f_lst = get_f_list_from_sp(s)
-        ctx_auth = AuthenticationContext(baseurl)
+        retry=0
+        while retry<3:
+            try:
+                ctx_auth = AuthenticationContext(baseurl)
 
-        ctx_auth.acquire_token_for_user(username, password)
+                ctx_auth.acquire_token_for_user(username, password)
 
-        ctx = ClientContext(siteurl, ctx_auth) # make sure you auth to the siteurl.
+                ctx = ClientContext(siteurl, ctx_auth) # make sure you auth to the siteurl.]
+                break
+            except Exception as e:
+                time.sleep(2)
+                if retry==2:
+                    raise e
+                retry+=1
 
         currFilename = os.path.splitext(currFilename)[0]
 

@@ -341,6 +341,8 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
         x = (screen_width/2) - (width/2)
         y = (screen_height/2) - (height/2)
         toproot.geometry('%dx%d+%d+%d' % (width, height, x, y))
+        toproot.attributes('-topmost', True)
+        toproot.grab_set()
 
         labelFrame = tk.Frame(toproot, bg= "#9BC2E6")
         labelFrame.grid(row=0, column=1)
@@ -455,23 +457,37 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
         # id2Var = tk.StringVar()
         # id2 = ttk.Entry(entryFrame2, textvariable=id2Var, background = 'white',width = 15)
         # id2.grid(row=1,column=1)
-        def exitTrue():
+        def exitTrue(close_check=False):
             od1=od1Var.get()
             id1 = id1Var.get()
-            if (specialList["E_OD2"][0][index][1].get() == '') or (specialList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == '':
+            if not close_check and (specialList["E_OD2"][0][index][1].get() == '') or (specialList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == '':
                 root.attributes('-topmost', True)
                 messagebox.showerror(title="Value Error",message="Please fill all values first",parent=root)
                 root.attributes('-topmost', False)
                 return
+            elif close_check and ((specialList["E_OD2"][0][index][1].get() == '') or (specialList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == ''):
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror(title="Closing with Blank",message="Please select type again as currently no data was provided",parent=toproot)
+                    toproot.attributes('-topmost', False)
+                    specialList['E_Type'][0][index][1].set("")
+                    specialList['E_Grade'][0][index][1].set("")
+                    specialList['E_Yield'][0][index][1].set("")
+                    toproot.attributes('-topmost', False)
+                    toproot.grab_release()
+                    toproot.destroy()
             else:
                 specialList["E_OD2"][0][index] = (e_od2.get(),e_od2.get())
                 specialList["E_ID2"][0][index] = (e_id2.get(),e_id2.get())
+                specialList['E_OD1'][0][index][0].configure(state='disabled')
+                specialList['E_ID1'][0][index][0].configure(state='disabled')
                 
+                toproot.attributes('-topmost', False)
+                toproot.grab_release()
                 toproot.destroy()
                 specialList['E_OD1'][0][index][1].set(float(od1))
                 specialList['E_ID1'][0][index][1].set(float(id1))
                 newDf = df[(df["site"] == specialList['E_Location'][0][index][0].get())
-                                                    & (df["global_grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
+                                                    & (df["grade"]==specialList['E_Grade'][0][index][0].get())& (df["heat_condition"]==specialList['E_Yield'][0][index][0].get())
                                                     & (df["od_in"]==float(specialList['E_OD2'][0][index][0])) & (df["od_in_2"]==float(specialList['E_ID2'][0][index][0]))]
                 newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
                 newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
@@ -484,15 +500,30 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
                 newDf.reset_index(inplace=True, drop=True)
                 pt.model.df = newDf
                 pt.redraw()
+                specialList['E_Length'][0][index][0].focus()
                 # toproot.destroy()
                 check=True
+        
+        def on_closing():
+            try:
+                toproot.attributes('-topmost', True)
+                if messagebox.askokcancel("Quit", "Do you want to quit?",parent=toproot):
+                    toproot.attributes('-topmost', False)
+                    close_check=True
+                    exitTrue(close_check)
+                root.attributes('-topmost', False)
+            except Exception as e:
+                raise e
         submitButton = tk.Button(submitFrame,text="Submit", command=exitTrue)
         # submitButton.place(relx=.5, rely=.5, anchor="center")
         submitButton.grid(row=0,column=1,pady=40)
         toproot.focus()
         od1.focus()
+        toproot.protocol("WM_DELETE_WINDOW", on_closing)
         toproot.mainloop()
         if check:
+            toproot.attributes('-topmost', False)
+            toproot.grab_release()
             toproot.destroy()
             return od1.get(), id1.get(), specialList["E_OD2"][index][0].get(), specialList["E_ID2"][index][0].get()
         else:

@@ -813,6 +813,8 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
         x = (screen_width/2) - (width/2)
         y = (screen_height/2) - (height/2)
         toproot.geometry('%dx%d+%d+%d' % (width, height, x, y))
+        toproot.attributes('-topmost', True)
+        toproot.grab_set()
 
         labelFrame = tk.Frame(toproot, bg= "#9BC2E6")
         labelFrame.grid(row=0, column=1)
@@ -910,7 +912,7 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
         # id2Var = tk.StringVar()
         # id2 = ttk.Entry(entryFrame2, textvariable=id2Var, background = 'white',width = 15)
         # id2.grid(row=1,column=1)
-        def exitTrue():
+        def exitTrue(close_check=False):
             try:
                 # if (boxList["E_OD2"][0][index] == ('', '')) or (boxList["E_ID2"][0][index] == ('', '')):
                 #     messagebox.showerror(title="Value Error",message="Please fill all values first")
@@ -921,28 +923,60 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
                 id1 = id1Var.get()
                 # if (boxList["E_OD2"][0][index] is not None) and (boxList["E_ID2"][0][index] is not None) and od1 is not None and id1 is not None:
                 # if (boxList["E_OD2"][0][index] == ('', '')) or (boxList["E_ID2"][0][index] == ('', '')) or od1 == '' or id1 == '':
-                if (boxList["E_OD2"][0][index][1].get() == '') or (boxList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == '':
-                    root.attributes('-topmost', True)
-                    messagebox.showerror(title="Value Error",message="Please fill all values first",parent=root)
-                    root.attributes('-topmost', False)
+                if not close_check and ((boxList["E_OD2"][0][index][1].get() == '') or (boxList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == ''):
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror(title="Value Error",message="Please fill all values first",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return
+                elif close_check and ((boxList["E_OD2"][0][index][1].get() == '') or (boxList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == ''):
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror(title="Closing with Blank",message="Please select type again as currently no data was provided",parent=toproot)
+                    toproot.attributes('-topmost', False)
+                    boxList['E_Type'][0][index][1].set("")
+                    boxList['E_Grade'][0][index][1].set("")
+                    boxList['E_Yield'][0][index][1].set("")
+                    toproot.attributes('-topmost', False)
+                    toproot.grab_release()
+                    toproot.destroy()
+                    
                 else:
                     
                     boxList['E_OD1'][0][index][1].set(float(od1))
                     boxList['E_ID1'][0][index][1].set(float(id1))
+                    
                     boxList["E_OD2"][0][index] = (boxList["E_OD2"][0][index][0].get(),boxList["E_OD2"][0][index][0].get())
                     boxList["E_ID2"][0][index] = (boxList["E_ID2"][0][index][0].get(),boxList["E_ID2"][0][index][0].get())
+                    boxList['E_OD1'][0][index][0].configure(state='disabled')
+                    boxList['E_ID1'][0][index][0].configure(state='disabled')
+                    toproot.attributes('-topmost', False)
+                    toproot.grab_release()
                     toproot.destroy()
+                    boxList['E_Length'][0][index][0].focus()
                     check=True
             except Exception as e:
                 raise e
+        
+        def on_closing():
+            try:
+                toproot.attributes('-topmost', True)
+                if messagebox.askokcancel("Quit", "Do you want to quit?",parent=toproot):
+                    toproot.attributes('-topmost', False)
+                    close_check=True
+                    exitTrue(close_check)
+                toproot.attributes('-topmost', False)
+            except Exception as e:
+                raise e
+
         submitButton = tk.Button(submitFrame,text="Submit", command=exitTrue)
         submitButton.bind("<Return>", exitTrue)
         # submitButton.place(relx=.5, rely=.5, anchor="center")
         submitButton.grid(row=0,column=1,pady=40)
         toproot.focus()
         od1.focus()
+        toproot.protocol("WM_DELETE_WINDOW", on_closing)
         if check:
+            toproot.attributes('-topmost', False)
+            toproot.grab_release()
             toproot.destroy()
             return od1.get(), id1.get(), boxList["E_OD2"][index][0].get(), boxList["E_ID2"][index][0].get()
         else:
@@ -1061,9 +1095,9 @@ def starSearch(root, df):
 
                 
                 elif "*" not in grade:
-                    filtered_df  = filtered_df[ (filtered_df["global_grade"]==grade)]
+                    filtered_df  = filtered_df[ (filtered_df["grade"]==grade)]
                 else:# gradeValue != "*":
-                    filtered_df = filtered_df.loc[df["global_grade"].str.startswith(grade.replace('*',''))]
+                    filtered_df = filtered_df.loc[df["grade"].str.startswith(grade.replace('*',''))]
 
                 if len(filtered_df)!=0:
                     #Filtering based on Yield
@@ -1094,7 +1128,7 @@ def starSearch(root, df):
                 
                 # if grade != "*" and yieldField != "*" and od != "*" and idField != "*":
                 #     filtered_df = df.loc[
-                #                         df["global_grade"].str.startswith(grade.replace('*','')) &
+                #                         df["grade"].str.startswith(grade.replace('*','')) &
                 #                         df["heat_condition"].str.startswith(yieldField.replace('*','')) &
                 #                         df["od_in"].str.startswith(od.replace('*','')) &
                 #                         df["od_in_2"].str.startswith(idField.replace('*',''))
@@ -1102,25 +1136,25 @@ def starSearch(root, df):
                     
                 # elif grade != "*" and yieldField != "*" and od != "*":
                 #     filtered_df  = df.loc[
-                #                             df["global_grade"].str.startswith(grade.replace('*','')) &
+                #                             df["grade"].str.startswith(grade.replace('*','')) &
                 #                             df["heat_condition"].str.startswith(yieldField.replace('*','')) &
                 #                             df["od_in"].str.startswith(od.replace('*',''))
                 #                         ]
                 # elif grade != "*" and yieldField != "*":
                 #     filtered_df  = df.loc[
-                #                             df["global_grade"].str.startswith(grade.replace('*','')) &
+                #                             df["grade"].str.startswith(grade.replace('*','')) &
                 #                             df["heat_condition"].str.startswith(yieldField.replace('*',''))
                 #                         ]
                 # elif grade != "*":
                 #     filtered_df  = df.loc[
-                #                             df["global_grade"].str.startswith(grade.replace('*',''))
+                #                             df["grade"].str.startswith(grade.replace('*',''))
                 #                         ]
                 # else:
                 #     messagebox.showerror("Error", f"Please check search query and try again")
                 #     return
                 if len(filtered_df):
-                    filtered_df = filtered_df[["global_grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in']]
-                    filtered_df = filtered_df.sort_values(["global_grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, False])
+                    filtered_df = filtered_df[["grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in']]
+                    filtered_df = filtered_df.sort_values(["grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, False])
                     
                     screen_width = toproot.winfo_screenwidth()
                     screen_height = toproot.winfo_screenheight()
@@ -1143,9 +1177,9 @@ def starSearch(root, df):
                     ptBakerxl.show()
             
                 else:
-                    root.attributes('-topmost', True)
+                    toproot.attributes('-topmost', True)
                     messagebox.showerror("Error", f"Please check search query and try again",parent=root)
-                    root.attributes('-topmost', False)
+                    toproot.attributes('-topmost', False)
                     return 
             except Exception as e:
                 raise e
@@ -1167,8 +1201,9 @@ def starSearch(root, df):
         raise e
 
 
+    
 
-def rangeSearch(root, df, boxList, index):
+def rangeSearch(root, df, boxList, index, pt):
     try:
         def intFloat(inStr,acttyp):
             try:
@@ -1186,8 +1221,12 @@ def rangeSearch(root, df, boxList, index):
                 return True
             except Exception as e:
                 raise e
+        
+        #Checking if Quote Yes/No selected as Other or Blank or not
+        
+        
         toproot = tk.Toplevel(root, bg = "#9BC2E6")
-        toproot.title('EAGS Quote Generator Star Search')
+        toproot.title('EAGS Quote Generator Range Search')
         screen_width = toproot.winfo_screenwidth()
         screen_height = toproot.winfo_screenheight()
 
@@ -1197,7 +1236,23 @@ def rangeSearch(root, df, boxList, index):
         x = (screen_width/2) - (width/2)
         y = (screen_height/2) - (height/2)
         toproot.geometry('%dx%d+%d+%d' % (width, height, x, y))
+        
 
+        ####################Condition for reasearcher to open################################################################
+        #Find last entry row and logic for fill type column based on ID value if 0 then BR else THF
+        last_row = len(boxList['E_Qty'][0]) - 1
+        if boxList['C_Quote Yes/No'][0][last_row][0].get() != "Other" and boxList['C_Quote Yes/No'][0][last_row][0].get() != "Yes":
+            # if boxList['C_Quote Yes/No'][0][index][0].get() != "":
+            root.attributes('-topmost', True)
+            messagebox.showerror("Error", f"Please Select Quote Yes/No as Other and try again",parent=root)
+            root.attributes('-topmost', False)
+            
+            toproot.destroy()
+
+            return
+        ######################################################################################################################
+        
+        toproot.grab_set()
         labelFrame = tk.Frame(toproot, bg= "#9BC2E6")
         labelFrame.grid(row=0, column=1)
         boxFrame = tk.Frame(toproot, bg= "#9BC2E6")
@@ -1284,6 +1339,8 @@ def rangeSearch(root, df, boxList, index):
         
         vcmd = toproot.register(intFloat)
         fromOdVar = tk.StringVar()
+
+        #######
         
         fromOd = ttk.Entry(entryFrame1, textvariable=fromOdVar, background = 'white',width = 10,validate = "key",
                 validatecommand=(vcmd, '%P','%d'))
@@ -1339,9 +1396,9 @@ def rangeSearch(root, df, boxList, index):
 
                 
                 elif "*" not in gradeValue:
-                    filtered_df  = filtered_df[ (filtered_df["global_grade"]==gradeValue)]
+                    filtered_df  = filtered_df[ (filtered_df["grade"]==gradeValue)]
                 else:# gradeValue != "*":
-                    filtered_df = filtered_df.loc[df["global_grade"].str.startswith(gradeValue.replace('*',''))]
+                    filtered_df = filtered_df.loc[df["grade"].str.startswith(gradeValue.replace('*',''))]
 
 
                 #Filtering based on Yield
@@ -1360,9 +1417,9 @@ def rangeSearch(root, df, boxList, index):
                             (float(from_od_value) <= filtered_df['od_in'])  & (filtered_df['od_in'] <= float(to_od_value))
                             ]
                 else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check OD search query and try again",parent=root)
-                    root.attributes('-topmost', False)
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check OD search query and try again",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return
 
 
@@ -1374,16 +1431,16 @@ def rangeSearch(root, df, boxList, index):
                             (float(from_id_value) <= filtered_df['od_in_2'])  & (filtered_df['od_in_2'] <= float(to_id_value))
                             ]
                 else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check ID search query and try again",parent=root)
-                    root.attributes('-topmost', False)
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check ID search query and try again",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return
 
 
                 # if gradeValue != '' or yieldValue != '':
                 #     if from_od_value != "" and to_od_value != "" and from_id_value != "" and to_id_value != "":
                 #         filtered_df = df[
-                #             (df["global_grade"]==gradeValue) & (df["heat_condition"]==yieldValue) &
+                #             (df["grade"]==gradeValue) & (df["heat_condition"]==yieldValue) &
                 #             (float(from_od_value) <= df['od_in'])  & (df['od_in'] <= float(to_od_value)) &
                 #             (float(from_id_value) <= df['od_in_2']) & (df['od_in_2'] <=  float(to_id_value))
                 #             ]
@@ -1391,14 +1448,14 @@ def rangeSearch(root, df, boxList, index):
                         
                 #     elif from_od_value == "" and to_od_value == "" and from_id_value != "" and to_id_value != "":
                 #         filtered_df  = df[ 
-                #             (df["global_grade"]==gradeValue) & (df["heat_condition"]==yieldValue) &
+                #             (df["grade"]==gradeValue) & (df["heat_condition"]==yieldValue) &
                 #             (float(from_id_value) <= df['od_in_2']) & (df['od_in_2'] <=  float(to_id_value))
                 #             ]
 
 
                 #     elif from_od_value != "" and to_od_value != "" and from_id_value == "" and to_id_value == "":
                 #         filtered_df  = df[ 
-                #             (df["global_grade"]==gradeValue) & (df["heat_condition"]==yieldValue) &
+                #             (df["grade"]==gradeValue) & (df["heat_condition"]==yieldValue) &
                 #             (float(from_od_value) <= df['od_in']) & (df['od_in'] <=  float(to_od_value))
                 #             ]
                     
@@ -1410,8 +1467,8 @@ def rangeSearch(root, df, boxList, index):
                 #     messagebox.showerror("Error", f"Please fill grade and yield")
                     return
                 if len(filtered_df):
-                    filtered_df = filtered_df[["site", "global_grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in', 'heat_number', 'lot_serial_number']]
-                    filtered_df = filtered_df.sort_values(["site","global_grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, True, False])
+                    filtered_df = filtered_df[["site", "grade", "heat_condition", "od_in","od_in_2",'age' ,'date_last_receipt','onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in', 'heat_number', 'lot_serial_number']]
+                    filtered_df = filtered_df.sort_values(["site","grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, True, False], ignore_index=True)
                     
                     screen_width = toproot.winfo_screenwidth()
                     screen_height = toproot.winfo_screenheight()
@@ -1421,22 +1478,93 @@ def rangeSearch(root, df, boxList, index):
                     # calculate position x and y coordinates
                     x = (screen_width/2) - (width/2)
                     y = (screen_height/2) - (height/2)
-                    xlRoot = tk.Toplevel()
+                    xlRoot = tk.Toplevel(root, bg = "#9BC2E6")
                     xlRoot.geometry('%dx%d+%d+%d' % (width, height, x, y))
                     xlRoot.state('zoomed')
+                    xlRoot.title("Range Search Table")
                     
+                    def handle_double_click(e):
+                        try:
+                            rowclicked_single = ptBakerxl.get_row_clicked(e)
+                            data = ptBakerxl.model.df['lot_serial_number'][rowclicked_single]
+                            print(boxList)
+                            map_dict = {"site":"E_Location", "grade":"E_Grade","heat_condition":"E_Yield", "od_in":"E_OD1","od_in_2":"E_ID1",
+                             "onhand_dollars_per_pounds":"E_COST","lot_serial_number":"Lot_Serial_Number"}
 
+                           
+
+                             
+                             
+                            #Find last entry row and logic for fill type column based on ID value if 0 then BR else THF
+                            last_row = len(boxList['E_Qty'][0]) - 1
+
+                            #Fill quoteYes or no as other if n blank
+                            # boxList['C_Quote Yes/No'][0][last_row][1].set("Other")
+
+                            xlRoot.grab_release()
+                            for key in map_dict.keys():
+                                if key == "lot_serial_number":
+                                    boxList['Lot_Serial_Number'][0][last_row] = (ptBakerxl.model.df[key][rowclicked_single], None)
+                                elif key == "site":
+                                    boxList[map_dict[key]][0][last_row][1].set(ptBakerxl.model.df[key][rowclicked_single])
+                                    if ptBakerxl.model.df["od_in_2"][rowclicked_single] != 0.0:
+                                        boxList["E_Type"][0][last_row][1].set("THF")
+                                    else:
+                                        boxList["E_Type"][0][last_row][1].set("BR")
+                                else:
+                                    boxList[map_dict[key]][0][last_row][1].set(ptBakerxl.model.df[key][rowclicked_single])
+
+                            #################################Updating bottom table###################################################
+                            newDf = df[(df["site"] == boxList['E_Location'][0][last_row][0].get()) & (df["grade"]==boxList['E_Grade'][0][last_row][0].get())
+                                    & (df["heat_condition"]==boxList['E_Yield'][0][last_row][0].get())& (df["od_in"]==float(boxList['E_OD1'][0][last_row][0].get()))
+                                    & (df["od_in_2"]==float(boxList['E_ID1'][0][last_row][0].get()))]
+
+                            newDf = newDf[['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']]
+                            newDf['date_last_receipt'] = pd.to_datetime(newDf['date_last_receipt'])
+                            newDf['date_last_receipt'] = newDf['date_last_receipt'].dt.date
+                            newDf = newDf[newDf['available_pieces']>0]
+                            newDf = newDf.sort_values('age', ascending=False).sort_values('date_last_receipt', ascending=True)
+                            
+                            #Resetting Index
+                            newDf.reset_index(inplace=True, drop=True)
+                            if pt is not None:
+                                pt.model.df = newDf
+                                pt.redraw()
+                                
+                            #########################################################################################################    
+                                
+                            
+                            xlRoot.destroy()
+                            print(f"Row clicked is {rowclicked_single+1}")
+                        except Exception as ex:
+                            raise ex
+                    toproot.grab_release()
+                    toproot.destroy()
+                    xlRoot.grab_set()
                     ptBakerxl = MyTable(xlRoot, editable=False,dataframe=filtered_df,showtoolbar=True, showstatusbar=True, maxcellwidth=2100, width=2100)
                     ptBakerxl.font = 'Segoe UI'
                     ptBakerxl.fontsize = 12
                     ptBakerxl.cellwidth = 130
                     ptBakerxl.thefont = ('Segoe UI', 12)
                     ptBakerxl.show()
+                    ptBakerxl.bind('<Double-Button-1>',handle_double_click)
+                    
+
+                    def on_closing():
+                        try:
+                            xlRoot.grab_release()
+                            xlRoot.destroy()
+                        except Exception as e:
+                            raise e
+                    
+                    
+                    xlRoot.protocol("WM_DELETE_WINDOW", on_closing)
+
             
                 else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check search query and try again",parent=root)
-                    root.attributes('-topmost', False)
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check search query and try again",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return
             except Exception as e:
                 raise e
@@ -1449,6 +1577,16 @@ def rangeSearch(root, df, boxList, index):
         submitButton.grid(row=0,column=1,pady=40)
         toproot.focus()
         boxList["searchLocation"][0][index][0].focus()
+
+        def on_closing():
+            try:
+                toproot.grab_release()
+                toproot.destroy()
+            except Exception as e:
+                raise e
+        
+        
+        toproot.protocol("WM_DELETE_WINDOW", on_closing)
 
         
     except Exception as e:

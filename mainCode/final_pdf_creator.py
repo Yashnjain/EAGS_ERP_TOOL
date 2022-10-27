@@ -43,9 +43,9 @@ def pdf_generator(df):
         retry=0
         while retry < 10:
             try:
-                app = xw.App(visible=True)
+                app = xw.App(visible=False)
                 wb = app.books.open(input_sheet) 
-                wb.app.visible = True
+                wb.app.visible = False
                 break
             except Exception as e:
                 time.sleep(5)
@@ -77,7 +77,11 @@ def pdf_generator(df):
                 for i in range(0,(len(chunk_df))):
                     diff=7
                     ws1.range(f'A{8+(diff*i+page_count*page_diff)}').value="Customer Requirement:"
-                    customer_requirement=f'{round(float(chunk_df["C_OD"][i]),3)}"OD - {round(chunk_df["C_ID"][i],3)}"ID - {chunk_df["C_GRADE"][i]} - {chunk_df["C_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["C_QTY"][i]}@{chunk_df["C_LENGTH"][i]}"'
+                    if chunk_df["E_UOM"][i] == 'Inch' or chunk_df["E_UOM"][i] == 'Each':
+                        customer_requirement=f'{round(float(chunk_df["C_OD"][i]),3)}"OD - {round(chunk_df["C_ID"][i],3)}"ID - {chunk_df["C_GRADE"][i]} - {chunk_df["C_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["C_QTY"][i]}@{chunk_df["C_LENGTH"][i]}"'
+                    else:
+                        customer_requirement=f"{round(float(chunk_df['C_OD'][i]),3)}'OD - {round(chunk_df['C_ID'][i],3)}'ID - {chunk_df['C_GRADE'][i]} - {chunk_df['C_YIELD'][i]} - {chunk_df['C_SPECIFICATION'][i]} - {chunk_df['C_QTY'][i]}@{chunk_df['C_LENGTH'][i]}'"
+
                     ws1.range(f'A{9+(diff*i+page_count*page_diff)}').value=customer_requirement
                     ws1.range(f'A{10+(diff*i+page_count*page_diff)}').value="EAGS Offer:"
                     if chunk_df['E_FREIGHT_CHARGED'][i]:
@@ -120,7 +124,11 @@ def pdf_generator(df):
                         else:
                             ws1.range(f'F{10+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
                         ws1.range(f'H{10+(diff*i+page_count*page_diff)}').value=f"Ex-works"#delivery term
-                        ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value=f'{chunk_df["E_QTY"][i]}PC@{chunk_df["E_LENGTH"][i]}"'#QTY
+                        #Entering different symbol for inch and foot
+                        if chunk_df["E_UOM"][i] == 'Inch' or chunk_df["E_UOM"][i] == 'Each':
+                            ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value=f'{chunk_df["E_QTY"][i]}PC@{chunk_df["E_LENGTH"][i]}"'#QTY
+                        else:
+                            ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_QTY'][i]}PC@{chunk_df['E_LENGTH'][i]}'"#QTY
                         ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_LOCATION'][i]}"#delivery term
                         ws1.range(f'G{10+(diff*i+page_count*page_diff)}').value=f"{chunk_df['LEAD_TIME'][i]} Days"#lead time
                     else:
@@ -132,7 +140,10 @@ def pdf_generator(df):
                     
                     if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='yes' or (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='other':
                         # chunk_df = chunk_df.astype({'E_OD1':'float','E_ID1':'float', 'E_FINAL_PRICE':'float', 'E_QTY':'float'})
-                        eagl_offer=f'{round(float(chunk_df["E_OD1"][i]),3)}"OD - {round(float(chunk_df["E_ID1"][i]),3)}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {float(chunk_df["E_QTY"][i])}@{float(chunk_df["E_LENGTH"][i])}"'
+                        if chunk_df["E_UOM"][i] == 'Inch' or chunk_df["E_UOM"][i] == 'Each':
+                            eagl_offer=f'{round(float(chunk_df["E_OD1"][i]),3)}"OD - {round(float(chunk_df["E_ID1"][i]),3)}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {float(chunk_df["E_QTY"][i])}@{float(chunk_df["E_LENGTH"][i])}"'
+                        else:
+                            eagl_offer=f"{round(float(chunk_df['E_OD1'][i]),3)}'OD - {round(float(chunk_df['E_ID1'][i]),3)}'ID - {chunk_df['E_GRADE'][i]} - {chunk_df['E_YIELD'][i]} - {chunk_df['C_SPECIFICATION'][i]} - {float(chunk_df['E_QTY'][i])}@{float(chunk_df['E_LENGTH'][i])}'"
                         ws1.range(f'A{11+(diff*i+page_count*page_diff)}').value= eagl_offer
                     if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='no':
                         eagl_offer='NA'#f'{chunk_df["E_OD1"][i]}"OD - {chunk_df["E_ID1"][i]}"ID - {chunk_df["E_GRADE"][i]} - {chunk_df["E_YIELD"][i]} - {chunk_df["E_SPEC"][i]} - {chunk_df["E_QTY"][i]}@{chunk_df["E_LENGTH"][i]}"'

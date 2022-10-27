@@ -465,6 +465,13 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
                 while i<len(df):
                     addRow()
                     i+=1
+
+                #####################for single row insertion##########################
+                if len(df)==1:
+                    addRow()
+                    deleteRow()
+                    
+
                 # df["Quote_Yes_No"] = None
                 # df['Location'] = None
                 model = TableModel(df)
@@ -1215,7 +1222,8 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         #Adding Search button in cxFrame 2
         # starButton = tk.Button(cxFrame2, text="Star Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: starSearch(root, df), activebackground="#20bebb", highlightbackground="#20bebd")
-        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0), activebackground="#20bebb", highlightbackground="#20bebd")
+        rangeButton = tk.Button(cxFrame2, text="Range Search", font = ("Segoe UI", 10, 'bold'), bg="#20bebe", fg="white", height=1, width=14, command=lambda: rangeSearch(root, df, specialList, 0, pt), activebackground="#20bebb", highlightbackground="#20bebd")
+        
 
         mobileLb = tk.Label(cxFrame2, text="Mobile", bg = "#9BC2E6", font=("Segoe UI", 10))
         currencyLabel = tk.Label(cxFrame2,text="Currency", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -1351,6 +1359,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         ptBaker.fontsize = 10
         ptBaker.thefont = ('Segoe UI', 10, 'bold')
         ptBaker.show()
+
+
+        
 
         #################Entry Form Section##############################################
         ######################defining labels############################################

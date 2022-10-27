@@ -47,7 +47,8 @@ def get_connection():
                 warehouse=WAREHOUSE,
                 database  = DATABASE,
                 schema=SCHEMA,
-                role =ROLE
+                role =ROLE,
+                client_session_keep_alive=True
             ) 
         
         return conn
@@ -134,7 +135,7 @@ def get_inv_df(conn, table):
     try:
         # init_time = datetime.datetime.now()
         # print(init_time)
-        query = f"SELECT SITE, MATERIAL_TYPE, GLOBAL_GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN, DATE_LAST_RECEIPT, AGE, HEAT_NUMBER, LOT_SERIAL_NUMBER FROM {DATABASE}.{SCHEMA}.{table}"
+        query = f"SELECT SITE, MATERIAL_TYPE, GRADE, OD_IN, OD_IN_2, HEAT_CONDITION, ONHAND_PIECES, ONHAND_LENGTH_IN, ONHAND_DOLLARS_PER_POUNDS, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN, DATE_LAST_RECEIPT, AGE, HEAT_NUMBER, LOT_SERIAL_NUMBER FROM {DATABASE}.{SCHEMA}.{table}"
         cur = conn.cursor()
         cur.execute(query)
         names = [ x[0] for x in cur.description]
@@ -174,7 +175,7 @@ def get_inv_df(conn, table):
 def get_qtylengthdf(conn, table, location, type, grade, od, id):
     try:
         query = f"""SELECT ONHAND_PIECES, ONHAND_LENGTH_IN, RESERVED_PIECES, RESERVED_LENGTH_IN, AVAILABLE_PIECES, AVAILABLE_LENGTH_IN FROM {DATABASE}.{SCHEMA}.{table} 
-                    WHERE SITE={location} AND MATERIAL_TYPE={type} AND GLOBAL_GRADE={grade}  AND OD_IN = {od} AND OD_IN_2 = {id}"""
+                    WHERE SITE={location} AND MATERIAL_TYPE={type} AND GRADE={grade}  AND OD_IN = {od} AND OD_IN_2 = {id}"""
         cur = conn.cursor()
         
         cur.execute(query)
