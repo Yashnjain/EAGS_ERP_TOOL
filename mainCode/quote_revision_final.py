@@ -22,6 +22,7 @@ def quoteRevision(root,user,conn,inv_df):
         # quoteList = Toplevel(root)
         def getquote(conn,quoteList,quote_number):
             quotedf=getfullquote(conn,quote_number)
+            quoteList.grab_release()
             quoteList.destroy()
             if 'Baker' in quotedf['QUOTENO'][0]:
                 bakerQuoteGenerator(root,user,conn,quotedf,quote_number, inv_df)
@@ -122,11 +123,13 @@ def quoteRevision(root,user,conn,inv_df):
                         list_of_quotes=list_of_quotes[::-1]
                         print(quote_numbers)
                         quoteSearcher.withdraw()
+                        quoteSearcher.grab_release()
                         quoteList = customtkinter.CTkToplevel(quoteSearcher)
                         quoteList.title("QUOTE REVISION")
                         quoteList["bg"]= "#e2e1ef"
                         height=int((len(list_of_quotes)*100)/1.5)
                         # quoteList.geometry(f"400x{height}")
+                        quoteList.grab_set()
 
                         screen_width = root.winfo_screenwidth()
                         screen_height = root.winfo_screenheight()
@@ -194,6 +197,7 @@ def quoteRevision(root,user,conn,inv_df):
         quoteSearcher.geometry('%dx%d+%d+%d' % (width2, height2, x2, y2))
         # quoteSearcher.geometry("350x200")
         quoteSearcher.wm_maxsize(width=350,height=200)
+        quoteSearcher.grab_set()
         #settings frame for app settings
         settings_frame = customtkinter.CTkFrame(quoteSearcher, width=50)
         # settings_frame.grid(row=3,column=0)
@@ -239,6 +243,17 @@ def quoteRevision(root,user,conn,inv_df):
         mFrame.grid_columnconfigure(index=1, weight=1)
         mFrame.focus()
         mybutn.focus()
+
+
+        def on_closing():
+            try:
+                quoteSearcher.grab_release()
+                quoteSearcher.destroy()
+            except Exception as e:
+                raise e
+        
+        
+        quoteSearcher.protocol("WM_DELETE_WINDOW", on_closing)
         # quoteSearcher.protocol("WM_DELETE_WINDOW", on_closing)
         mFrame.mainloop()
         quoteSearcher.mainloop()
@@ -246,6 +261,8 @@ def quoteRevision(root,user,conn,inv_df):
         # root.destroy()
         # quoteSearcher()
         root.mainloop()
+
+
     except Exception as e:
         raise e
 

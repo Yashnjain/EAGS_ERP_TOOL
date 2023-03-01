@@ -87,7 +87,7 @@ def formulaCalc(boxList, index, root):
         raise ex
 
 
-def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW,item_list=[],boxList={},cxDict={},val = None, pt=None, entpady=0, bakerDf = []):
+def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW,item_list=[],boxList={},cxDict={},val = None, pt=None, entpady=0, bakerDf = [],is_on=None):
     try:
         # def __init__(self,item_list,frame,row,column,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW):
         global checker
@@ -211,23 +211,25 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     else:
                         key, index = keyFinder(cxDict,(ent,var))
                     if key == "cus_long_name":
-                        df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
-                        # dataList = df[(df["cus_long_name"] == value)].values.tolist()[0]
-                        dataList = df[(df["cx_name_id"] == value)].values.tolist()[0]
-                        cxDict["payment_term"][index][1].set(dataList[3])
-                        # cxDict["payment_term"] = dataList[2]
+                        if is_on is not None:
+                            if is_on.get()=='On':
+                                df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
+                                # dataList = df[(df["cus_long_name"] == value)].values.tolist()[0]
+                                dataList = df[(df["cx_name_id"] == value)].values.tolist()[0]
+                                cxDict["payment_term"][index][1].set(dataList[3])
+                                # cxDict["payment_term"] = dataList[2]
 
-                        cxDict["cus_address"][index][1].set(dataList[4])
-                        # cxDict["cus_address"] = dataList[3]
+                                cxDict["cus_address"][index][1].set(dataList[4])
+                                # cxDict["cus_address"] = dataList[3]
 
-                        cxDict["cus_email"][index][1].set(dataList[6])
-                        # cxDict["cus_email"] = dataList[5]
+                                cxDict["cus_email"][index][1].set(dataList[6])
+                                # cxDict["cus_email"] = dataList[5]
 
-                        cxDict["cus_phone"][index][1].set(dataList[5])
+                                cxDict["cus_phone"][index][1].set(dataList[5])
 
-                        cxDict["cus_city_zip"] = dataList[7]
-                        # val.lift()
-                        val.focus()
+                                cxDict["cus_city_zip"] = dataList[7]
+                                # val.lift()
+                                val.focus()
                         breakCheck = True
 
                     elif key=='E_UOM' and boxList['C_Quote Yes/No'][0][index][0].get() != "Other":
@@ -698,6 +700,10 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         key, index = keyFinder(cxDict,(ent,var))
                         df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
                         newList = df["cx_name_id"].values.tolist() 
+                        if key == "cus_long_name":
+                            if is_on is not None:
+                                if is_on.get()=='Off':
+                                    newList = []
                     lbframe.list.delete(0, tk.END)
                     if listCheck and len(newList):
                         for item in newList:
@@ -1022,6 +1028,10 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         key, index = keyFinder(cxDict,(ent,var))
                         df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
                         newList = df["cx_name_id"].values.tolist()
+                        if key == "cus_long_name":
+                            if is_on is not None:
+                                if is_on.get()=='Off':
+                                    newList = []
                     
                     # lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
                     

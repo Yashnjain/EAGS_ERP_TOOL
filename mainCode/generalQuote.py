@@ -404,12 +404,27 @@ def quoteGenerator(mainRoot,user,conn, df):
             except Exception as e:
                 raise e
 
-        
-        
-        
-        mainRoot.withdraw()
-        global row_num
-        row_num=0
+        global is_on
+        is_on = True
+        def switch(onButtonVar):
+            global is_on
+            
+            # Determine is on or off
+            if is_on:
+                on_button.config(image = off)
+
+                onButtonVar.set("Off")
+                
+                is_on = False
+            else:
+            
+                on_button.config(image = on)
+                onButtonVar.set("On")
+                is_on = True
+                
+                mainRoot.withdraw()
+                global row_num
+                row_num=0
 
         #Getting invoentory dataframe
         # df = get_inv_df(conn,table = INV_TABLE)
@@ -512,7 +527,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         
         
 
-        global cxDatadict
+        global cxDatadicttextvariable
         cxDatadict = {}
         #Cx data Varilables
 
@@ -541,11 +556,24 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         item_list = () #('A4140', 'A4140M', 'A4330V', 'A4715', 'BS708M40', 'A4145M', '4542','4462')
 
+        ##############Toggle Button###################################################################
+        on = tk.PhotoImage(file = "on.png")
+        off = tk.PhotoImage(file = "off.png")
+
+        
+        onButtonVar = tk.StringVar()
+        on_button = tk.Button(cxFrame, textvariable=onButtonVar, image = on, bd = 0, bg = "#9BC2E6", highlightbackground = "#9BC2E6", activebackground="#9BC2E6",
+                   command = lambda: switch(onButtonVar))
+        onButtonVar.set('On')
+        # on_button.pack(pady = 50)
+        ###############################################################################################
+
         cxLabel = tk.Label(cxFrame, text="Customer Details", bg = "#9BC2E6", font=("Segoe UI", 12))
         prepByLb = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6", font=("Segoe UI", 10))
         prep_by = ttk.Entry(cxFrame)
         prep_by.insert(tk.END, user)
         inpDateLb = tk.Label(cxFrame,text="Date", bg = "#9BC2E6", font=("Segoe UI", 10))
+        inpcustomerLb = tk.Label(cxFrame,text="Existing Customer", bg = "#9BC2E6", font=("Segoe UI", 10))
         inpDate = MyDateEntry(master=cxFrame, width=17, selectmode='day', font=("Segoe UI", 10))
         cxNameLb = tk.Label(cxFrame,text="Customer Name", bg = "#9BC2E6", font=("Segoe UI", 10))
         locAddLb = tk.Label(cxFrame,text="Location/Address", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -565,6 +593,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         prepByLb.grid(row=1,column=0)
         prep_by.grid(row=2,column=0)
         inpDateLb.grid(row=1,column=1)
+        inpcustomerLb.grid(row=1,column=2)
+        on_button.grid(row=2,column=2)
         inpDate.grid(row=2, column=1)
         cxNameLb.grid(row=3,column=0)
         locAddLb.grid(row=3,column=1)
@@ -623,7 +653,8 @@ def quoteGenerator(mainRoot,user,conn, df):
 
 
         #Customer Name Entry Box
-        cxNameVar.append(myCombobox(cx_df,root,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=25,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
+        cxNameVar.append(myCombobox(cx_df,root,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=25,list_bd = 0,foreground='blue',
+         background='white',sticky = "nsew",cxDict= cxDatadict,val=currency, is_on=onButtonVar))
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))

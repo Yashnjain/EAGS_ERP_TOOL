@@ -124,6 +124,8 @@ def reportGenerator(root, conn):
         y = (screen_height/2) - (height/2)
         toproot.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
+        toproot.grab_set()
+
         labelFrame = tk.Frame(toproot, bg= "#9BC2E6")
         labelFrame.grid(row=0, column=1)
         entryFrame1 = tk.Frame(labelFrame, bg= "#9BC2E6")
@@ -318,7 +320,7 @@ def reportGenerator(root, conn):
 
 
 
-               
+                filtered_df = df.copy()
 
                 #Filtering based on Username
                 if user == '' or user == '*':
@@ -341,18 +343,12 @@ def reportGenerator(root, conn):
                 elif quoteYesNo==4:#All
                     allCheck = True
                 else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check Quote Yes or No Checkboxes",parent=root)
-                    root.attributes('-topmost', False)
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check Quote Yes or No Checkboxes",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return
                 
-                #Filtering based on Location
-                if locationValue == '' or locationValue == '*':
-                    pass
-                elif '*' in locationValue:
-                    filtered_df = filtered_df.loc[df["E_LOCATION"].str.startswith(locationValue.replace('*',''))]
-                else:
-                    filtered_df = df[(df['E_LOCATION']==locationValue)]
+                
 
 
                 na_df = []
@@ -368,6 +364,13 @@ def reportGenerator(root, conn):
                             ("NA" != filtered_df['E_OD1'])  & (filtered_df['E_OD1'] != "NA")
                             ]
                 if not noCheck:
+                    #Filtering based on Location
+                    if locationValue == '' or locationValue == '*':
+                        pass
+                    elif '*' in locationValue:
+                        filtered_df = filtered_df.loc[df["E_LOCATION"].str.startswith(locationValue.replace('*',''))]
+                    else:
+                        filtered_df = filtered_df.loc[(df['E_LOCATION']==locationValue)]
                     #Filtering based on Grade
                     if grade == "*":
                             pass
@@ -392,9 +395,9 @@ def reportGenerator(root, conn):
                                 (float(from_od_value) <= filtered_df['E_OD1'].astype(float))  & (filtered_df['E_OD1'].astype(float) <= float(to_od_value))
                                 ]
                     else:
-                        root.attributes('-topmost', True)
-                        messagebox.showerror("Error", f"Please check OD search query and try again",parent=root)
-                        root.attributes('-topmost', False)
+                        toproot.attributes('-topmost', True)
+                        messagebox.showerror("Error", f"Please check OD search query and try again",parent=toproot)
+                        toproot.attributes('-topmost', False)
                         return
 
 
@@ -406,9 +409,9 @@ def reportGenerator(root, conn):
                                 (float(from_id_value) <= filtered_df['E_ID1'].astype(float))  & (filtered_df['E_ID1'].astype(float) <= float(to_id_value))
                                 ]
                     else:
-                        root.attributes('-topmost', True)
-                        messagebox.showerror("Error", f"Please check ID search query and try again",parent=root)
-                        root.attributes('-topmost', False)
+                        toproot.attributes('-topmost', True)
+                        messagebox.showerror("Error", f"Please check ID search query and try again",parent=toproot)
+                        toproot.attributes('-topmost', False)
                         return
 
                 if len(na_df):
@@ -439,13 +442,13 @@ def reportGenerator(root, conn):
                     reportName = f'Report_{datetime.strftime(datetime.today(), "%m%d%Y_%H%M%S")}.xlsx'
                     reportPath = desktopDir+ "\\" +reportName
                     filtered_df.to_excel(reportPath, index=False)
-                    root.attributes('-topmost', True)
-                    messagebox.showinfo("Successfull", f"{reportName} has been generated and parked in your Desktop EAGS_Reports Folder",parent=root)
-                    root.attributes('-topmost', False)
+                    toproot.attributes('-topmost', True)
+                    messagebox.showinfo("Successfull", f"{reportName} has been generated and parked in your Desktop EAGS_Reports Folder",parent=toproot)
+                    toproot.attributes('-topmost', False)
                 else:
-                    root.attributes('-topmost', True)
-                    messagebox.showerror("Error", f"Please check search query and try again",parent=root)
-                    root.attributes('-topmost', False)
+                    toproot.attributes('-topmost', True)
+                    messagebox.showerror("Error", f"Please check search query and try again",parent=toproot)
+                    toproot.attributes('-topmost', False)
                     return
             except Exception as e:
                 raise e
@@ -466,6 +469,16 @@ def reportGenerator(root, conn):
         yieldVar.set('*')
         # odVar.set('*')
         # idVar.set('*')
+
+        def on_closing():
+            try:
+                toproot.grab_release()
+                toproot.destroy()
+            except Exception as e:
+                raise e
+        
+        
+        toproot.protocol("WM_DELETE_WINDOW", on_closing)
     except Exception as e:
         raise e
 

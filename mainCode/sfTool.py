@@ -353,3 +353,17 @@ def get_master_df(conn, table):
         return df
     except Exception as e:
         raise e
+###############################################For Manual Customer Data Upload##################################
+# def cxUploader():
+#     try:
+#         csv_loc = "C:\\Users\\imam.khan\\Downloads\\AKS-BUITDB_DEV.csv"
+#         conn = get_connection()
+#         df = pd.read_csv(csv_loc)
+
+#         success, nchunks, nrows, _ = write_pandas(conn, df, 'EAGS_CUSTOMER')
+#         print(f"Successfull inserted rows:{nrows}")
+#     except Exception as e:
+#         raise e
+
+# cxUploader()
+###############################################################################################################

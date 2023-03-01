@@ -963,7 +963,8 @@ def specialCase(root, boxList,pt,df,index, item_list, bakerDf=[],cxDict=[]):
                     toproot.attributes('-topmost', False)
                     close_check=True
                     exitTrue(close_check)
-                toproot.attributes('-topmost', False)
+                else:
+                    toproot.attributes('-topmost', False)
             except Exception as e:
                 raise e
 

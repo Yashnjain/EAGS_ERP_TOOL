@@ -4,6 +4,7 @@ import os, shutil, traceback, time
 from mail import send_mail
 import tkinter as tk
 import numpy as np
+from tkinter import messagebox
 from office365.runtime.auth.client_credential import ClientCredential
 from office365.runtime.client_request_exception import ClientRequestException
 from office365.sharepoint.client_context import ClientContext
@@ -153,7 +154,7 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
             top.geometry('%dx%d+%d+%d' % (width2, height2, x2, y2))
             top.iconphoto(True, photo)
             top["bg"]= "white"
-
+            top.grab_set()
             
 
             updateLabel = tk.Label(top, text="App is Updating, Please Wait...", anchor="center", bg = "white", font=("Segoe UI", 12))
@@ -201,12 +202,22 @@ def appUpdater(root, photo,curr_version, curr_location, curr_directory, currFile
                     
                     # r = s.getfile(site + sp_path1+sp_path2+"Files('{1}')/$value".format(
                     #                                 file), filename=download_file_path)
-                    
+            def on_closing():
+                try:
+                    top.attributes('-topmost', True)
+                    messagebox.showeinfo("Info", f"Please wait for app update to complete",parent=top)
+                    top.attributes('-topmost', False)
+                    return
+                except Exception as e:
+                    raise e
+        
+        
+            top.protocol("WM_DELETE_WINDOW", on_closing)        
             
             if updatedFilename:
                 #renaming curr exe
-                # os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
-                os.rename(curr_location, curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                os.rename(curr_location.replace('.py','.exe'), curr_directory+"\\EAGS_Quote_Generator_Old.exe")
+                # os.rename(curr_location, curr_directory+"\\EAGS_Quote_Generator_Old.exe")
                 #rename exe version updatedFilename to EAGS_Quote_Generator.exe
                 os.rename(curr_directory+"\\"+updatedFilename, curr_directory+"\\EAGS_Quote_Generator.exe")
                 #trigger to open new EAGS_Quote_generator.exe

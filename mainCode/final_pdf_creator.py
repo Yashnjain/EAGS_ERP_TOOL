@@ -52,8 +52,17 @@ def pdf_generator(df):
                 retry+=1
                 if retry ==10:
                     raise e 
-        ws1=wb.sheets[1]  
-        ws1.activate() 
+        ws1=wb.sheets[1]
+        while retry < 10:
+            try:
+                ws1.activate() 
+                break
+            except Exception as e:
+                time.sleep(5)
+                retry+=1
+                if retry ==10:
+                    raise e 
+        
                 
         list1=list(chunks(range(0, (len(df))), 8))
         page_count=0
