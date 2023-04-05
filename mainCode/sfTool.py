@@ -215,19 +215,20 @@ def getLatestQuote(conn,curr_quoteNo,previous_quote_number=None, baker=False, ne
     try:
         cx_init_name = curr_quoteNo.split("_")[0]
         if previous_quote_number is None:
-            previous_quote_number = cx_init_name
+            # previous_quote_number = cx_init_name
+            previous_quote_number = curr_quoteNo
 
-        if previous_quote_number.rfind("R")!=-1:
+        if previous_quote_number.split("_")[-1].rfind("R")!=-1:
             cx_init_name_previous=previous_quote_number[:previous_quote_number.rfind("R")]
         else:
-             cx_init_name_previous=previous_quote_number   
+            cx_init_name_previous=previous_quote_number.split("_")[0] 
         # query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE DESC LIMIT 1"
         if baker and not newQuote:
             query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO desc LIMIT 1"  
         elif baker and newQuote:
-            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO not like '%R%' and QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO  desc LIMIT 1"
+            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO not like '%[_]R%' and QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO  desc LIMIT 1"
         elif newQuote:
-            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO not like '%R%' and QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO  desc LIMIT 1"
+            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO not like '%[_]R%' and QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO  desc LIMIT 1"
             
         else:
             query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO desc LIMIT 1"

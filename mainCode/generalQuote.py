@@ -148,6 +148,21 @@ def quoteGenerator(mainRoot,user,conn, df):
             
             except Exception as e:
                 raise e
+            
+        def tabFuncPaymentTerm(e):
+            try:
+                mobile.focus_set()
+                return "break"
+            
+            except Exception as e:
+                raise e
+        def tabFuncMobile(e):
+            try:
+                currency.focus_set()
+                return "break"
+            
+            except Exception as e:
+                raise e
 
         def addRow():
             try:
@@ -676,12 +691,16 @@ def quoteGenerator(mainRoot,user,conn, df):
         payTerm = ttk.Entry(cxFrame, textvariable=payTermVar, foreground='blue', background = 'white',width = 5, font=('Segoe UI', 10))
         payTerm.grid(row=4,column=3,sticky=tk.EW,padx=5,pady=5)
         cxDatadict["payment_term"].append((payTerm, payTermVar))
+        payTerm.bind("<Tab>",tabFuncPaymentTerm)
         
         #Mobile No. Entry
         mobileVar = tk.StringVar()
         mobile = ttk.Entry(cxFrame2, textvariable=mobileVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
         mobile.grid(row=2,column=0,sticky=tk.EW,padx=5,pady=5)
         cxDatadict["cus_phone"].append((mobile, mobileVar))
+        mobile.bind("<Tab>", tabFuncMobile)
+        
+        
         
 
         home_button = tk.Button(cxFrame2, image=home_img, borderwidth=0,bg=root["bg"],activebackground=root["bg"],command=returnTohome)

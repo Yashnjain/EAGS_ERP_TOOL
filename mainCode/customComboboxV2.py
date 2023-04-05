@@ -232,7 +232,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 val.focus()
                         breakCheck = True
 
-                    elif key=='E_UOM' and boxList['C_Quote Yes/No'][0][index][0].get() != "Other":
+                    elif key=='E_UOM' and boxList['C_Quote Yes/No'][0][index][0].get() != "No":
                         sellCostUOM = formulaCalc(boxList, index, root)
                         boxList["E_Selling Cost/UOM"][0][index][1].set(sellCostUOM)
                         boxList["E_Additional_Cost"][0][index][0].focus()
@@ -689,7 +689,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 if ent.get()=='':
                     if len(boxList):
                         key, index = keyFinder(boxList,(ent,var))
-                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other":
+                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other" and key != 'E_UOM':
                             listCheck = False
                         elif key=='E_UOM':
                             newList = item_list
@@ -732,6 +732,11 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         boxList["E_freightIncured"][0][index][1].set('')
                     elif key == 'E_freightCharged' and boxList["E_freightCharged"][0][index][0].get()=='0':
                         boxList["E_freightCharged"][0][index][1].set('')
+                    elif (boxList['C_Quote Yes/No'][0][index][0].get()=="Other" and key == 'E_UOM'):
+                        lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
+                        lbframe.list.focus()
+                        lbframe.list.select_set(0)
+
                 elif len(cxDict):
                     key, index = keyFinder(cxDict,(ent,var))
                     if key == "cus_long_name":
@@ -1023,6 +1028,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             else:
                                 if key != "E_UOM":
                                     newList = filterList(boxList,key,index,df)
+
+                            if str(boxList["C_Quote Yes/No"][0][index][0].get().upper())=="OTHER" and key == "E_UOM":
+                                check = True
                         
                     elif len(cxDict):
                         key, index = keyFinder(cxDict,(ent,var))

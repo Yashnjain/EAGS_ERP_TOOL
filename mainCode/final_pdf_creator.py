@@ -86,7 +86,7 @@ def pdf_generator(df):
                 for i in range(0,(len(chunk_df))):
                     diff=7
                     ws1.range(f'A{8+(diff*i+page_count*page_diff)}').value="Customer Requirement:"
-                    if chunk_df["E_UOM"][i] == 'Inch' or chunk_df["E_UOM"][i] == 'Each':
+                    if chunk_df["E_UOM"][i] == 'Inch' or chunk_df["E_UOM"][i] == 'Each' or chunk_df["C_QUOTE_YES/NO"][i] == 'No':
                         customer_requirement=f'{round(float(chunk_df["C_OD"][i]),3)}"OD - {round(chunk_df["C_ID"][i],3)}"ID - {chunk_df["C_GRADE"][i]} - {chunk_df["C_YIELD"][i]} - {chunk_df["C_SPECIFICATION"][i]} - {chunk_df["C_QTY"][i]}@{chunk_df["C_LENGTH"][i]}"'
                     else:
                         customer_requirement=f"{round(float(chunk_df['C_OD'][i]),3)}'OD - {round(chunk_df['C_ID'][i],3)}'ID - {chunk_df['C_GRADE'][i]} - {chunk_df['C_YIELD'][i]} - {chunk_df['C_SPECIFICATION'][i]} - {chunk_df['C_QTY'][i]}@{chunk_df['C_LENGTH'][i]}'"
@@ -96,15 +96,20 @@ def pdf_generator(df):
                     if chunk_df['E_FREIGHT_CHARGED'][i]:
                         if chunk_df['E_FREIGHT_CHARGED'][i] != 'NA':
                             if float(chunk_df['E_FREIGHT_CHARGED'][i]) != float(0.0):
-                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value=f"Freight Charges: {chunk_df.E_FREIGHT_CHARGED.str.replace('NA','0').astype(float).sum()}"
+                                if chunk_df['CURRENCY'][i] == "$":
+                                    ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value=f"Freight Charges: $ {chunk_df.E_FREIGHT_CHARGED.str.replace('NA','0').astype(float)[i]}"#.sum()
+                                elif chunk_df['CURRENCY'][i] == "£":
+                                    ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value=f"Freight Charges: £ {chunk_df.E_FREIGHT_CHARGED.str.replace('NA','0').astype(float)[i]}"#.sum()
+                                else:
+                                    ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value=f"Freight Charges: {chunk_df.E_FREIGHT_CHARGED.str.replace('NA','0').astype(float)[i]}"#.sum()
                             else:
                                 ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value = None
-                            if chunk_df['CURRENCY'][i] == "$":
-                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
-                            elif chunk_df['CURRENCY'][i] == "£":
-                                ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
-                            else:
-                                pass
+                            # if chunk_df['CURRENCY'][i] == "$":
+                            #     ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$$-en-US]#,##0.00"
+                            # elif chunk_df['CURRENCY'][i] == "£":
+                            #     ws1.range(f'A{12+(diff*i+page_count*page_diff)}').api.NumberFormat = "[$£-en-GB]#,##0.00"
+                            # else:
+                            #     pass
                         else:
                             ws1.range(f'A{12+(diff*i+page_count*page_diff)}').value = None
                     else:
