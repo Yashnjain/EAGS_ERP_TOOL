@@ -23,7 +23,7 @@ today = datetime.strftime(date.today(), format = "%d%m%Y")
 S_TABLE = "EAGS_SALESPERSON"
 INV_TABLE = "EAGS_INVENTORY"
 
-VERSION = "0.0.0.6"
+VERSION = "0.0.0.7"
 #Version format:
 #Major revision (new UI, lots of new features, conceptual change, etc.)
 #Minor revision (maybe a change to a search box, 1 feature added, collection of bug fixes)

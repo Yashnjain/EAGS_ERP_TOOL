@@ -11,6 +11,40 @@ self.master.bind("<KP_8>", self.handle_arrow_keys)
 self.master.bind("<Return>", self.handle_arrow_keys)
 self.master.bind("<Tab>", self.handle_arrow_keys)
 
+Add try except in these lines in core.py around 2299
+# if rowover >= self.rows or self.startrow > self.rows:
+#     return
+# else:
+#     self.endrow = rowover
+try:
+    if rowover >= self.rows or self.startrow > self.rows:
+        return
+    else:
+        self.endrow = rowover
+except:
+    return
+
+#do columns
+# if colover > self.cols or self.startcol > self.cols:
+#     return
+# else:
+#     self.endcol = colover
+#     if self.endcol < self.startcol:
+#         self.multiplecollist=list(range(self.endcol, self.startcol+1))
+#     else:
+#         self.multiplecollist=list(range(self.startcol, self.endcol+1))
+try:
+    if colover > self.cols or self.startcol > self.cols:
+        return
+    else:
+        self.endcol = colover
+        if self.endcol < self.startcol:
+            self.multiplecollist=list(range(self.endcol, self.startcol+1))
+        else:
+            self.multiplecollist=list(range(self.startcol, self.endcol+1))
+except:
+    return
+
 
 Update these lines in tkPDFViewer
 # def pdf_view(self,master,width=1200,height=600,pdf_location="",bar=True,load="after"):
@@ -21,5 +55,10 @@ pix = page.get_pixmap(dpi=zoomDPI)
 
 # img = pix1.getImageData("ppm")
 img = pix1.tobytes("ppm")
+
+Add this line in tkpdfviewer
+self.text.delete('1.0', END)
+before
+self.text.image_create(END,image=i)
 
 

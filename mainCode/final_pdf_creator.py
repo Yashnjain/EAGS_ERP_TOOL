@@ -36,22 +36,23 @@ def chunks(lst, n):
                 raise e
 
 def pdf_generator(df):
-    try:       
-        # job_name = 'open_ar_v2' 
+    try:
+        # job_name = 'open_ar_v2'
         input_sheet = resource_path('pdfCreator.xlsm')
         # input_sheet='pdfCreator.xlsm'
         retry=0
         while retry < 10:
             try:
                 app = xw.App(visible=False)
-                wb = app.books.open(input_sheet) 
+                wb = app.books.open(input_sheet)
+                # wb = xw.Book(input_sheet)
                 wb.app.visible = False
                 break
             except Exception as e:
                 time.sleep(5)
                 retry+=1
                 if retry ==10:
-                    raise e 
+                    raise e
         ws1=wb.sheets[1]
         while retry < 10:
             try:
@@ -70,7 +71,7 @@ def pdf_generator(df):
                 chunk_df=df.iloc[values]
                 chunk_df.reset_index(inplace=True)
                 chunk_df = chunk_df.astype({'C_OD':'float','C_ID':'float'})
-                page_diff=70
+                page_diff=72
                 ws1.range(f'F{2+(page_count*page_diff)}').value=df['QUOTENO'][0]
                 ws1.range(f'F{3+(page_count*page_diff)}').value=df['DATE'][0]
                 ws1.range(f'F{4+(page_count*page_diff)}').value=df['VALIDITY'][0]
@@ -149,7 +150,8 @@ def pdf_generator(df):
                         ws1.range(f'F{10+(diff*i+page_count*page_diff)}').value = "NA"
                         ws1.range(f'H{10+(diff*i+page_count*page_diff)}').value="NA"#delivery term
                         ws1.range(f'C{10+(diff*i+page_count*page_diff)}').value="NA"#QTY
-                        ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_LOCATION'][i]}"#delivery term
+                        # ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f"{chunk_df['E_LOCATION'][i]}"#delivery term
+                        ws1.range(f'H{11+(diff*i+page_count*page_diff)}').value=f""#delivery term2
                         ws1.range(f'G{10+(diff*i+page_count*page_diff)}').value=chunk_df['LEAD_TIME'][i]#lead time                    
                     
                     if (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='yes' or (chunk_df["C_QUOTE_YES/NO"][i]).lower()=='other':

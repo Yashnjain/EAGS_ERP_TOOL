@@ -288,6 +288,8 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         def cxListCalc():
             try:
+                if is_on:
+                    cxDatadict["cus_city_zip"] = ""
                 cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
                     cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
@@ -358,6 +360,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                     # zoom_scale.set(10)
                     screen_width = (pdfRoot.winfo_screenwidth())//6
                     screen_height = (pdfRoot.winfo_screenheight())//6
+                    pdfviewer.img_object_li.clear()
                     pdfframe = pdfviewer.pdf_view(pdfRoot, pdf_location=pdf_path, width=140 ,zoomDPI=120)
                     pdfframe.pack(expand=True, fill='both')
                     pdfRoot.state('zoomed')

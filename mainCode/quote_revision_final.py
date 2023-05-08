@@ -127,6 +127,10 @@ def quoteRevision(root,user,conn,inv_df):
                         quoteList = customtkinter.CTkToplevel(quoteSearcher)
                         quoteList.title("QUOTE REVISION")
                         quoteList["bg"]= "#e2e1ef"
+                        try:
+                            list_of_quotes = list_of_quotes[:5]
+                        except:
+                            pass
                         height=int((len(list_of_quotes)*100)/1.5)
                         # quoteList.geometry(f"400x{height}")
                         quoteList.grab_set()

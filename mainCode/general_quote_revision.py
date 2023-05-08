@@ -150,9 +150,9 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                             fcostPrice = float(specialList["E_freightIncured"][0][index][0].get())
                             fsalePrice = float(specialList["E_freightCharged"][0][index][0].get())
                             if fsalePrice == 0.0 or fcostPrice == 0.0:
-                                root.attributes('-topmost', True)
-                                messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry",parent=root)
-                                root.attributes('-topmost', False)
+                                # root.attributes('-topmost', True)
+                                # messagebox.showerror(title="Wrong Value",message="Freight Charged or Freight Incured is 0, please check and retry",parent=root)
+                                # root.attributes('-topmost', False)
                                 return
                             # if fcostPrice != 0 and fsalePrice != 0:
                             margin_freight = round(((fsalePrice - fcostPrice)/fcostPrice) * 100, 2)
