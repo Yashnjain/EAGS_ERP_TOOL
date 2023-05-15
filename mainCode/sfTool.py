@@ -224,14 +224,14 @@ def getLatestQuote(conn,curr_quoteNo,previous_quote_number=None, baker=False, ne
             cx_init_name_previous=previous_quote_number.split("_")[0] 
         # query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL ORDER BY INSERT_DATE DESC LIMIT 1"
         if baker and not newQuote:
-            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO desc LIMIT 1"  
+            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name_previous}^_%' escape '^' ORDER BY QUOTENO desc LIMIT 1"  
         elif baker and newQuote:
-            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO not like '%[_]R%' and QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO  desc LIMIT 1"
+            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_BAKER_TABLE} WHERE INSERT_DATE IS NOT NULL AND SUBSTRING(QUOTENO, -2, 1) <> 'R' and QUOTENO like '%{cx_init_name_previous}^_%' escape '^' ORDER BY QUOTENO  desc LIMIT 1"
         elif newQuote:
-            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO not like '%[_]R%' and QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO  desc LIMIT 1"
+            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND SUBSTRING(QUOTENO, -2, 1) <> 'R' and QUOTENO like '%{cx_init_name_previous}^_%' escape '^' ORDER BY QUOTENO  desc LIMIT 1"
             
         else:
-            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name_previous}%' ORDER BY QUOTENO desc LIMIT 1"
+            query = f"SELECT QUOTENO FROM {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} WHERE INSERT_DATE IS NOT NULL AND QUOTENO like '%{cx_init_name_previous}^_%' escape '^' ORDER BY QUOTENO desc LIMIT 1"
 
         # data = conn.execute(query)
         # raw_data = data.fetchall()

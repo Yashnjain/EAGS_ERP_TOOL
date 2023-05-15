@@ -328,7 +328,7 @@ def general_quote_revision(mainRoot,user,conn,quotedf,quote_number, df):
                 # update scrollregion after starting 'mainloop'
                 # when all widgets are in canvas
                 entryCanvas.configure(scrollregion=entryCanvas.bbox('all'))#,width=1890,height=380)#(0,0,300,200)
-                entryCanvas.yview_moveto('1.0')
+                # entryCanvas.yview_moveto('1.0')
             except Exception as e:
                 raise e
         def returnTohome():

@@ -460,7 +460,7 @@ def specialCase(root, specialList,index,pt,df,row_num,quotedf):
         def exitTrue(close_check=False):
             od1=od1Var.get()
             id1 = id1Var.get()
-            if not close_check and (specialList["E_OD2"][0][index][1].get() == '') or (specialList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == '':
+            if not close_check and ((specialList["E_OD2"][0][index][1].get() == '') or (specialList["E_ID2"][0][index][1].get() == '') or od1 == '' or id1 == ''):
                 root.attributes('-topmost', True)
                 messagebox.showerror(title="Value Error",message="Please fill all values first",parent=root)
                 root.attributes('-topmost', False)

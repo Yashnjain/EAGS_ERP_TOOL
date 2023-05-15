@@ -104,7 +104,7 @@ def quoteGenerator(mainRoot,user,conn, df):
                     float(inStr)
                     # print('value:', inStr)
                 except ValueError:
-                    root.attributes('-topmost', False)
+                    root.attributes('-topmost', True)
                     messagebox.showerror("Wrong Value Entered", f"Please re-enter correct value in Integer or Decimal format only",parent=root)
                     root.attributes('-topmost', False)
                     return False
