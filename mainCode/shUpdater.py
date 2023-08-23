@@ -38,9 +38,11 @@ siteurl = baseurl + basesite
 
 relative_url = "Shared%20Documents/EAGS%20Quote%20Generator/Updater/" # existing folder path under sharepoint site.
 
-username="priyanshi.jhawar@ealloys.com"
+# username="priyanshi.jhawar@ealloys.com"
+username="itdevsupport@ealloys.com"
 
-password="PJWelcome1$"
+# password="PJWelcome1$"
+password="4Gi.osDYQjM4C92x9iXnkW9w"
 
 sp_path1 = "/it/_api/web/GetFolderByServerRelativeUrl"
 sp_path2 = "Shared%20Documents/EAGS%20Quote%20Generator/Updater/"
