@@ -247,7 +247,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
                 marginlbs.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=18,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # sellCostLBS[-1].config(textvariable="NA", state='disabled')
-                e_uom.append(myCombobox(df,root,item_list=["Inch","Each","Foot"],frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
+                e_uom.append(myCombobox(df,root,item_list=["Inch","Each","Meter","Foot"],frame=entryFrame,row=2+row_num,column=19,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 # e_uom[-1].config(textvariable="NA", state='disabled')
                 sellCostUOM.append(myCombobox(df,root,item_list=item_list,frame=entryFrame,row=2+row_num,column=20,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",boxList = specialList))
                 sellCostUOM[-1][0]['validate']='key'
