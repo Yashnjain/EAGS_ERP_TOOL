@@ -59,6 +59,8 @@ def formulaCalc(boxList, index, root):
             elif uom == "Inch":
                 # Selling cost/UOM = "SellingCost/LBS" * mid_formula (rounded upto 2 decimal places)
                 sellCostUOM = round((sellCostLBS * mid_formula),2)
+            elif uom =="Meter":
+                sellCostUOM = round(((e_od-wt) * wt * 0.0544),2)
             #For Foot
             else:
                 sellCostUOM = round((sellCostLBS * mid_formula),2)
@@ -76,6 +78,8 @@ def formulaCalc(boxList, index, root):
                 # For Inch: 
                 # Selling cost/UOM ="SellingCost/LBS" * mid_formula	
                 sellCostUOM = round((sellCostLBS * mid_formula),2)
+            elif uom =="Meter":
+                sellCostUOM = round(((e_od * e_od * 2.71) / 196.64),2)
             #For Foot
             else:
                 sellCostUOM = round((sellCostLBS * mid_formula),2)
