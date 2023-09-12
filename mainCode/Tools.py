@@ -527,6 +527,13 @@ def dfMaker(specialList,cxList,otherList,pt,conn,root):
             # curr_quoteNo = f"EAGS/{location}/{input_year}/000001"
             cx_init_name = cxList[2].split(" ")[0]
             curr_quoteNo = f"{cx_init_name}_000001"
+            if len(cx_init_name)==1:
+                if cxList[2].split(" ")[1] == "&":
+                    cx_init_name = cxList[2].split(" ")[0]+cxList[2].split(" ")[1]+cxList[2].split(" ")[2]
+                else:
+                    cx_init_name = cxList[2].split(" ")[0]+"_"+cxList[2].split(" ")[1]
+                curr_quoteNo = f"{cx_init_name}_000001"
+
 
             new_quoteNo, raw_data = getLatestQuote(conn,curr_quoteNo, previous_quote_number=None, newQuote=True)
 

@@ -40,7 +40,7 @@ def get_connection():
                 schema=SCHEMA,
                 role =ROLE,
                 client_session_keep_alive=True
-            ) 
+            )
         
         return conn
     except Exception as e:
