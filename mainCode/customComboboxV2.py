@@ -792,12 +792,14 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 if len(boxList) and rowclicked_single < len(pt.model.df):
                     if list(pt.model.df.columns) == ['onhand_pieces', 'onhand_length_in', 'onhand_dollars_per_pounds', 'available_pieces', 'available_length_in','date_last_receipt','age', 'heat_number', 'lot_serial_number']:
                         if list(pt.model.df.iloc[0]) != [None, None, None, None, None, None, None, None, None]:
+                            # pt=pt.getCurrentTable()
                             varname = focused_entry.cget("textvariable")
                             focused_var = focused_entry.getvar(varname)
                             key, index = keyFinder2(boxList,(focused_entry,varname))
                             if key ==  None and index == None:
                                 pass
                             else:
+                                pt.model.df.reset_index(inplace = True,drop = True)
                                 print(key, index)
                                 boxList['Lot_Serial_Number'][0][index] = (pt.model.df['lot_serial_number'][rowclicked_single], None)
                                 boxList['E_COST'][0][index][1].set(float(pt.model.df['onhand_dollars_per_pounds'][rowclicked_single]))
