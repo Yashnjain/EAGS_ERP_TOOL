@@ -17,6 +17,7 @@ from shUpdater import appUpdater
 import ctypes
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 from eagsReport import reportGenerator
+from eagsReport import no_order_why
 
 today = datetime.strftime(date.today(), format = "%d%m%Y")
 
@@ -158,16 +159,31 @@ class App():
         report_img_path1 = resource_path("reportGenerator1.png")
         report_img1 = tk.PhotoImage(master=mFrame, file=report_img_path1)
 
+        no_order_path1 = resource_path("no_order_why1.png")
+        no_order_pathimg1 = tk.PhotoImage(master=mFrame, file=no_order_path1)
+
+        no_order_path2 = resource_path("no_order_why2.png")
+        no_order_pathimg2 = tk.PhotoImage(master=mFrame, file=no_order_path2)
+
+        noordertbut = tk.Button(mFrame, image=no_order_pathimg1, command=lambda:no_order_why(root, conn),borderwidth=0, background=root["bg"],activebackground=root["bg"])
+        noordertbut.image = no_order_pathimg1
+        noordertbut.place(x=1, y=20)
+
         report_img_path2 = resource_path("reportGenerator2.png")
         report_img2 = tk.PhotoImage(master=mFrame, file=report_img_path2)
 
+
         reportbut = tk.Button(mFrame, image=report_img1, command=lambda:reportGenerator(root, conn),borderwidth=0, background=root["bg"],activebackground=root["bg"])
         reportbut.image = report_img1
-        reportbut.place(x=620, y=20)
+        reportbut.place(x=630, y=20)
 
         button_dict[reportbut] = [report_img1, report_img2]
         reportbut.bind("<Enter>", on_enter)
         reportbut.bind("<Leave>", on_leave)
+
+        button_dict[noordertbut] = [no_order_pathimg1, no_order_pathimg2]
+        noordertbut.bind("<Enter>", on_enter)
+        noordertbut.bind("<Leave>", on_leave)
         ##############################################################
 
         cent_Lable = tk.Label(mFrame,image=cent_photo,borderwidth=0,bg=root["bg"])
