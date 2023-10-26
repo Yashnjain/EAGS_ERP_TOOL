@@ -119,12 +119,13 @@ def no_order_why(root,conn):
         screen_width = toproot.winfo_screenwidth()
         screen_height = toproot.winfo_screenheight()
 
-        width = 350
-        height = 400
+        width = 450
+        height = 500
         # calculate position x and y coordinates
         x = (screen_width/2) - (width/2)
         y = (screen_height/2) - (height/2)
         toproot.geometry('%dx%d+%d+%d' % (width, height, x, y))
+        toproot.resizable(False,False)
 
         toproot.grab_set()
       
@@ -135,6 +136,8 @@ def no_order_why(root,conn):
 
         labelFrame = tk.Frame(toproot, bg= "#9BC2E6")
         labelFrame.grid(row=0, column=1)
+        labelFrame2= tk.Frame(toproot, bg= "#9BC2E6")
+        labelFrame2.grid(row=1, column=1)
         entryFrame1 = tk.Frame(labelFrame, bg= "#9BC2E6")
         entryFrame1.grid(row=1, column=0)
         entryFrame2 = tk.Frame(labelFrame, bg= "#9BC2E6")
@@ -144,7 +147,7 @@ def no_order_why(root,conn):
         # quoteFrame = tk.Frame(toproot, bg= "#9BC2E6")
         # quoteFrame.grid(row=1, column=1)
         submitFrame = tk.Frame(toproot, bg= "#9BC2E6")
-        submitFrame.grid(row=1, column=1)
+        submitFrame.grid(row=2, column=1)
         #Declaring Labels
         # tobePrinted = tk.Label(labelFrame, text="To be Printed", bg = "#9BC2E6")
         # tobePrinted.grid(row=0, column=0)
@@ -171,10 +174,10 @@ def no_order_why(root,conn):
         deliveryLabel.grid(row=2, column=0)
 
 
-        nofeedbackLabel = tk.Label(labelFrame, text="No Feedback", bg = "#9BC2E6", font=("Segoe UI", 10))
+        nofeedbackLabel = tk.Label(labelFrame2, text="No Feedback", bg = "#9BC2E6", font=("Segoe UI", 10))
         nofeedbackLabel.grid(row=4, column=0)
 
-        addcommtLabel = tk.Label(labelFrame, text="Add Comment", bg = "#9BC2E6",font=("Segoe UI", 10))
+        addcommtLabel = tk.Label(labelFrame2, text="Add Comment", bg = "#9BC2E6",font=("Segoe UI", 10))
         addcommtLabel.grid(row=4, column=1)
         # Configuring frame sizes based on screen size
         toproot.grid_rowconfigure(0, weight=1)
@@ -249,16 +252,20 @@ def no_order_why(root,conn):
 
         DeliveryVar = tk.StringVar()
         DeliveryBox = ttk.Entry(entryFrame3, textvariable=DeliveryVar, background = 'white',width = 10)
+        # DeliveryBox = tk.Text(entryFrame3, height = 5, width = 5,bg='white')
+        # DeliveryBox.pack(side='bottom',padx=2)
         DeliveryBox.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
         DeliveryVar.set("*")
 
         no_feedbackVar = tk.StringVar()
-        no_feedbackBox = ttk.Entry(labelFrame, textvariable=no_feedbackVar, background = 'white',width = 10)
+        # no_feedbackBox = ttk.Entry(labelFrame, textvariable=no_feedbackVar, background = 'white',width = 10)
+        no_feedbackBox = tk.Text(labelFrame2, height = 2, width = 20,bg='white')
         no_feedbackBox.grid(row=5,column=0,sticky=tk.EW,padx=10,pady=10)
         no_feedbackVar.set("*")
 
         add_commtVar = tk.StringVar()
-        add_commtBox = ttk.Entry(labelFrame, textvariable=add_commtVar, background = 'white',width = 10)
+        # add_commtBox = ttk.Entry(labelFrame, textvariable=add_commtVar, background = 'white',width = 10)
+        add_commtBox = tk.Text(labelFrame2, height = 2, width = 20,bg='white')
         add_commtBox.grid(row=5,column=1,sticky=tk.EW,padx=10,pady=10)
         add_commtVar.set("*")
 
@@ -546,6 +553,7 @@ def reportGenerator(root, conn):
         toproot.title('EAGS Report Generator')
         screen_width = toproot.winfo_screenwidth()
         screen_height = toproot.winfo_screenheight()
+        toproot.resizable(False,False)
 
         width = 415
         height = 380
