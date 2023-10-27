@@ -502,10 +502,11 @@ def dfMaker(specialList,cxList,otherList,pt,conn,root):
         # Location: USA/UK/DUB/SGP
         # Year: 2022
         # Number:00xxxx
+
         for i in range(len(cxList)):
             if i == "" or i == None:
                 root.attributes('-topmost', True)
-                messagebox.showerror("Error", f"Empty Customer entry found, please fill and then click preview",parent=root)
+                messagebox.showerror("Error", f"Empty Customer or Sales Person entry found, please fill and then click preview",parent=root)
                 root.attributes('-topmost', False)
                 return []
         for i in range(len(otherList)):
@@ -549,7 +550,7 @@ def dfMaker(specialList,cxList,otherList,pt,conn,root):
             # 'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
             # 'E_QTY', 'E_SELLING_COST/LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER','INSERT_DATE']
 
-            columnList = ['QUOTENO', 'PREPAREDBY', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
+            columnList = ['QUOTENO', 'PREPAREDBY', 'SALES_PERSON', 'DATE', 'CUS_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUS_ADDRESS', 'CUS_PHONE', 'CUS_EMAIL', 'CUS_CITY_ZIP', 'C_SPECIFICATION', 'C_TYPE',
             'C_GRADE', 'C_YIELD', 'C_OD', 'C_ID', 'C_LENGTH', 'C_QTY', 'C_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC','E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH',
             'E_QTY', 'E_COST', 'E_SELLING_COST/LBS', 'E_MARGIN_LBS','E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME','E_FINAL_PRICE', 'E_FREIGHT_INCURED', 'E_FREIGHT_CHARGED', 
             'E_MARGIN_FREIGHT','LOT_SERIAL_NUMBER','VALIDITY', 'ADD_COMMENTS','PREVIOUS_QUOTE','REV_CHECKER','INSERT_DATE']

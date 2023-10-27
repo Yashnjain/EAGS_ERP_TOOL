@@ -299,7 +299,7 @@ def quoteGenerator(mainRoot,user,conn, df):
             try:
                 if is_on:
                     cxDatadict["cus_city_zip"] = ""
-                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
+                cxList = [cxDatadict["Prepared_By"],salespersonDict["sales_person"][0][0].get(),cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
                     cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
             except Exception as e:
@@ -311,6 +311,14 @@ def quoteGenerator(mainRoot,user,conn, df):
                 # row_num+=1
             except Exception as e:
                 raise e
+            
+        # def salesPCalc():
+        #     try:
+        #         salesPList = [salespersonDict["sales_person"][0][0].get()]
+        #         return salesPList
+        #         # row_num+=1
+        #     except Exception as e:
+        #         raise e
         def deleteRow():
             try:
                 root.attributes('-topmost', True)
