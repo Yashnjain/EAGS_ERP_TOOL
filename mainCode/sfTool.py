@@ -130,6 +130,25 @@ def get_cx_df(conn,table, customer= 'general'):
         return df
     except Exception as e:
         raise e
+    
+def get_salesperson_df(conn,table):
+    try:
+        # query = f"SELECT CUS_LONG_NAME, PAYMENT_TERM, CUS_ADDRESS, CUS_PHONE, CUS_EMAIL, CUS_CITY_ZIP FROM {DATABASE}.{SCHEMA}.{table}"
+        
+        query = f"SELECT * FROM {DATABASE}.{SCHEMA}.{table}"
+        cur = conn.cursor()
+
+        cur.execute(query)
+
+        names = [ x[0] for x in cur.description]
+        rows = cur.fetchall()
+        df= pd.DataFrame(rows, columns=names)
+
+        df.columns = map(str.lower  , df.columns)
+        # df = pd.read_sql_query(query, conn)
+        return df
+    except Exception as e:
+        raise e
 
 def get_inv_df(conn, table):
     try:
@@ -357,11 +376,11 @@ def get_master_df(conn, table):
 ###############################################For Manual Customer Data Upload##################################
 # def cxUploader():
 #     try:
-#         csv_loc = "C:\\Users\\imam.khan\\Downloads\\AKS-BUITDB_DEV.csv"
+#         csv_loc = "C:\\Users\\imam.khan\\Downloads\\output_file.csv"
 #         conn = get_connection()
 #         df = pd.read_csv(csv_loc)
 
-#         success, nchunks, nrows, _ = write_pandas(conn, df, 'EAGS_CUSTOMER')
+#         success, nchunks, nrows, _ = write_pandas(conn, df, 'EAGS_SALESPERSON_V2')
 #         print(f"Successfull inserted rows:{nrows}")
 #     except Exception as e:
 #         raise e

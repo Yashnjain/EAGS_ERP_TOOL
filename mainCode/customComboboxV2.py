@@ -91,7 +91,7 @@ def formulaCalc(boxList, index, root):
         raise ex
 
 
-def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW,item_list=[],boxList={},cxDict={},val = None, pt=None, entpady=0, bakerDf = [],is_on=None):
+def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW,item_list=[],boxList={},cxDict={},salesDict={},val = None, pt=None, entpady=0, bakerDf = [],is_on=None):
     try:
         # def __init__(self,item_list,frame,row,column,width=10,list_bd = 0,foreground='blue', background='white',sticky = tk.EW):
         global checker
@@ -212,6 +212,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     if len(boxList):
                         key, index = keyFinder(boxList,(ent,var))
                         
+                    elif len(salesDict):
+                        key, index = keyFinder(salesDict,(ent,var))
                     else:
                         key, index = keyFinder(cxDict,(ent,var))
                     if key == "cus_long_name":
@@ -233,8 +235,11 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
 
                                 cxDict["cus_city_zip"] = dataList[7]
                                 # val.lift()
-                                val.focus()
+                                val.focus_set()
                         breakCheck = True
+                    elif key == "sales_person":
+                        df["s_person_name_id"] = df['sales_person'] +" | "+ df["code_no"].astype(str) +" | "+ df["location"]
+                        val.focus_set()
 
                     elif key=='E_UOM' and boxList['C_Quote Yes/No'][0][index][0].get() != "No":
                         sellCostUOM = formulaCalc(boxList, index, root)
@@ -449,7 +454,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                             newKey = list(boxList.keys())[i]
                             if value == "Yes" or value == "Other":
                                 # if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'Lot_Serial_Number'and newKey != 'searchLocation':
-                                if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'E_Spec' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and not len(bakerDf):
+                                if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'E_Spec' and newKey != 'Lot_Serial_Number' and not len(bakerDf) and newKey != 'searchLocation':
                                     # if newKey=='E_Spec' and not len(bakerDf):
                                     #     pass
                                     # else:
@@ -693,13 +698,18 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 if ent.get()=='':
                     if len(boxList):
                         key, index = keyFinder(boxList,(ent,var))
-                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other" and key != 'E_UOM':
+                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other" and key != 'E_UOM' and key != 'E_Location':
                             listCheck = False
                         elif key=='E_UOM':
                             newList = item_list
                         else:
                             newList = filterList(boxList,key,index,df)
                         
+                    elif len(salesDict):
+                        key, index = keyFinder(salesDict,(ent,var))
+                        df["s_person_name_id"] = df['sales_person'] +" | "+ df["code_no"].astype(str) +" | "+ df["location"]
+                        newList = df["s_person_name_id"].values.tolist() 
+
                     else:
                         key, index = keyFinder(cxDict,(ent,var))
                         df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
@@ -741,6 +751,13 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                         lbframe.list.focus()
                         lbframe.list.select_set(0)
 
+                elif len(salesDict):
+                    key, index = keyFinder(salesDict,(ent,var))
+                    if key == "sales_person":
+                        lbframe.place(in_=ent, x=0, rely=1, relwidth=1.0, anchor="nw")
+                        lbframe.list.focus()
+                        lbframe.list.select_set(0)
+                
                 elif len(cxDict):
                     key, index = keyFinder(cxDict,(ent,var))
                     if key == "cus_long_name":
@@ -762,10 +779,11 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
 
         def list_up(_):
             try:
-                if not lbframe.list.curselection()[0]:
-                    
-                    ent.focus()
-                    list_hide()
+                if len(lbframe.list.curselection()):
+                    if not lbframe.list.curselection()[0]:
+                        
+                        ent.focus()
+                        list_hide()
             except Exception as e:
                 raise e
                     
@@ -777,8 +795,9 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     value = lbframe.list.get(lbframe.list.curselection())
                     var.set(value)
                     list_hide(e)
-                    ent.focus()
-                    ent.icursor(tk.END)
+                    if not salesDict and not cxDict:
+                        ent.focus()
+                        ent.icursor(tk.END)
                 else:
                     pass
             except Exception as ex:
@@ -1035,9 +1054,15 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                 if key != "E_UOM":
                                     newList = filterList(boxList,key,index,df)
 
-                            if str(boxList["C_Quote Yes/No"][0][index][0].get().upper())=="OTHER" and key == "E_UOM":
+                            if str(boxList["C_Quote Yes/No"][0][index][0].get().upper())=="OTHER" and (key == "E_UOM" or key == "E_Location"):
                                 check = True
-                        
+
+
+                    elif len(salesDict):
+                        key, index = keyFinder(salesDict,(ent,var))
+                        df["s_person_name_id"] = df['sales_person'] +" | "+ df["code_no"].astype(str) +" | "+ df["location"]
+                        newList = df["s_person_name_id"].values.tolist()
+
                     elif len(cxDict):
                         key, index = keyFinder(cxDict,(ent,var))
                         df["cx_name_id"] = df['cus_long_name'].astype(str) +" | "+ df["cus_id"]
@@ -1073,7 +1098,13 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     lbframe.place_forget()
                                     
                             if errMessage:
-                                if not len(cxDict) and not str(boxList["C_Quote Yes/No"][0][index][0].get()).upper().startswith("N"):
+                                if not len(salesDict) and not len(cxDict) and not str(boxList["C_Quote Yes/No"][0][index][0].get()).upper().startswith("N"):
+                                    root.attributes('-topmost', True)
+                                    messagebox.showerror(title="Wrong Value",message="Please enter value from list only!",parent=root)
+                                    root.attributes('-topmost', False)
+                                    ent.delete(0, tk.END)
+                                    ent.focus()
+                                elif len(salesDict):
                                     root.attributes('-topmost', True)
                                     messagebox.showerror(title="Wrong Value",message="Please enter value from list only!",parent=root)
                                     root.attributes('-topmost', False)

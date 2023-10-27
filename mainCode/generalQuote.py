@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 from pandastable import Table
 from Tools import dfMaker, resource_path, rangeSearch
-from sfTool import get_cx_df
+from sfTool import get_cx_df, get_salesperson_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
 import os, shutil
@@ -21,7 +21,7 @@ ctypes.windll.shcore.SetProcessDpiAwareness(1)
 UNITS = "units"
 INV_TABLE = "EAGS_INVENTORY"
 CX_TABLE = "EAGS_CUSTOMER"
-
+S_PERSON_TABLE = "EAGS_SALESPERSON_V2"
 #Calendar
 class MyDateEntry(DateEntry):
     try:
@@ -148,7 +148,16 @@ def quoteGenerator(mainRoot,user,conn, df):
             
             except Exception as e:
                 raise e
+
+        def tabFuncCx(e):
+            try:
+                cxNameVar[0][0].focus_set()
+                return "break"
             
+            except Exception as e:
+                raise e
+
+
         def tabFuncPaymentTerm(e):
             try:
                 mobile.focus_set()
@@ -451,6 +460,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         # df = pd.read_excel("sampleInventory.xlsx")
         # Getting Cx Dataframe
         cx_df = get_cx_df(conn,table = CX_TABLE)
+        salesperson_df = get_salesperson_df(conn,table = S_PERSON_TABLE)
         # cx_df = pd.read_excel("cxDatabase.xlsx")
 
         count = 0
@@ -546,6 +556,11 @@ def quoteGenerator(mainRoot,user,conn, df):
         
 
         global cxDatadicttextvariable
+        salespersonDict = {}
+        salespersonDict["sales_person"] = []
+        salespersonVar = []
+        salespersonDict["sales_person"].append(salespersonVar)
+
         cxDatadict = {}
         #Cx data Varilables
 
@@ -554,6 +569,7 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         cxDatadict["Date"] = []
         inpDateVar = []
+        
         
 
         cxDatadict["cus_long_name"] = []
@@ -590,6 +606,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         prepByLb = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6", font=("Segoe UI", 10))
         prep_by = ttk.Entry(cxFrame)
         prep_by.insert(tk.END, user)
+        salespersonLb = tk.Label(cxFrame,text="Sales Person", bg = "#9BC2E6", font=("Segoe UI", 10))
+        # salesperson_entry = ttk.Entry(cxFrame)
         inpDateLb = tk.Label(cxFrame,text="Date", bg = "#9BC2E6", font=("Segoe UI", 10))
         inpcustomerLb = tk.Label(cxFrame,text="Existing Customer", bg = "#9BC2E6", font=("Segoe UI", 10))
         inpDate = MyDateEntry(master=cxFrame, width=17, selectmode='day', font=("Segoe UI", 10))
@@ -610,10 +628,14 @@ def quoteGenerator(mainRoot,user,conn, df):
         cxLabel.grid(row=0,column=0)
         prepByLb.grid(row=1,column=0)
         prep_by.grid(row=2,column=0)
-        inpDateLb.grid(row=1,column=1)
-        inpcustomerLb.grid(row=1,column=2)
-        on_button.grid(row=2,column=2)
-        inpDate.grid(row=2, column=1)
+
+        salespersonLb.grid(row=1,column=1)
+        # salesperson_entry.grid(row=2,column=1)
+
+        inpDateLb.grid(row=1,column=2)
+        inpcustomerLb.grid(row=1,column=3)
+        on_button.grid(row=2,column=3)
+        inpDate.grid(row=2, column=2)
         cxNameLb.grid(row=3,column=0)
         locAddLb.grid(row=3,column=1)
         emailLb.grid(row=3,column=2)
@@ -673,6 +695,11 @@ def quoteGenerator(mainRoot,user,conn, df):
         #Customer Name Entry Box
         cxNameVar.append(myCombobox(cx_df,root,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=25,list_bd = 0,foreground='blue',
          background='white',sticky = "nsew",cxDict= cxDatadict,val=currency, is_on=onButtonVar))
+        # cxNameVar[0][0].bind("<Tab>",tabFuncMobile)
+        #SalesPerson Name Entry Box
+        salespersonVar.append(myCombobox(salesperson_df,root,item_list=list(salesperson_df['sales_person']),frame=cxFrame,row=2,column=1,width=25,list_bd = 0,foreground='blue',
+         background='white',sticky = "nsew",salesDict= salespersonDict,val=cxNameVar[0][0], is_on=onButtonVar))
+        salespersonVar[0][0].bind("<Tab>",tabFuncCx)
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
@@ -1111,6 +1138,9 @@ def quoteGenerator(mainRoot,user,conn, df):
 
         databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
         databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
+
+        #Focus on Sales Person
+        salespersonVar[0][0].focus_set()
 
         #Moving horizontal scroll bar to initial position
         entryCanvas.xview("moveto", 0)
