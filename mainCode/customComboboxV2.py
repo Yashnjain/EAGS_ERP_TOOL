@@ -205,6 +205,8 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 # global get_input_checker
                 global checker
                 checker = False
+                print("List box size is ")
+                print(lbframe.list.size())
                 if lbframe.list.size()==1:
                     value = lbframe.list.get(0)
                     var.set(value)

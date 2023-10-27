@@ -18,6 +18,7 @@ ROLE = "OWNER_BUITDB"
 
 EAGS_QUOTATION_TABLE = "EAGS_QUOTATION"
 EAGS_BAKER_TABLE = "EAGS_BAKER"
+NO_ORDER_WHY_TABLE = "NO_ORDER_WHY"
 
 def get_connection():
     try:
@@ -229,7 +230,24 @@ def eagsQuotationuploader(conn,df,latest_revised_quote=None,baker=False):
 
     # df.to_sql(name=EAGS_QUOTATION_TABLE, con=conn, index=False,if_exists='append', schema=SCHEMA)
 
-
+#No ORder Why Uploader
+def upload_no_order_why(conn,df):
+    try:
+                 #---------Updating previous rev checker to 0 ----------#
+        # if latest_revised_quote is not None:
+        #     rev_query = f'''UPDATE {DATABASE}.{SCHEMA}.{EAGS_QUOTATION_TABLE} set REV_CHECKER = 0 Where QUOTENO = '{latest_revised_quote}';'''
+        #     cur = conn.cursor()
+        #     cur.execute(rev_query)
+        # # Write the data from the DataFrame to the table named "customers".
+        # # Write the data from the DataFrame to the table named "eags quotation".
+        # if baker:
+        #     df.columns = map(str.upper, df.columns)
+        #     df. columns = df. columns. str. replace(' ','_')
+        #     success, nchunks, nrows, _ = write_pandas(conn, df, EAGS_BAKER_TABLE)
+        # else:
+        success, nchunks, nrows, _ = write_pandas(conn, df, NO_ORDER_WHY_TABLE)
+    except Exception as e:
+        raise e
 def getLatestQuote(conn,curr_quoteNo,previous_quote_number=None, baker=False, newQuote=False):
     try:
         cx_init_name = curr_quoteNo.split("_")[0]
