@@ -355,7 +355,7 @@ def no_order_why(root,conn):
             print(df)
 
             upload_no_order_why(conn, df)
-            messagebox.showinfo("Data Uploaded Successfully")
+            messagebox.showinfo("Info", "Data Uploaded Successfully")
             submitButton.configure(state='normal')
             priceBox.configure(state='normal')
             preparedBox.configure(state='normal')
