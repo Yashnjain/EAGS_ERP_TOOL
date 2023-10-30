@@ -242,6 +242,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     elif key == "sales_person":
                         df["s_person_name_id"] = df['sales_person'] +" | "+ df["code_no"].astype(str) +" | "+ df["location"]
                         val.focus_set()
+                        breakCheck = True
 
                     elif key=='E_UOM' and boxList['C_Quote Yes/No'][0][index][0].get() != "No":
                         sellCostUOM = formulaCalc(boxList, index, root)

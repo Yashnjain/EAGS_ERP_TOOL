@@ -521,18 +521,18 @@ def dfMaker(specialList,cxList,otherList,pt,conn,root):
             if locVar != "NA":
                 location = locDict[locVar.upper()]
 
-            cxList[1]=datetime.strptime(cxList[1],"%m.%d.%Y").date()
-            input_year=datetime.strftime(cxList[1],"%Y")
+            cxList[1+1]=datetime.strptime(cxList[1+1],"%m.%d.%Y").date()
+            input_year=datetime.strftime(cxList[1+1],"%Y")
             
             #try to get latest quote number of same combination if not present then put 1 otherwise increament current contract
             # curr_quoteNo = f"EAGS/{location}/{input_year}/000001"
-            cx_init_name = cxList[2].split(" ")[0]
+            cx_init_name = cxList[2+1].split(" ")[0]
             curr_quoteNo = f"{cx_init_name}_000001"
             if len(cx_init_name)==1:
-                if cxList[2].split(" ")[1] == "&":
-                    cx_init_name = cxList[2].split(" ")[0]+cxList[2].split(" ")[1]+cxList[2].split(" ")[2]
+                if cxList[2+1].split(" ")[1] == "&":
+                    cx_init_name = cxList[2+1].split(" ")[0]+cxList[2+1].split(" ")[1]+cxList[2+1].split(" ")[2]
                 else:
-                    cx_init_name = cxList[2].split(" ")[0]+"_"+cxList[2].split(" ")[1]
+                    cx_init_name = cxList[2+1].split(" ")[0]+"_"+cxList[2+1].split(" ")[1]
                 curr_quoteNo = f"{cx_init_name}_000001"
 
 

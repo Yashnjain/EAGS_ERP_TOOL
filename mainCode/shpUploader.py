@@ -21,9 +21,10 @@ def shpUploader(localpath, filename):
 
         remotepath = 'Shared%20Documents/Quotations' # existing folder path under sharepoint site.
 
-        username="priyanshi.jhawar@ealloys.com"
+        username="itdevsupport@ealloys.com"
 
-        password="PJWelcome1$"
+        # password="PJWelcome1$"
+        password="4Gi.osDYQjM4C92x9iXnkW9w"
 
     
 

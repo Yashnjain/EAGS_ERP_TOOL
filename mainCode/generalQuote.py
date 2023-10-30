@@ -299,7 +299,7 @@ def quoteGenerator(mainRoot,user,conn, df):
             try:
                 if is_on:
                     cxDatadict["cus_city_zip"] = ""
-                cxList = [cxDatadict["Prepared_By"],salespersonDict["sales_person"][0][0].get(),cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
+                cxList = [cxDatadict["Prepared_By"],salespersonDict["sales_person"][0][0][0].get(),cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
                     cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
             except Exception as e:
@@ -707,7 +707,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         #SalesPerson Name Entry Box
         salespersonVar.append(myCombobox(salesperson_df,root,item_list=list(salesperson_df['sales_person']),frame=cxFrame,row=2,column=1,width=25,list_bd = 0,foreground='blue',
          background='white',sticky = "nsew",salesDict= salespersonDict,val=cxNameVar[0][0], is_on=onButtonVar))
-        salespersonVar[0][0].bind("<Tab>",tabFuncCx)
+        # salespersonVar[0][0].bind("<Tab>",tabFuncCx)
         #location Address entry box
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
