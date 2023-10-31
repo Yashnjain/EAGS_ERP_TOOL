@@ -7,7 +7,7 @@ import pandas as pd
 
 def formulaCalc(boxList, index, root):
     try:
-        if boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM":
+        if (boxList['E_Type'][0][index][0].get()=="TUI" or boxList['E_Type'][0][index][0].get()=="HR" or boxList['E_Type'][0][index][0].get()=="HM") and boxList['C_Quote Yes/No'][0][index][0].get() != "Other" :
             if boxList["E_OD2"][0][index][1]!='' and boxList["E_ID2"][0][index][1]!='':
                 if boxList["E_OD2"][0][index][1]!='None' and boxList["E_ID2"][0][index][1]!='None':
                     e_od = float(boxList["E_OD2"][0][index][1])
