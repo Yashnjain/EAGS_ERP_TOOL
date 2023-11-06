@@ -17,7 +17,7 @@ MASTER_TABLE = "EAGS_MASTER"
 class MyDateEntry(DateEntry):
     try:
         def __init__(self, master=None, **kw):
-            DateEntry.__init__(self, master=master, date_pattern='mm.dd.yyyy',**kw)
+            DateEntry.__init__(self, master=master, date_pattern='dd.mm.yyyy',**kw)
             # add black border around drop-down calendar
             self._top_cal.configure(bg='black', bd=1)
             # add label displaying today's date below
@@ -718,7 +718,10 @@ def reportGenerator(root, conn):
                 if len(na_df):
                     filtered_df = pd.concat([filtered_df,na_df],ignore_index=True)
 
-
+                if len(filtered_df):
+                #    df['DATE'] = df['DATE'].dt.strftime('%d.%m.%Y')
+                    filtered_df=  df[(df['DATE'] >= datetime.strptime(fDate,'%d.%m.%Y').date())]
+                    filtered_df=  filtered_df[(filtered_df['DATE'] <= datetime.strptime(tDate,'%d.%m.%Y').date())]
                 
                 
                 if len(filtered_df):
