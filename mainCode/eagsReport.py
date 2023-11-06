@@ -727,7 +727,7 @@ def reportGenerator(root, conn):
                     # filtered_df = filtered_df.sort_values(["site","grade", "heat_condition", "od_in","od_in_2", "age"], ascending=[True, True, True, True, True, False])
                     
 
-                    colList = ['QUOTE NO', 'PREPARED BY', 'DATE', 'CUSTOMER_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUSTOMER_ADDRESS', 'CUSTOMER_PHONE', 'CUSTOMER_EMAIL', 'CUSTOMER_CITY_ZIP', 'WORK_ORDER', 'DELIVERY_DATE',
+                    colList = ['QUOTE NO', 'PREPARED BY', 'SALES_PERSON', 'DATE', 'CUSTOMER_NAME', 'PAYMENT_TERM', 'CURRENCY', 'CUSTOMER_ADDRESS', 'CUSTOMER_PHONE', 'CUSTOMER_EMAIL', 'CUSTOMER_CITY_ZIP', 'WORK_ORDER', 'DELIVERY_DATE',
                      'MATERIALNUMBER', 'MATERIALDESCRIPTION', 'QTY', 'RM', 'RMQTY', 'SAW_CUT', 'CUSTOMER_SPECIFICATION', 'CUSTOMER_TYPE', 'CUSTOMER_GRADE', 'CUSTOMER_YIELD', 'CUSTOMER_OD', 'CUSTOMER_ID', 'CUSTOMER_LENGTH', 
                      'CUSTOMER_QTY', 'CUSTOMER_QUOTE_YES/NO', 'E_LOCATION', 'E_TYPE', 'E_SPEC', 'E_GRADE', 'E_YIELD', 'E_OD1', 'E_ID1', 'E_OD2', 'E_ID2', 'E_LENGTH', 'E_QTY', 'E_COST', 
                      'E_SELLING_COST/LBS', 'E_MARGIN_LBS', 'E_UOM', 'E_SELLING_COST/UOM', 'E_ADDITIONAL_COST', 'LEAD_TIME', 'E_FINAL_PRICE', 'E_FREIGHT_INCURED', 

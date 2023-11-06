@@ -24,12 +24,13 @@ today = datetime.strftime(date.today(), format = "%d%m%Y")
 S_TABLE = "EAGS_SALESPERSON"
 INV_TABLE = "EAGS_INVENTORY"
 
-VERSION = "0.0.0.12"
+VERSION = "0.1.0.13"
 #Version format:
 #Major revision (new UI, lots of new features, conceptual change, etc.)
 #Minor revision (maybe a change to a search box, 1 feature added, collection of bug fixes)
 #Bug fix release
 #Build number
+
 
 
 
@@ -145,7 +146,9 @@ class App():
         image4New = image4New.resize((420,199), Image.Resampling.LANCZOS)
         bottom_imgNew = ImageTk.PhotoImage(image4New)
 
+
         button_dict = {}
+
         center_img_path = resource_path("center.png")
         center_img = Image.open(center_img_path)
         # center_img = center_img.resize((int(285*w_scale_factor),int(285*h_scale_factor)), Image.Resampling.LANCZOS)
@@ -322,7 +325,7 @@ class App():
                         if user:
                                 global inv_df
                                 loginButton_text.set("Logging In...")
-                                root.update()
+                                root.update()  
                                 inv_df = get_inv_df(conn,table = INV_TABLE)
                                 root.deiconify() #Unhides the root window
                                 root.state('zoomed')
@@ -334,6 +337,8 @@ class App():
                                 messagebox.showinfo("Current App Location", f"Version changed to {VERSION}")
                                 #sys.exit()
                                 # top.wait_window()
+                                
+                                
                                 # user = username.get().copy()
                         else:
                                 password.delete(0, tk.END)
@@ -343,6 +348,7 @@ class App():
                         raise e
 
                 top_frame = ttk.Frame(top)
+                       
                 top_frame.grid(row=0, column=1,pady=(24,0),columnspan=3, padx=(10,0))#Book Antiqua
                 user_label = ttk.Label(top_frame, text="Username:", font=("Segoe UI bold", 12), foreground='black', background="white")#"#ff8c00"
                 user_label.grid(row=0, column=0)

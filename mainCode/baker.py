@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 from pandastable import Table
 from Tools import dfMaker, resource_path, bakerMaker, starSearch, rangeSearch
-from sfTool import get_connection,get_cx_df, get_inv_df
+from sfTool import get_connection,get_cx_df, get_inv_df, get_salesperson_df
 from final_pdf_creator import pdf_generator
 from sfTool import eagsQuotationuploader
 import os
@@ -24,6 +24,7 @@ from shpUploader import shpUploader
 UNITS = "units"
 INV_TABLE = "EAGS_INVENTORY"
 CX_TABLE = "EAGS_CUSTOMER"
+S_PERSON_TABLE = "EAGS_SALESPERSON_V2"
 
 #Calendar
 class MyDateEntry(DateEntry):
@@ -921,7 +922,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         def cxListCalc():
             try:
-                cxList = [cxDatadict["Prepared_By"],cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
+                cxList = [cxDatadict["Prepared_By"],salespersonDict["sales_person"][0][0][0].get(),cxDatadict["Date"],cxDatadict["cus_long_name"][0][0][0].get(), cxDatadict["payment_term"][0][0].get(), currency.get(),  cxDatadict["cus_address"][0][0].get(),
                     cxDatadict["cus_phone"][0][0].get(),cxDatadict["cus_email"][0][0].get(),cxDatadict["cus_city_zip"]]
                 return cxList
             except Exception as e:
@@ -1078,6 +1079,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         # df = pd.read_csv("sampleInventory.csv")
         # Getting Cx Dataframe
         cx_df = get_cx_df(conn,table = CX_TABLE, customer='baker')
+        salesperson_df = get_salesperson_df(conn,table = S_PERSON_TABLE)
         # cx_df = pd.read_excel("cxDatabase.xlsx")
 
         count = 0
@@ -1181,6 +1183,11 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         pt.show()
 
         global cxDatadict
+        salespersonDict = {}
+        salespersonDict["sales_person"] = []
+        salespersonVar = []
+        salespersonDict["sales_person"].append(salespersonVar)
+
         cxDatadict = {}
         #Cx data Varilables
 
@@ -1213,6 +1220,7 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         prepByLb = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6", font=("Segoe UI", 10))
         prep_by = ttk.Entry(cxFrame)
         prep_by.insert(tk.END, user)
+        salespersonLb = tk.Label(cxFrame,text="Sales Person", bg = "#9BC2E6", font=("Segoe UI", 10))
         inpDateLb = tk.Label(cxFrame,text="Date", bg = "#9BC2E6", font=("Segoe UI", 10))
         inpDate = MyDateEntry(master=cxFrame, width=17, selectmode='day', font=("Segoe UI", 10))
         cxNameLb = tk.Label(cxFrame,text="Customer Name", bg = "#9BC2E6", font=("Segoe UI", 10))
@@ -1233,6 +1241,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         cxLabel.grid(row=0,column=0)
         prepByLb.grid(row=1,column=0)
         prep_by.grid(row=2,column=0)
+        
+        salespersonLb.grid(row=1,column=1)
+
         inpDateLb.grid(row=1,column=1)
         inpDate.grid(row=2, column=1)
         cxNameLb.grid(row=3,column=0)
@@ -1291,6 +1302,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
         #Customer Name Entry Box
         cxNameVar.append(myCombobox(cx_df,tab1,item_list=list(cx_df['cus_long_name']),frame=cxFrame,row=4,column=0,width=5,list_bd = 0,foreground='blue', background='white',sticky = "nsew",cxDict= cxDatadict,val=currency))
         #location Address entry box
+        salespersonVar.append(myCombobox(salesperson_df,root,item_list=list(salesperson_df['sales_person']),frame=cxFrame,row=2,column=1,width=25,list_bd = 0,foreground='blue',
+         background='white',sticky = "nsew",salesDict= salespersonDict,val=cxNameVar[0][0]))
+        
         locAddVar = tk.StringVar()
         locAdd = ttk.Entry(cxFrame, textvariable=locAddVar, foreground='blue', background = 'white',width = 20, font=('Segoe UI', 10))
         locAdd.grid(row=4,column=1,sticky=tk.EW,padx=5,pady=5)
@@ -1750,6 +1764,9 @@ def bakerQuoteGenerator(mainRoot,user,conn, df):
 
         databaseFrame.grid_rowconfigure(1, weight=1) # For column 21
         databaseFrame.grid_columnconfigure(1, weight=1) # For column 21
+
+        #Focus on Sales Person
+        salespersonVar[0][0].focus_set()
 
         #Moving horizontal scroll bar to initial position
         entryCanvas.xview("moveto", 0)
