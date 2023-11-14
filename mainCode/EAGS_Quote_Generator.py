@@ -155,6 +155,9 @@ class App():
         center_img = center_img.resize((285,285), Image.Resampling.LANCZOS)
         cent_photo = ImageTk.PhotoImage(center_img)
 
+        left_side_img_path = resource_path("ea_timeline_logo.png")
+        left_side_img = tk.PhotoImage(master=mFrame,file=left_side_img_path)
+
         #########Adding report generator button#################
         report_img_path1 = resource_path("reportGenerator1.png")
         report_img1 = tk.PhotoImage(master=mFrame, file=report_img_path1)
@@ -184,6 +187,10 @@ class App():
         button_dict[noordertbut] = [no_order_pathimg1, no_order_pathimg2]
         noordertbut.bind("<Enter>", on_enter)
         noordertbut.bind("<Leave>", on_leave)
+
+        # left_img_button = tk.Button(mFrame, image=report_img1, command=lambda:'https://www.ealloys.com/',borderwidth=0, background=root["bg"],activebackground=root["bg"])
+        # left_img_button.bind('<Configure>', resize_image)
+        # left_img_button.place(x=0,y=300)
         ##############################################################
 
         cent_Lable = tk.Label(mFrame,image=cent_photo,borderwidth=0,bg=root["bg"])

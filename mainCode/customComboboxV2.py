@@ -701,7 +701,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 if ent.get()=='':
                     if len(boxList):
                         key, index = keyFinder(boxList,(ent,var))
-                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other" and key != 'E_UOM' and key != 'E_Location':
+                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other" and key != 'E_UOM' and key != 'E_Location' and key!='E_Type':
                             listCheck = False
                         elif key=='E_UOM':
                             newList = item_list

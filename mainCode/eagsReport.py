@@ -605,7 +605,6 @@ def reportGenerator(root, conn):
                 print(yesVar.get())
                 
 
-
                 user = userVar.get()
                 locationValue = locationVar.get()
                 grade = gradeVar.get()
@@ -618,7 +617,6 @@ def reportGenerator(root, conn):
                 fDate = fDateBox.get()
                 quoteYesNo = yesVar.get()
                 
-
 
 
                 filtered_df = df.copy()
@@ -651,9 +649,7 @@ def reportGenerator(root, conn):
                 
                 
 
-
                 na_df = []
-
 
                 #Filtering NA Values if required for No and All case
                 if noCheck or allCheck:
@@ -759,10 +755,6 @@ def reportGenerator(root, conn):
                 
                
             
-
-
-
-
         submitButton = ttk.Button(submitFrame,text="Submit", command=starSearcher)
         # submitButton.place(relx=.5, rely=.5, anchor="center")
         submitButton.grid(row=0,column=1,pady=40)

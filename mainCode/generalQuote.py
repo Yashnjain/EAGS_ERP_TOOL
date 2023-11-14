@@ -482,7 +482,6 @@ def quoteGenerator(mainRoot,user,conn, df):
         tab2 = ttk.Frame(tabControl)
         tab3 = ttk.Frame(tabControl)
         
-
         tabControl.add(tab1, text='Quote Generator')
         tabControl.add(tab2, text='Machining')
         tabControl.add(tab3, text='Quote Generator + Machining')
@@ -673,7 +672,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         
         #Currency
         currencyVar = tk.StringVar()
-        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£"], width=5, text='$')
+        currency = ttk.Combobox(cxFrame2, background='white', font=('Segoe UI', 10), justify='center',textvariable=currencyVar,values=["$","£","kr"], width=5, text='$')
     
         # currencyVar.set("$")
         currency.delete(0, tk.END)
