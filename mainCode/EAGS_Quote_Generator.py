@@ -273,8 +273,6 @@ class App():
             cap.capture(imageV1path)
             # imageV1path = os.getcwd()+'\\'+f'{error_id}V1.png'
             
-
-            
             # dsp_msg = f"Error: {error_id}\nPlease send a screenshot of this error message along with the app window to devsupport@biourja.com"
             dsp_msg = f"A Report for this issue has been sent to IT India Team with Error ID: {error_id}, it will be resolved soon\nPlease capture this error id for future reference"
             root.attributes('-topmost', True)
@@ -284,7 +282,6 @@ class App():
             cap = tkcap.CAP(root)     # master is an instance of tkinter.Tk
             cap.capture(imageV2path)       # Capture and Save the screenshot of the tkiner window
             # imageV2path = os.getcwd()+'\\'+f'{error_id}V2.png'
-            
             
             send_mail(receiver_email='imam.khan@biourja.com, yashn.jain@biourja.com, devsupport@biourja.com', mail_subject=f"EAGS APP ERROR FOUND {user[0]} {error_id}", 
             mail_body=f"<strong>User: {user[0]}{nl}Error ID: {error_id}</strong>{nl}{msg}", attachment_locations=[imageV1path, imageV2path])
@@ -355,7 +352,6 @@ class App():
                         raise e
 
                 top_frame = ttk.Frame(top)
-                       
                 top_frame.grid(row=0, column=1,pady=(24,0),columnspan=3, padx=(10,0))#Book Antiqua
                 user_label = ttk.Label(top_frame, text="Username:", font=("Segoe UI bold", 12), foreground='black', background="white")#"#ff8c00"
                 user_label.grid(row=0, column=0)
@@ -369,14 +365,12 @@ class App():
                 password = ttk.Entry(top_frame, show="*", textvariable=password_text) #Password entry
                 password.grid(row=1, column=1, pady=10)
                 # password_text.set("Biourja@2021#7515")
-
                 loginButton_text = tk.StringVar()
                 loginButton = tk.Button(top_frame, textvariable=loginButton_text, font = ("Book Antiqua bold", 12), bg="#20bebe", fg="white", height=1, width=14, command=login_command, activebackground="#20bebb", highlightbackground="#20bebd")
                 loginButton.grid(row=2, column=1, pady=30)
                 loginButton_text.set("Login")
                 loginButton.bind("<Enter>", on_enter)
                 loginButton.bind("<Leave>", on_leave)
-
                 loginButton.bind("<Return>", (lambda event: login_command()))
                 password.bind("<Return>", (lambda event: login_command()))
                 top_frame.focus_set()

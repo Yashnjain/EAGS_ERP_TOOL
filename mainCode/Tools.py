@@ -527,7 +527,9 @@ def dfMaker(specialList,cxList,otherList,pt,conn,root):
             #try to get latest quote number of same combination if not present then put 1 otherwise increament current contract
             # curr_quoteNo = f"EAGS/{location}/{input_year}/000001"
             cx_init_name = cxList[2+1].split(" ")[0]
-            curr_quoteNo = f"{cx_init_name}_000001"
+            cx_id_name = cxList[2+1].split("|")[-1]#########################################
+            curr_quoteNo = f"{cx_init_name}_{cx_id_name}_000001"######################################
+            # curr_quoteNo = f"{cx_init_name}_000001"
             if len(cx_init_name)==1:
                 if cxList[2+1].split(" ")[1] == "&":
                     cx_init_name = cxList[2+1].split(" ")[0]+cxList[2+1].split(" ")[1]+cxList[2+1].split(" ")[2]
