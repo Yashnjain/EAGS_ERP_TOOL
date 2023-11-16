@@ -92,7 +92,8 @@ def loginChecker(conn,table, user, pwd):
         
         # data = raw_data.fetchall()
         if len(data):
-            return [data[0][1], data[0][-2], data[0][-1],data[0][0]], #UsernameName, Role#data.iloc[0,0],#Name
+            return [data[0][0], data[0][-2], data[0][-1]] #Name, Role#data.iloc[0,0]
+            # return [data[0][1], data[0][-2], data[0][-1],data[0][0]], #UsernameName, Role#data.iloc[0,0],#Name
         return False
     except Exception as e:
         raise e

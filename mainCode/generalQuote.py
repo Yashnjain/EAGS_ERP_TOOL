@@ -612,7 +612,7 @@ def quoteGenerator(mainRoot,user,conn, df):
         cxLabel = tk.Label(cxFrame, text="Customer Details", bg = "#9BC2E6", font=("Segoe UI", 12))
         prepByLb = tk.Label(cxFrame,text="Prepared By", bg = "#9BC2E6", font=("Segoe UI", 10))
         prep_by = ttk.Entry(cxFrame)
-        prep_by.insert(tk.END, user[0])
+        prep_by.insert(tk.END, user)
         salespersonLb = tk.Label(cxFrame,text="Sales Person", bg = "#9BC2E6", font=("Segoe UI", 10))
         # salesperson_entry = ttk.Entry(cxFrame)
         inpDateLb = tk.Label(cxFrame,text="Date", bg = "#9BC2E6", font=("Segoe UI", 10))
