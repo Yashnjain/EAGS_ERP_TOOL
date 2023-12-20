@@ -1,9 +1,11 @@
 import tkinter as tk
+from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk,Label,Entry,StringVar,Tk
 from tkcalendar import DateEntry
 from datetime import date
 from sfTool import get_connection, upload_no_order_why, get_master_df
+from Tools import resource_path
 from customComboboxForReport import myCombobox
 from datetime import datetime
 import os
@@ -13,11 +15,12 @@ import pandas as pd
 MASTER_TABLE = "EAGS_MASTER"
 
 
+
 #Calendar
 class MyDateEntry(DateEntry):
     try:
         def __init__(self, master=None, **kw):
-            DateEntry.__init__(self, master=master, date_pattern='dd.mm.yyyy',**kw)
+            DateEntry.__init__(self, master=master, date_pattern='dd.mm.yyyy',width= 8,**kw)
             # add black border around drop-down calendar
             self._top_cal.configure(bg='black', bd=1)
             # add label displaying today's date below
@@ -121,7 +124,7 @@ def no_order_why(root,conn):
                 raise e
         def tabFuncPrice(e):
             try:
-                TimeBox.focus_set()
+                Time_yes.focus_set()
                 return "break"           
             except Exception as e:
                 raise e
@@ -139,7 +142,7 @@ def no_order_why(root,conn):
         screen_width = toproot.winfo_screenwidth()
         screen_height = toproot.winfo_screenheight()
 
-        width = 600
+        width = 580
         height = 500
         # calculate position x and y coordinates
         x = (screen_width/2) - (width/2)
@@ -167,14 +170,6 @@ def no_order_why(root,conn):
         cxDatadict["sales_person"] =[]
         # cxDatadict["sales_person"].append(sales_p_var)
 
-
-
-
-
-
-
-    
-
         labelFrame = tk.Frame(toproot, bg= "#9BC2E6")
         labelFrame.grid(row=0, column=1)
         labelFrame2= tk.Frame(toproot, bg= "#9BC2E6")
@@ -196,30 +191,43 @@ def no_order_why(root,conn):
         # tobeCalculated = tk.Label(labelFrame, text="To be Calculated", bg = "#9BC2E6")
         # tobeCalculated.grid(row=0,column=1)
 
-        Quote_number = tk.Label(entryFrame1, text="Quote Number", bg = "#9BC2E6", font=("Segoe UI", 10))
-        Quote_number.grid(row=0, column=0)
-
+        
         PreparedLabel = tk.Label(entryFrame2, text="Prepared By", bg = "#9BC2E6", font=("Segoe UI", 10))
         PreparedLabel.grid(row=0, column=0)
+
+        Quote_number = tk.Label(entryFrame1, text="Quote Number", bg = "#9BC2E6", font=("Segoe UI", 10))
+        Quote_number.grid(row=0, column=0)
 
         salesLabel = tk.Label(entryFrame3, text="Sales Person", bg = "#9BC2E6", font=("Segoe UI", 10))
         salesLabel.grid(row=0, column=0)
 
-        PriceLabel = tk.Label(entryFrame1, text="Price", bg = "#9BC2E6", font=("Segoe UI", 10))
+        PriceLabel = tk.Label(entryFrame1, text="Date", bg = "#9BC2E6", font=("Segoe UI", 10))
         PriceLabel.grid(row=2, column=0)
 
-        timeLabel = tk.Label(entryFrame2, text="Time", bg = "#9BC2E6", font=("Segoe UI", 10))
-        timeLabel.grid(row=2,column=0)
+        timeLabel = tk.Label(labelFrame, text="Time", bg = "#9BC2E6", font=("Segoe UI", 10))
+        timeLabel.grid(row=4,column=0)
+
+        nofeedbackLabel = tk.Label(labelFrame2, text="No Feedback", bg = "#9BC2E6", font=("Segoe UI", 10))
+        nofeedbackLabel.grid(row=4, column=0)
+
+        status_lable = tk.Label(entryFrame2, text="Status", bg = "#9BC2E6", font=("Segoe UI", 10))
+        status_lable.grid(row=2,column=0)
 
         deliveryLabel = tk.Label(entryFrame3, text="Delivery", bg = "#9BC2E6", font=("Segoe UI", 10))
         deliveryLabel.grid(row=2, column=0)
 
 
-        nofeedbackLabel = tk.Label(labelFrame2, text="No Feedback", bg = "#9BC2E6", font=("Segoe UI", 10))
-        nofeedbackLabel.grid(row=4, column=0)
+        material_unav = tk.Label(labelFrame, text="Material Unavailability", bg = "#9BC2E6", font=("Segoe UI", 10))
+        material_unav.grid(row=4, column=1)
+
+        date_lable = tk.Label(labelFrame, text="Price", bg = "#9BC2E6", font=("Segoe UI", 10))
+        date_lable.grid(row=4, column=2)
+
+
+        
 
         addcommtLabel = tk.Label(labelFrame2, text="Add Comment", bg = "#9BC2E6",font=("Segoe UI", 10))
-        addcommtLabel.grid(row=4, column=1)
+        addcommtLabel.grid(row=4, column=2)
         # Configuring frame sizes based on screen size
         toproot.grid_rowconfigure(0, weight=1)
         toproot.grid_columnconfigure(0, weight=1)
@@ -266,14 +274,12 @@ def no_order_why(root,conn):
         
         
         # qn = tk.StringVar()
-        priceVar = tk.StringVar()
-        priceBox = ttk.Entry(entryFrame1, textvariable=priceVar, background = 'white',width = 20)
-        priceBox.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
-        priceVar.set("*")
-        priceBox.bind("<Tab>",tabFuncPrice)
+        
+        # priceVar.set("*")
+        # priceBox.bind("<Tab>",tabFuncPrice)
         
         quote_no_var.append(myCombobox(df,toproot,item_list=list(df['quoteno']),frame=entryFrame1,row=1,column=0,width=10,list_bd = 0,foreground='blue',
-         background='white',sticky = tk.EW,cxDict= cxDatadict,val=priceBox))
+         background='white',sticky = tk.EW,cxDict= cxDatadict))
         # Quotenum = ttk.Entry(entryFrame1, textvariable=qn, background = 'white',width = 20)
         # Quotenum.grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
         # qn.set("*")
@@ -285,37 +291,142 @@ def no_order_why(root,conn):
         cxDatadict["preparedby"].append((preparedBox, preparedVar))
 
         salespersonVar = tk.StringVar()
-        salespersonBox = ttk.Entry(entryFrame3, textvariable=salespersonVar, background = 'white',width = 20)
+        salespersonBox = ttk.Entry(entryFrame3, textvariable=salespersonVar,width = 20)
+        # salespersonBox =ttk.Radiobutton(entryFrame3, text='Yes',variable=salespersonVar, value=1)
+        # salespersonBox1 =ttk.Radiobutton(entryFrame3, text='No',variable=salespersonVar, value=0)
         salespersonBox.grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
+        # salespersonBox1.grid(row=1,column=0,sticky=tk.EW,padx=90,pady=10)
         salespersonVar.set("*")
         cxDatadict["sales_person"].append((salespersonBox, salespersonVar))
         salespersonBox.bind("<Tab>",tabFunc)
-        
+
+        # yes_path = resource_path("yes_main.png")
+        yes = tk.PhotoImage(file = "yesmain_img1.png")
+        no = tk.PhotoImage(file = "nomain_img1.png")
+        # yes =tk.PhotoImage(yes_path)
+        # no_path = resource_path("NO_main.png")
+        # no = tk.PhotoImage(no_path)
+
+        # def switch(onButtonVar):
+
+        #     # Determine is no or yes
+        #     if yes:
+        #         Time_yes.config(image = no)  
+        #     else:
+        #         Time_yes.config(image = yes)
+        #         onButtonVar.set("On")     
+        #         # toproot.withdraw()
+        global is_on
+        is_on = False
+
+        def switch(box,onButtonVar,on_image,off_image):
+            global is_on
+            
+            # Determine is on or off
+            if is_on:
+                box.config(image = off_image)
+                onButtonVar.set("Off")
+                
+                is_on = False
+                print("button off")
+            else:
+            
+                box.config(image = on_image)
+                onButtonVar.set("On")
+                is_on = True
+                print("button on")
+                
+                # mainRoot.withdraw()
+                global row_num
+                row_num=0
+
+
         
 
-        TimeVar = tk.StringVar()
-        TimeBox = ttk.Entry(entryFrame2, textvariable=TimeVar, background = 'white',width = 20)
-        TimeBox.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
-        TimeVar.set("*")
-        TimeBox.bind("<Tab>",tabFuncTime)
+        # date_var = tk.StringVar()
+        # date_box = MyDateEntry(master=labelFrame,textvariable=date_var, selectmode='day')
+        # date_box.grid(row=5,column=2,sticky=tk.EW,padx=10,pady=10)
+
+        date_var = tk.StringVar()
+        date_box = MyDateEntry(master=entryFrame1,textvariable=date_var, selectmode='day')
+        date_box.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
+
+
+        priceVar = tk.StringVar()
+        # priceBox = ttk.Entry(entryFrame1, textvariable=priceVar, background = 'white',width = 20)
+        priceBox = tk.Button(labelFrame, textvariable=priceVar, image = no, bd = 0, bg = "#9BC2E6", highlightbackground = "#9BC2E6", activebackground="#9BC2E6",
+                   command = lambda: switch(priceBox,priceVar,on_image=yes,off_image=no))
+        priceBox.grid(row=5,column=2,sticky=tk.EW,padx=10,pady=10)
+
 
         DeliveryVar = tk.StringVar()
-        DeliveryBox = ttk.Entry(entryFrame3, textvariable=DeliveryVar, background = 'white',width = 20)
+        # DeliveryBox = ttk.Entry(entryFrame3, textvariable=DeliveryVar, background = 'white',width = 20)
+        DeliveryBox =tk.Button(entryFrame3, textvariable=DeliveryVar, image = no, bd = 0, bg = "#9BC2E6", highlightbackground = "#9BC2E6", activebackground="#9BC2E6",
+                   command = lambda: switch(DeliveryBox,DeliveryVar,on_image=yes,off_image=no))
+        # DeliveryBox.set("On")
+        # DeliveryBox1=ttk.Radiobutton(entryFrame3, text='No',variable=DeliveryVar, value=0)
+        DeliveryBox.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
+        # DeliveryBox1.grid(row=3,column=0,sticky=tk.EW,padx=70,pady=10)
+        
         # DeliveryBox = tk.Text(entryFrame3, height = 5, width = 5,bg='white')
         # DeliveryBox.pack(side='bottom',padx=2)
-        DeliveryBox.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
-        DeliveryVar.set("*")
+        # DeliveryBox.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
+        DeliveryVar.set("Off")
+
+        TimeVar = tk.StringVar()
+        # TimeBox = ttk.Entry(entryFrame2, textvariable=TimeVar, background = 'white',width = 20)
+        # Time_yes=tk.Button(entryFrame2, textvariable=TimeVar, image = yes, bd = 0, bg = "#9BC2E6", highlightbackground = "#9BC2E6", activebackground="#9BC2E6",
+        #            command = lambda: switch(TimeVar))
+        Time_yes =tk.Button(labelFrame, textvariable=TimeVar, image = no, bd = 0, bg = "#9BC2E6", highlightbackground = "#9BC2E6", activebackground="#9BC2E6",
+                   command = lambda: switch(Time_yes,TimeVar,on_image=yes,off_image=no))
+        TimeVar.set('Off')
+        # Time_yes =ttk.Radiobutton(entryFrame2, text='Yes',variable=TimeVar, value=1)
+        # TimeBox1 =ttk.Radiobutton(entryFrame2, text='No',variable=TimeVar, value=0)
+        Time_yes.grid(row=5,column=0,sticky=tk.EW,padx=10,pady=10)
+        # TimeBox1.grid(row=3,column=0,sticky=tk.EW,padx=70,pady=10)
+        # TimeBox.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
+        # TimeVar.set("*")
+        # Time_yes.bind("<Tab>",tabFuncTime)
+
 
         no_feedbackVar = tk.StringVar()
         # no_feedbackBox = ttk.Entry(labelFrame, textvariable=no_feedbackVar, background = 'white',width = 10)
-        no_feedbackBox = ttk.Entry(labelFrame2, textvariable= no_feedbackVar, width = 30,background='white')
+        # no_feedbackBox = ttk.Entry(labelFrame2, textvariable= no_feedbackVar, width = 30,background='white')
+        no_feedbackBox = tk.Button(labelFrame2, textvariable=no_feedbackVar, image = no, bd = 0, bg = "#9BC2E6", highlightbackground = "#9BC2E6", activebackground="#9BC2E6",
+                   command = lambda: switch(no_feedbackBox,no_feedbackVar,on_image=yes,off_image=no))
         no_feedbackBox.grid(row=5,column=0,sticky=tk.EW,padx=10,pady=10)
-        no_feedbackVar.set("*")
+
+        OPTIONS = [
+                "Converted",
+                "Not Converted",
+                "Partially Converted"
+                  ]
+
+        status_var = tk.StringVar()
+        status_box = OptionMenu(entryFrame2, status_var, *OPTIONS)
+        status_box.config(width=7,height=0,bg='white')
+        status_box.grid(row=3,column=0,sticky=tk.EW,padx=10,pady=10)
+
+        
+        # no_feedbackVar.set("*")
+
+        material_unav_var = tk.StringVar()
+        # no_feedbackBox = ttk.Entry(labelFrame, textvariable=no_feedbackVar, background = 'white',width = 10)
+        # no_feedbackBox = ttk.Entry(labelFrame2, textvariable= no_feedbackVar, width = 30,background='white')
+        material_unav_box = tk.Button(labelFrame, textvariable=material_unav_var, image = no, bd = 0, bg = "#9BC2E6", highlightbackground = "#9BC2E6", activebackground="#9BC2E6",
+                   command = lambda: switch(material_unav_box,material_unav_var,on_image=yes,off_image=no))
+        material_unav_box.grid(row=5,column=1,sticky=tk.EW,padx=10,pady=10)
+        # no_feedbackVar.set("*")
+        
+
+
+        
+
 
         add_commtVar = tk.StringVar()
         # add_commtBox = ttk.Entry(labelFrame, textvariable=add_commtVar, background = 'white',width = 10)
-        add_commtBox = ttk.Entry(labelFrame2, textvariable= add_commtVar, width = 30,background='white')
-        add_commtBox.grid(row=5,column=1,sticky=tk.EW,padx=10,pady=10)
+        add_commtBox = ttk.Entry(labelFrame2, textvariable= add_commtVar, width = 20,background='white')
+        add_commtBox.grid(row=5,column=2,sticky=tk.EW,padx=20,pady=10)
         add_commtVar.set("*")
 
         data = {'QUOTE_NUMBER': [], 'PREPAREDBY': [], 'SALES_PERSON': [], 'PRICE': [], 'TIME': [], 'DELIVERY': [], 'NO_FEEDBACK': [], 'ADDITIONAL_COMMENT':''}
@@ -325,10 +436,10 @@ def no_order_why(root,conn):
             priceBox.configure(state='disable')
             preparedBox.configure(state='disable')
             salespersonBox.configure(state='disable')
-            TimeBox.configure(state='disable')
+            Time_yes.configure(state='disable')
             DeliveryBox.configure(state='disable')
             no_feedbackBox.configure(state='disable')
-            add_commtBox.configure(state='disable')
+            add_commtBox.configure(state='disable')                                                                                                                                                                                                                                    
 
             # qn_list.append(qn.get())
             # preparedVar_list.append(preparedVar.get())
@@ -360,7 +471,7 @@ def no_order_why(root,conn):
             priceBox.configure(state='normal')
             preparedBox.configure(state='normal')
             salespersonBox.configure(state='normal')
-            TimeBox.configure(state='normal')
+            Time_yes.configure(state='normal')
             DeliveryBox.configure(state='normal')
             no_feedbackBox.configure(state='normal')
             add_commtBox.configure(state='normal')

@@ -469,11 +469,11 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         boxList[newKey][0][index][1].set("")
                                         boxList[newKey][0][index][0].configure(state='normal')
                             else:
-                                if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'E_Spec' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and not len(bakerDf):
+                                if newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'E_Spec' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and newKey !='E_Location' and not len(bakerDf):
                                     boxList[newKey][0][index][1].set("NA")
                                     boxList[newKey][0][index][0].configure(state='disabled')
                                 
-                                elif newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and len(bakerDf):
+                                elif newKey != 'E_OD2' and newKey != 'E_ID2' and newKey != 'Lot_Serial_Number' and newKey != 'searchLocation' and newKey !='E_Location' and len(bakerDf):
                                     if newKey != 'E_freightIncured' and newKey != 'E_freightCharged' and newKey != 'E_Margin_Freight':
                                         boxList[newKey][0][index][1].set("NA")
                                         boxList[newKey][0][index][0].configure(state='disabled')
