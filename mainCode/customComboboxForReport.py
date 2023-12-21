@@ -158,7 +158,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
 
                         # cxDict["cus_city_zip"] = dataList[7]
                         # val.lift()
-                        val.focus_set()
+                        # val.focus_set()
                         breakCheck = True
                     
 
