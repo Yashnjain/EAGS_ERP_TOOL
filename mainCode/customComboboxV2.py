@@ -278,8 +278,6 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     elif value != "Other" and value != "Yes" and value != "No"  and key != "E_UOM" and boxList['C_Quote Yes/No'][0][index][0].get() != "Other" and boxList['C_Quote Yes/No'][0][index][0].get() != "No": #and key!='E_Location'
                         current_key = key
                         while True:
-                            if value == 'No':
-                                break 
                             if current_key=="searchLocation":
                                 break
                             next_key = nextKey(current_key, index)
