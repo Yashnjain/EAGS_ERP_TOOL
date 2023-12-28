@@ -275,9 +275,11 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                     #     breakCheck = True
 
                         
-                    elif value != "Other" and value != "Yes" and value != "No"  and key != "E_UOM" and boxList['C_Quote Yes/No'][0][index][0].get() != "Other": #and key!='E_Location'
+                    elif value != "Other" and value != "Yes" and value != "No"  and key != "E_UOM" and boxList['C_Quote Yes/No'][0][index][0].get() != "Other" and boxList['C_Quote Yes/No'][0][index][0].get() != "No": #and key!='E_Location'
                         current_key = key
                         while True:
+                            if value == 'No':
+                                break 
                             if current_key=="searchLocation":
                                 break
                             next_key = nextKey(current_key, index)
@@ -477,6 +479,14 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                     if newKey != 'E_freightIncured' and newKey != 'E_freightCharged' and newKey != 'E_Margin_Freight':
                                         boxList[newKey][0][index][1].set("NA")
                                         boxList[newKey][0][index][0].configure(state='disabled')
+                            # if value == "No":
+                            #     print("no")
+                            #     newKey == 'E_OD2' and newKey == 'E_ID2' and newKey == 'Lot_Serial_Number' and newKey == 'searchLocation' and newKey !='E_Location' and len(bakerDf)
+                            #     boxList[newKey][0][index][1].set("NA")
+                            #     boxList[newKey][0][index][0].configure(state='disabled')
+                                
+
+                            
                         
                 
                 
