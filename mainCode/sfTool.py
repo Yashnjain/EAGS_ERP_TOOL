@@ -5,9 +5,9 @@ from snowflake.connector.pandas_tools import write_pandas
 import pandas as pd
 import datetime
 
-USER =  "SVC_BUIT"#  "SVC_BUITDB_DEV"
-PASSWORD = "BUIT2022"
-ACCOUNT = 'OS54042.east-us-2.azure'
+USER =  "SVC_BUSNOWFLAKE"#  "SVC_BUITDB_DEV"
+PASSWORD = "z}a=n\E4AG61"
+ACCOUNT = "afa26792.east-us-2.azure"
 WAREHOUSE = "BUIT_WH"
 DATABASE = "BUITDB"
 # DATABASE = "BUITDB_DEV"
