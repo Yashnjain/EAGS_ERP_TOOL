@@ -624,7 +624,7 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                                         for keys in cx_eags.keys():
                                             if not(keys == 'E_OD2' or keys == 'E_ID2'):
                                                 boxList[keys][0][index][1].set('')
-                                        boxList[key][0][index][0].focus()
+                                        boxList[key][0][index][0].focus() 
                                         breakCheck = True
                                         # break
                             else:#removing .get() from customer side 
@@ -708,10 +708,24 @@ def myCombobox(df,root,frame,row,column,width=10,list_bd = 0,foreground='blue', 
                 if ent.get()=='':
                     if len(boxList):
                         key, index = keyFinder(boxList,(ent,var))
-                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other" and key != 'E_UOM' and key != 'E_Location' and key!='E_Type':
+                        if boxList['C_Quote Yes/No'][0][index][1].get() == "Other" and key != 'E_UOM' and key != 'E_Location' and key!='E_Type' and key !='E_Grade':
                             listCheck = False
                         elif key=='E_UOM':
                             newList = item_list
+                        elif key=='E_Grade' and boxList['C_Quote Yes/No'][0][index][1].get() == "Other":
+                            newList=[
+                                        'A4140', 'SUP13CR', 'A420M', '4668', 'SM2550', '4006', 'API Q125', 'API L80',
+                                        'S32760', 'G3', 'S32750', 'SM2242', 'SM2535', 'VM25S', 'A4130M', '4462',
+                                        'S39277', 'N09925', 'N08825', 'P9', '4542', '4307', 'AL7075', 'N09935',
+                                        'A4145M', '15CR', 'A4130', '4404', '600', 'A4130-M7', 'API P110', 'N04400',
+                                        'N06625', 'API T95', 'AF22', 'A4330V', 'A1018', 'A1026', 'A8620', 'A4340',
+                                        'HY2S13CR', 'A4140M', 'API C110', 'API J55', 'HY1S13CR', 'C360', 'CDA954',
+                                        'A320', '1541', 'MONEL400', 'AL6061', '80-55-06', '4305', 'NIT50', 'MP35N',
+                                        'A8630', 'C22E', '4057', 'N07716', '4550', 'API 5CT', '4541', 'BS708M40',
+                                        '42CRMO4', 'API K55', 'API T951', 'API C95', '4401', 'C63000', 'API R95',
+                                        'V140', 'API 13CR', 'A4820', 'A4330M', '42CRMO', 'P550', 'A9310', 'API X52',
+                                        'N08028'
+                                    ]
                         else:
                             newList = filterList(boxList,key,index,df)
                         
