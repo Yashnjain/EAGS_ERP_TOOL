@@ -766,7 +766,8 @@ def quoteGenerator(mainRoot,user,conn, df):
         quoteLabel2 = tk.Label(entryFrame, text="Yes/No", bg= "#DDEBF7")
         locationLabel = tk.Label(entryFrame, text="EA Region", bg= "#DDEBF7")
         typeLabel = tk.Label(entryFrame, text="Form", bg= "#DDEBF7")
-        e_gradeLabel = tk.Label(entryFrame, text="Grade", bg= "#DDEBF7") 
+        e_gradeLabel = tk.Label(entryFrame, text="Grade", bg= "#DDEBF7")
+
         e_yieldLabel = tk.Label(entryFrame, text="Yield", bg= "#DDEBF7")
         e_odLabel = tk.Label(entryFrame, text="OD", bg= "#DDEBF7")
         e_idLabel = tk.Label(entryFrame, text="ID", bg= "#DDEBF7")
